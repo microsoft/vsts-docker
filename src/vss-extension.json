@@ -1,0 +1,62 @@
+{
+    "manifestVersion": 1,
+    "extensionId": "docker",
+    "name": "Docker Deployment",
+    "version": "0.1.0",
+    "publisher": "ms-vscs-rm",
+    "description": "Deploy to Docker",
+    "public": "true",
+    "galleryFlags": [
+        "Preview"
+    ],
+    "icons": {
+        "default": "images/docker_logo.png",
+        "large": "images/docker_logo_large.png"
+    },
+    "categories": [
+        "Build and release"
+    ],
+    "tags": [
+        "docker"
+    ],
+    "links": {
+        "home": {
+            "uri": "http://aka.ms/vsts-docker"
+        }
+    },
+    "branding": {
+        "color": "#f6f7fb",
+        "theme": "light"
+    },
+    "content": {
+        "details": {
+            "path": "docker.md"
+        }
+    },
+    "files": [
+        {
+            "path": "tasks/dockerRun"
+        },
+        {
+            "path": "images",
+            "addressable": true
+        }
+    ],
+    "targets": [
+        {
+            "id": "Microsoft.VisualStudio.Services"
+        }
+    ],
+    "contributions": [
+        {
+            "id": "dockerRun-task",
+            "type": "ms.vss-distributed-task.task",
+            "targets": [
+                "ms.vss-distributed-task.tasks"
+            ],
+            "properties": {
+                "name": "tasks/dockerRun"
+            }
+        }
+    ]
+}

@@ -1,0 +1,36 @@
+{
+    "id": "B93C4522-5BEA-4118-97AE-2B560628A157",
+    "name": "DockerRun",
+    "friendlyName": "Run Docker image",
+    "description": "run a docker image.",
+	"helpMarkDown": "[More Information](http://aka.ms/vsts-docker-run-task)",
+    "category": "Deploy",
+	"visibility": [
+        "Build",
+        "Release"
+    ],
+    "author": "Microsoft Corporation",
+    "version": {
+        "Major": 0,
+        "Minor": 1,
+        "Patch": 0
+    },
+    "demands": [],
+    "inputs": [
+        {
+            "name": "imageName",
+            "type": "string",
+            "label": "Image name",
+            "defaultValue": "",
+            "required": "true",
+            "helpMarkDown": "name of the image to run"
+        }
+    ],
+    "instanceNameFormat": "run $(imageName)",
+    "execution": {
+        "Node": {
+            "target": "invokeDockerRun.js",
+            "argumentFormat": ""
+        }
+    }
+}
