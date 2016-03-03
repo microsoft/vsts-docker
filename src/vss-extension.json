@@ -49,6 +49,111 @@
     ],
     "contributions": [
         {
+            "id": "dockerhub-endpoint-type",
+            "description": "Service Endpoint type for pushing to Docker Hub",
+            "type": "ms.vss-endpoint.service-endpoint-type",
+            "targets": [
+                "ms.vss-endpoint.endpoint-types"
+            ],
+            "properties": {
+                "name": "dockerhub",
+                "displayName": "Docker Hub",
+                "url": "http://hub.docker.com",
+                "authenticationSchemes": [
+                    {
+                        "type": "ms.vss-endpoint.endpoint-auth-scheme-basic",
+                        "inputDescriptors": [
+                            {
+                                "id": "username",
+                                "name": "Docker ID",
+                                "description": "Your username for your Docker Hub account",
+                                "inputMode": "textbox",
+                                "isConfidential": false,
+                                "validation": {
+                                    "isRequired": true,
+                                    "dataType": "string"
+                                }
+                            },
+                            {
+                                "id": "password",
+                                "name": "Password",
+                                "description": "Your password for your Docker Hub account",
+                                "inputMode": "passwordBox",
+                                "isConfidential": true,
+                                "validation": {
+                                    "isRequired": true,
+                                    "dataType": "string"
+                                }
+                            },
+                            {
+                                "id": "email",
+                                "name": "Email",
+                                "description": "Your email address for your Docker Hub account",
+                                "inputMode": "textbox",
+                                "isConfidential": false,
+                                "validation": {
+                                    "isRequired": true,
+                                    "dataType": "string"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "id": "docker-endpoint-type",
+            "description": "Service Endpoint type for all Docker connections",
+            "type": "ms.vss-endpoint.service-endpoint-type",
+            "targets": [
+                "ms.vss-endpoint.endpoint-types"
+            ],
+            "properties": {
+                "name": "docker",
+                "displayName": "Docker",
+                "authenticationSchemes": [
+                    {
+                        "type": "ms.vss-endpoint.endpoint-auth-scheme-basic",
+                        "inputDescriptors": [
+                            {
+                                "id": "username",
+                                "name": "CA Certificate",
+                                "description": "Contents of ca.pem",
+                                "inputMode": "textarea",
+                                "isConfidential": false,
+                                "validation": {
+                                    "isRequired": true,
+                                    "dataType": "string"
+                                }
+                            },
+                            {
+                                "id": "password",
+                                "name": "Certificate",
+                                "description": "Contents of cert.pem",
+                                "inputMode": "textarea",
+                                "isConfidential": false,
+                                "validation": {
+                                    "isRequired": true,
+                                    "dataType": "string"
+                                }
+                            },
+                            {
+                                "id": "key",
+                                "name": "Key",
+                                "description": "Contents of key.pem",
+                                "inputMode": "textarea",
+                                "isConfidential": false,
+                                "validation": {
+                                    "isRequired": true,
+                                    "dataType": "string"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
             "id": "dockerRun-task",
             "type": "ms.vss-distributed-task.task",
             "targets": [
