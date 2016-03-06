@@ -61,9 +61,9 @@ gulp.task("test", ["build"], function() {
         .pipe(istanbul.enforceThresholds({thresholds: {global: 100}}));
 });
 
-gulp.task("default", ["test"]);
+gulp.task("default", ["build"]);
 
-gulp.task("package", ["test"], function() {
+gulp.task("package", ["build"], function() {
     getNodeDependencies(function() {
         copyNodeModulesToTasks();
         createVsixPackage();        
