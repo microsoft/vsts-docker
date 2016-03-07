@@ -6,6 +6,7 @@ import tr = require("vsts-task-lib/toolrunner");
 export class DockerCommand {
     public commandName: string;
     public imageName: string;
+    public additionalArguments: string;
 
     constructor(commandName: string) {
         this.commandName = commandName;
@@ -20,6 +21,10 @@ export class DockerCommand {
                 break;
             default:
                 command.arg(this.imageName);
+        }
+
+        if (this.additionalArguments) {
+           command.arg(this.additionalArguments);
         }
 
         command.execSync();

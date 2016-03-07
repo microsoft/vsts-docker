@@ -24,6 +24,14 @@
             "defaultValue": "",
             "required": "true",
             "helpMarkDown": "name of the image to run"
+        },
+        {
+            "name": "additionalArgs",
+            "type": "string",
+            "label": "Additional arguments",
+            "defaultValue": "",
+            "required": false,
+            "helpMarkDown": "Additional arguments to pass to the run command."
         }
     ],
     "instanceNameFormat": "run $(imageName)",
