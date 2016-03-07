@@ -12,29 +12,32 @@ export class DockerCommand {
     }
 
     public execSync() {
-        var cmd = this.getCommand();
-        cmd.execSync(<tr.IExecOptions> { failOnStdErr: true });
+        var command = this.getBasicCommand();
+
+        switch (this.commandName) {
+            case "run":
+                this.appendRunCmdArgs(command);
+                break;
+            default:
+                command.arg(this.imageName);
+        }
+
+        command.execSync();
     }
 
-    private getCommand(): tr.ToolRunner {
+    private getBasicCommand(): tr.ToolRunner {
         var dockerPath = tl.which("docker", true);
         tl.debug("docker path: " + dockerPath);
         // TODO: what if docker is not found
 
-        var dockerToolRunner = tl.createToolRunner(dockerPath);
+        var basicDockerCommand = tl.createToolRunner(dockerPath);
 
-        // TODO: throw if commandName is not set
+        return basicDockerCommand;
+    }
 
-        if (this.commandName == "run") {
-            dockerToolRunner.arg("run");
-
-            // TODO: throw if imageName is not set
-            dockerToolRunner.arg(this.imageName);
-        }
-        else {
-            dockerToolRunner.arg(this.commandName);
-        }
-
-        return dockerToolRunner;
+    private appendRunCmdArgs(command: tr.ToolRunner) {
+        command.arg("run");
+        command.arg(this.imageName);
+        // TODO: hanle imageName not set
     }
 }

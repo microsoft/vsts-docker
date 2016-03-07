@@ -8,5 +8,5 @@ export function dockerRun(): void {
 
     var cmd = new docker.DockerCommand("run");
     cmd.imageName = imageName;
-    cmd.execSync();    
+    cmd.execSync();
 }
