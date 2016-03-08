@@ -18,6 +18,19 @@
     "demands": [],
     "inputs": [
         {
+            "name": "action",
+            "type": "pickList",
+            "label": "Action",
+            "defaultValue": "run a container",
+            "required": true,
+            "options":
+            {
+                "run a container": "run a container",
+                "build an image": "build an image"
+            },
+            "helpMarkDown": "Select a docker action"
+        },
+        {
             "name": "imageName",
             "type": "string",
             "label": "Image name",
@@ -37,7 +50,7 @@
     "instanceNameFormat": "run $(imageName)",
     "execution": {
         "Node": {
-            "target": "invokeDockerRun.js",
+            "target": "invokeDockerAction.js",
             "argumentFormat": ""
         }
     }
