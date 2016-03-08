@@ -4,5 +4,9 @@ import tl = require("vsts-task-lib/task");
 import * as docker from "./dockerCommand";
 
 export function dockerBuild(): void {
-    tl.debug("inside dockerBuild");
+    var dockerFile = tl.getInput("dockerFile", true);
+    var imageName = tl.getInput("imageName", true);
+    var additionalArgs = tl.getInput("additionalArgs", false);
+    
+    
 }

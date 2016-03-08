@@ -31,6 +31,15 @@
             "helpMarkDown": "Select a docker action"
         },
         {
+            "name": "dockerFile",
+            "type": "",
+            "label": "Docker File",
+            "defaultValue": "",
+            "required": true,
+            "visibleRule": "action = build an image",
+            "helpMarkDown": "docker file to be built"
+        },
+        {
             "name": "imageName",
             "type": "string",
             "label": "Image name",
