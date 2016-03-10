@@ -5,6 +5,8 @@ import tr = require("vsts-task-lib/toolrunner");
 
 export class DockerCommand {
     public commandName: string;
+    public dockerFile: string;
+    public context: string;
     public imageName: string;
     public additionalArguments: string;
 
@@ -19,8 +21,11 @@ export class DockerCommand {
             case "run":
                 this.appendRunCmdArgs(command);
                 break;
+            case "build":
+                this.appendBuildCmdArgs(command);
+                break;
             default:
-                command.arg(this.imageName);
+                command.arg(this.commandName);
         }
 
         if (this.additionalArguments) {
@@ -44,5 +49,12 @@ export class DockerCommand {
         command.arg("run");
         command.arg(this.imageName);
         // TODO: hanle imageName not set
+    }
+
+    private appendBuildCmdArgs(command: tr.ToolRunner) {
+        command.arg("build");
+        command.arg("-t " + this.imageName);
+        command.arg("-f " + this.dockerFile);
+        command.arg(this.context);
     }
 }

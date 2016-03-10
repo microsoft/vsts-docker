@@ -32,12 +32,21 @@
         },
         {
             "name": "dockerFile",
-            "type": "",
+            "type": "filePath",
             "label": "Docker File",
             "defaultValue": "",
             "required": true,
             "visibleRule": "action = build an image",
-            "helpMarkDown": "docker file to be built"
+            "helpMarkDown": "Path to Dockerfile to use"
+        },
+        {
+            "name": "context",
+            "type": "filePath",
+            "label": "Context",
+            "defaultValue": "$(Build.StagingDirectory)/drop",
+            "required": true,
+            "visibleRule": "action = build an image",
+            "helpMarkDown": "The path to the folder to build from."
         },
         {
             "name": "imageName",
