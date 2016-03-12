@@ -25,10 +25,19 @@
             "required": true,
             "options":
             {
-                "run a container": "run a container",
-                "build an image": "build an image"
+                "build an image": "build an image",
+                "publish image": "publish image",
+                "run a container": "run a container"
             },
             "helpMarkDown": "Select a docker action"
+        },
+        {
+            "name": "dockerRegistryServiceEndpoint",
+            "type": "connectedService:DockerHub",
+            "label": "Docker Hub connection",
+            "required": true,
+            "visibleRule": "action = publish image",
+            "helpMarkDown": "The Docker Hub endpoint, to login to Docker Hub."
         },
         {
             "name": "dockerFile",

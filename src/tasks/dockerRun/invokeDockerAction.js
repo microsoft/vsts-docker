@@ -13,4 +13,8 @@ switch (action) {
         var dockerBuild = require("./dockerBuild");
         dockerBuild.dockerBuild();
         break;
+    case "publish image":
+        var dockerPublish = require("./dockerPublish");
+        dockerPublish.dockerPublish();
+        break;
 }

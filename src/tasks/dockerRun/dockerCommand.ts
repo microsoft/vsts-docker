@@ -9,6 +9,7 @@ export class DockerCommand {
     public context: string;
     public imageName: string;
     public additionalArguments: string;
+    public registryConnetionDetails: tl.EndpointAuthorization;
 
     constructor(commandName: string) {
         this.commandName = commandName;
@@ -23,6 +24,15 @@ export class DockerCommand {
                 break;
             case "build":
                 this.appendBuildCmdArgs(command);
+                break;
+            case "publish":
+                this.appendPublishCmdArgs(command);
+                break;
+            case "login":
+                this.appendLoginCmdArgs(command);
+                break;
+            case "logout":
+                this.appendLogoutCmdArgs(command);
                 break;
             default:
                 command.arg(this.commandName);
@@ -48,7 +58,6 @@ export class DockerCommand {
     private appendRunCmdArgs(command: tr.ToolRunner) {
         command.arg("run");
         command.arg(this.imageName);
-        // TODO: hanle imageName not set
     }
 
     private appendBuildCmdArgs(command: tr.ToolRunner) {
@@ -56,5 +65,21 @@ export class DockerCommand {
         command.arg("-t " + this.imageName);
         command.arg("-f " + this.dockerFile);
         command.arg(this.context);
+    }
+
+    private appendPublishCmdArgs(command: tr.ToolRunner) {
+        command.arg("push");
+        command.arg(this.imageName);
+    }
+
+    private appendLoginCmdArgs(command: tr.ToolRunner) {
+        command.arg("login");
+        command.arg("-e " + this.registryConnetionDetails.parameters["email"]);
+        command.arg("-u " + this.registryConnetionDetails.parameters["username"]);
+        command.arg("-p " + this.registryConnetionDetails.parameters["password"]);
+    }
+
+    private appendLogoutCmdArgs(command: tr.ToolRunner) {
+        command.arg("logout");
     }
 }
