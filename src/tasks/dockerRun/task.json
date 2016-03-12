@@ -18,6 +18,13 @@
     "demands": [],
     "inputs": [
         {
+            "name": "dockerServiceEndpoint",
+            "type": "connectedService:Docker",
+            "label": "Docker connection",
+            "required": true,
+            "helpMarkDown": "The Docker endpoint, set the certs and url."
+        },
+        {
             "name": "action",
             "type": "pickList",
             "label": "Action",
