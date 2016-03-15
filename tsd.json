@@ -9,7 +9,7 @@
       "commit": "e69fe60f2d6377ea4fae539493997b098f52cad1"
     },
     "node/node.d.ts": {
-      "commit": "3030a4be536b6530c06b80081f1333dc0de4d703"
+      "commit": "81ebfb3d08cd608a7c801668a6d5f7b2ea9ecc38"
     },
     "shelljs/shelljs.d.ts": {
       "commit": "3030a4be536b6530c06b80081f1333dc0de4d703"
@@ -25,6 +25,15 @@
     },
     "sinon-chai/sinon-chai.d.ts": {
       "commit": "95b7178e0ef33b4b88327676418b4cc3ad61df0f"
+    },
+    "del/del.d.ts": {
+      "commit": "81ebfb3d08cd608a7c801668a6d5f7b2ea9ecc38"
+    },
+    "glob/glob.d.ts": {
+      "commit": "81ebfb3d08cd608a7c801668a6d5f7b2ea9ecc38"
+    },
+    "minimatch/minimatch.d.ts": {
+      "commit": "81ebfb3d08cd608a7c801668a6d5f7b2ea9ecc38"
     }
   }
 }

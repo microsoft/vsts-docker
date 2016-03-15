@@ -1,5 +1,6 @@
 /// <reference path="../../../typings/vsts-task-lib/vsts-task-lib.d.ts" />
 
+import del = require("del");
 import fs = require("fs");
 import path = require("path");
 import tl = require("vsts-task-lib/task");
@@ -48,6 +49,8 @@ export class DockerCommand {
         }
 
         command.execSync();
+
+        this.clearAuth();
     }
 
     private getBasicCommand(): tr.ToolRunner {
@@ -82,6 +85,13 @@ export class DockerCommand {
         command.arg("--tlscert='" + certPath + "'");
         command.arg("--tlskey='" + keyPath + "'");
         command.arg("-H " + serverUrl);
+    }
+
+    private clearAuth() {
+        var dir = path.join("", "certs");
+        if (fs.existsSync(dir)) {
+            del.sync(dir);
+        }
     }
 
     private appendRunCmdArgs(command: tr.ToolRunner) {
