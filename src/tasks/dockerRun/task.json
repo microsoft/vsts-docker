@@ -43,7 +43,6 @@
             "type": "connectedService:DockerHub",
             "label": "Docker Hub connection",
             "required": true,
-            "visibleRule": "action = publish image",
             "helpMarkDown": "The Docker Hub endpoint, to login to Docker Hub."
         },
         {
