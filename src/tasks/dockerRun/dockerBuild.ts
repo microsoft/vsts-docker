@@ -6,6 +6,7 @@ import tl = require("vsts-task-lib/task");
 import * as docker from "./dockerCommand";
 
 export function dockerBuild(): void {
+    var dockerConnectionString = tl.getInput("dockerServiceEndpoint", true);
     var dockerFile = tl.getInput("dockerFile", true);
     var context = tl.getInput("context", true);
     var imageName = tl.getInput("imageName", true);
@@ -14,6 +15,7 @@ export function dockerBuild(): void {
     dockerFile = copyDockerFileToContextFolder(dockerFile, context);
 
     var cmd = new docker.DockerCommand("build");
+    cmd.dockerConnectionString = dockerConnectionString;
     cmd.dockerFile = dockerFile;
     cmd.context = context;
     cmd.imageName = imageName;
@@ -30,5 +32,4 @@ function copyDockerFileToContextFolder(dockerFile: string, context: string): str
 
     fs.createReadStream(dockerFile).pipe(<any>fs.createWriteStream(target));
     return target;
-    // TODO: handle errors
 }

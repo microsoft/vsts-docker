@@ -53,7 +53,6 @@ export class DockerCommand {
     private getBasicCommand(): tr.ToolRunner {
         var dockerPath = tl.which("docker", true);
         tl.debug("docker path: " + dockerPath);
-        // TODO: what if docker is not found
 
         var basicDockerCommand = tl.createToolRunner(dockerPath);
 
@@ -82,8 +81,7 @@ export class DockerCommand {
         command.arg("--tlscacert='" + caPath + "'");
         command.arg("--tlscert='" + certPath + "'");
         command.arg("--tlskey='" + keyPath + "'");
-        command.arg("-H");
-        command.arg(serverUrl);
+        command.arg("-H " + serverUrl);
     }
 
     private appendRunCmdArgs(command: tr.ToolRunner) {
