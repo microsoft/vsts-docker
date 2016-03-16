@@ -90,6 +90,15 @@
             "helpMarkDown": "Name value pairs to pass as environments variables to the run commnad in name=value format."
         },
         {
+            "name": "ports",
+            "type": "multiLine",
+            "label": "Ports",
+            "defaultValue": "",
+            "required": false,
+            "visibleRule": "action = run a container",
+            "helpMarkDown": "Port mappings to pass to the run commnad in port:port format."
+        },
+        {
             "name": "removeImageAfterPublish",
             "type": "boolean",
             "label": "Remove image after publish",

@@ -12,6 +12,7 @@ export class DockerCommand {
     public context: string;
     public imageName: string;
     public containerName: string;
+    public ports: string[];
     public envVars: string[];
     public additionalArguments: string;
     public dockerConnectionString: string;
@@ -104,6 +105,11 @@ export class DockerCommand {
 
     private appendRunCmdArgs(command: tr.ToolRunner) {
         command.arg("run");
+        if (this.ports) {
+            this.ports.forEach(function (v, i) {
+                command.arg("-p " + v);
+            });
+        }
         if (this.envVars) {
             this.envVars.forEach(function (v, i) {
                 command.arg("-e " + v);
