@@ -12,6 +12,7 @@ export class DockerCommand {
     public context: string;
     public imageName: string;
     public containerName: string;
+    public envVars: string[];
     public additionalArguments: string;
     public dockerConnectionString: string;
     public registryConnetionDetails: tl.EndpointAuthorization;
@@ -103,6 +104,11 @@ export class DockerCommand {
 
     private appendRunCmdArgs(command: tr.ToolRunner) {
         command.arg("run");
+        if (this.envVars) {
+            this.envVars.forEach(function (v, i) {
+                command.arg("-e " + v);
+            });
+        }
         if (this.containerName) {
             command.arg("--name " + this.containerName);
         }

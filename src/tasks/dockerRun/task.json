@@ -81,6 +81,15 @@
             "helpMarkDown": "Name to use for Docker container."
         },
         {
+            "name": "envVars",
+            "type": "multiLine",
+            "label": "Environment Variables",
+            "defaultValue": "",
+            "required": false,
+            "visibleRule": "action = run a container",
+            "helpMarkDown": "Name value pairs to pass as environments variables to the run commnad in name=value format."
+        },
+        {
             "name": "removeImageAfterPublish",
             "type": "boolean",
             "label": "Remove image after publish",

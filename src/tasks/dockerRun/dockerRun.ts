@@ -8,6 +8,7 @@ export function dockerRun(): void {
     var registryEndpoint = tl.getInput("dockerRegistryServiceEndpoint", true);
     var imageName = tl.getInput("imageName", true);
     var containerName = tl.getInput("containerName", false);
+    var envVars = tl.getDelimitedInput("envVars", "\n", false);
     var additionalArgs = tl.getInput("additionalArgs", false);
 
     var registryConnetionDetails = tl.getEndpointAuthorization(registryEndpoint, true);
@@ -22,9 +23,10 @@ export function dockerRun(): void {
     }
 
     var cmd = new docker.DockerCommand("run");
+    cmd.dockerConnectionString = dockerConnectionString;
     cmd.imageName = imageName;
     cmd.containerName = containerName;
-    cmd.dockerConnectionString = dockerConnectionString;
+    cmd.envVars = envVars;
     cmd.additionalArguments = additionalArgs;
     cmd.execSync();
 
