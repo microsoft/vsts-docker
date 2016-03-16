@@ -22,7 +22,7 @@ export class DockerCommand {
         this.commandName = commandName;
     }
 
-    public execSync() {
+    public execSync(): tr.IExecResult {
         var command = this.getBasicCommand();
 
         this.appendAuth(command);
@@ -57,9 +57,11 @@ export class DockerCommand {
            command.arg(this.additionalArguments);
         }
 
-        command.execSync();
+        var result = command.execSync();
 
         this.clearAuth();
+
+        return result;
     }
 
     private getBasicCommand(): tr.ToolRunner {

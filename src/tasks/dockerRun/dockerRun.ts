@@ -20,7 +20,11 @@ export function dockerRun(): void {
     loginCmd.execSync();
 
     if (containerName) {
-        removeConflictingContainers(containerName, dockerConnectionString);
+        removeConflictingContainersByName(containerName, dockerConnectionString);
+    }
+
+    if (ports.length > 0) {
+        removeConflictingContainersByPort(ports, dockerConnectionString);
     }
 
     var cmd = new docker.DockerCommand("run");
@@ -37,9 +41,24 @@ export function dockerRun(): void {
     logoutCmd.execSync();
 }
 
-function removeConflictingContainers(containerName: string, dockerConnectionString: string): void {
+function removeConflictingContainersByName(containerName: string, dockerConnectionString: string): void {
     var cmd = new docker.DockerCommand("removeContainerByName");
     cmd.dockerConnectionString = dockerConnectionString;
     cmd.containerName = containerName;
     cmd.execSync();
+}
+
+function removeConflictingContainersByPort(ports: string[], dockerConnectionString: string): void {
+    // TODO We should be removing containers that have conflicting ports
+    // For now, we are removing all
+    var cmd = new docker.DockerCommand("ps -a -q");
+    cmd.dockerConnectionString = dockerConnectionString;
+    var containerIdList = cmd.execSync().stdout.toString();
+
+    if ( (containerIdList) && (containerIdList.trim() != "")) {
+        var containerIds = containerIdList.split("\n").join(" ").trim();
+        var cmd = new docker.DockerCommand("rm -f " + containerIds);
+        cmd.dockerConnectionString = dockerConnectionString;
+        cmd.execSync();
+    }
 }
