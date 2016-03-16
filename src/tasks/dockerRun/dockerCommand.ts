@@ -40,6 +40,9 @@ export class DockerCommand {
             case "logout":
                 this.appendLogoutCmdArgs(command);
                 break;
+            case "removeImage":
+                this.appendRemoveImageCmdArgs(command);
+                break;
             default:
                 command.arg(this.commandName);
         }
@@ -120,5 +123,9 @@ export class DockerCommand {
 
     private appendLogoutCmdArgs(command: tr.ToolRunner) {
         command.arg("logout");
+    }
+
+    private appendRemoveImageCmdArgs(command: tr.ToolRunner) {
+        command.arg("rmi --force " + this.imageName);
     }
 }

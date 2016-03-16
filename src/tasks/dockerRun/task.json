@@ -72,6 +72,14 @@
             "helpMarkDown": "name of the image to run"
         },
         {
+            "name": "removeImageAfterPublish",
+            "type": "boolean",
+            "label": "Remove image after publish",
+            "defaultValue": "false",
+            "visibleRule": "action = publish image",
+            "helpMarkDown": "When true the image is force removed after publishing."
+        },
+        {
             "name": "additionalArgs",
             "type": "string",
             "label": "Additional arguments",

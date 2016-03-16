@@ -7,6 +7,7 @@ export function dockerPublish(): void {
     var dockerConnectionString = tl.getInput("dockerServiceEndpoint", true);
     var registryEndpoint = tl.getInput("dockerRegistryServiceEndpoint", true);
     var imageName = tl.getInput("imageName", true);
+    var removeImageAfterPublish = tl.getBoolInput("removeImageAfterPublish", true);
     var additionalArgs = tl.getInput("additionalArgs", false);
 
     var registryConnetionDetails = tl.getEndpointAuthorization(registryEndpoint, true);
@@ -21,6 +22,13 @@ export function dockerPublish(): void {
     publishCmd.imageName = imageName;
     publishCmd.additionalArguments = additionalArgs;
     publishCmd.execSync();
+
+    if (removeImageAfterPublish) {
+        var rmiCmd = new docker.DockerCommand("removeImage");
+        rmiCmd.dockerConnectionString = dockerConnectionString;
+        rmiCmd.imageName = imageName;
+        rmiCmd.execSync();
+    }
 
     var logoutCmd = new docker.DockerCommand("logout");
     logoutCmd.dockerConnectionString = dockerConnectionString;
