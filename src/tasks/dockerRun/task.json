@@ -72,6 +72,15 @@
             "helpMarkDown": "name of the image to run"
         },
         {
+            "name": "containerName",
+            "type": "string",
+            "label": "Container Name",
+            "defaultValue": "",
+            "required": false,
+            "visibleRule": "action = run a container",
+            "helpMarkDown": "Name to use for Docker container."
+        },
+        {
             "name": "removeImageAfterPublish",
             "type": "boolean",
             "label": "Remove image after publish",

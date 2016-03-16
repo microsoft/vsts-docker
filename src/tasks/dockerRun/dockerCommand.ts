@@ -11,6 +11,7 @@ export class DockerCommand {
     public dockerFile: string;
     public context: string;
     public imageName: string;
+    public containerName: string;
     public additionalArguments: string;
     public dockerConnectionString: string;
     public registryConnetionDetails: tl.EndpointAuthorization;
@@ -42,6 +43,9 @@ export class DockerCommand {
                 break;
             case "removeImage":
                 this.appendRemoveImageCmdArgs(command);
+                break;
+            case "removeContainerByName":
+                this.appendRemoveContainerByNameCmdArgs(command);
                 break;
             default:
                 command.arg(this.commandName);
@@ -99,6 +103,9 @@ export class DockerCommand {
 
     private appendRunCmdArgs(command: tr.ToolRunner) {
         command.arg("run");
+        if (this.containerName) {
+            command.arg("--name " + this.containerName);
+        }
         command.arg(this.imageName);
     }
 
@@ -127,5 +134,9 @@ export class DockerCommand {
 
     private appendRemoveImageCmdArgs(command: tr.ToolRunner) {
         command.arg("rmi --force " + this.imageName);
+    }
+
+    private appendRemoveContainerByNameCmdArgs(command: tr.ToolRunner) {
+        command.arg("rm --force " + this.containerName);
     }
 }
