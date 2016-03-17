@@ -17,4 +17,8 @@ switch (action) {
         var dockerPublish = require("./dockerPublish");
         dockerPublish.dockerPublish();
         break;
+    case "run a docker command":
+        var dockerAnyCmd = require("./dockerAnyCmd");
+        dockerAnyCmd.runCommand();
+        break;
 }

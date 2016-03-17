@@ -41,7 +41,8 @@
             {
                 "build an image": "build an image",
                 "publish image": "publish image",
-                "run a container": "run a container"
+                "run a container": "run a container",
+                "run a docker command": "run a docker command"
             },
             "helpMarkDown": "Select a docker action"
         },
@@ -105,6 +106,15 @@
             "defaultValue": "false",
             "visibleRule": "action = publish image",
             "helpMarkDown": "When true the image is force removed after publishing."
+        },
+        {
+            "name": "customCommand",
+            "type": "string",
+            "label": "Command",
+            "defaultValue": "",
+            "required": true,
+            "visibleRule": "action = run a docker command",
+            "helpMarkDown": "Docker command with arguments to execute."
         },
         {
             "name": "additionalArgs",
