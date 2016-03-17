@@ -25,6 +25,13 @@
             "helpMarkDown": "The Docker endpoint, set the certs and url."
         },
         {
+            "name": "dockerRegistryServiceEndpoint",
+            "type": "connectedService:DockerHub",
+            "label": "Docker Hub connection",
+            "required": true,
+            "helpMarkDown": "The Docker Hub endpoint, to login to Docker Hub."
+        },
+        {
             "name": "action",
             "type": "pickList",
             "label": "Action",
@@ -37,13 +44,6 @@
                 "run a container": "run a container"
             },
             "helpMarkDown": "Select a docker action"
-        },
-        {
-            "name": "dockerRegistryServiceEndpoint",
-            "type": "connectedService:DockerHub",
-            "label": "Docker Hub connection",
-            "required": true,
-            "helpMarkDown": "The Docker Hub endpoint, to login to Docker Hub."
         },
         {
             "name": "dockerFile",
