@@ -68,15 +68,14 @@
             "name": "imageName",
             "type": "string",
             "label": "Image name",
-            "defaultValue": "",
-            "required": "true",
+            "required": true,
+            "visibleRule": "action = build an image || action = publish image || action = run a container",
             "helpMarkDown": "name of the image to run"
         },
         {
             "name": "containerName",
             "type": "string",
             "label": "Container Name",
-            "defaultValue": "",
             "required": false,
             "visibleRule": "action = run a container",
             "helpMarkDown": "Name to use for Docker container."
@@ -85,7 +84,6 @@
             "name": "envVars",
             "type": "multiLine",
             "label": "Environment Variables",
-            "defaultValue": "",
             "required": false,
             "visibleRule": "action = run a container",
             "helpMarkDown": "Name value pairs to pass as environments variables to the run commnad in name=value format."
@@ -94,7 +92,6 @@
             "name": "ports",
             "type": "multiLine",
             "label": "Ports",
-            "defaultValue": "",
             "required": false,
             "visibleRule": "action = run a container",
             "helpMarkDown": "Port mappings to pass to the run commnad in port:port format."
@@ -111,7 +108,6 @@
             "name": "customCommand",
             "type": "string",
             "label": "Command",
-            "defaultValue": "",
             "required": true,
             "visibleRule": "action = run a docker command",
             "helpMarkDown": "Docker command with arguments to execute."
@@ -120,8 +116,8 @@
             "name": "additionalArgs",
             "type": "string",
             "label": "Additional arguments",
-            "defaultValue": "",
             "required": false,
+            "visibleRule": "action = build an image || action = publish image || action = run a container",
             "helpMarkDown": "Additional arguments to pass to the run command."
         }
     ],
