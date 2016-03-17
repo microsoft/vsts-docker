@@ -8,7 +8,7 @@ import * as docker from "./dockerCommand";
 export function dockerBuild(): void {
     var dockerConnectionString = tl.getInput("dockerServiceEndpoint", true);
     var registryEndpoint = tl.getInput("dockerRegistryServiceEndpoint", true);
-    var dockerFile = tl.getInput("dockerFile", true);
+    var dockerFilePattern = tl.getInput("dockerFile", true);
     var context = tl.getInput("context", true);
     var imageName = tl.getInput("imageName", true);
     var additionalArgs = tl.getInput("additionalArgs", false);
@@ -20,6 +20,7 @@ export function dockerBuild(): void {
     loginCmd.registryConnetionDetails = registryConnetionDetails;
     loginCmd.execSync();
 
+    var dockerFile = getDockerFile(dockerFilePattern);
     dockerFile = copyDockerFileToContextFolder(dockerFile, context);
 
     var cmd = new docker.DockerCommand("build");
@@ -44,4 +45,9 @@ function copyDockerFileToContextFolder(dockerFile: string, context: string): str
 
     fs.writeFileSync(target, fs.readFileSync(dockerFile));
     return target;
+}
+
+function getDockerFile(dockerFilePattern: string): string {
+    var dockerFile = tl.globFirst(dockerFilePattern);
+    return dockerFile;
 }

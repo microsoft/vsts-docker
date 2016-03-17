@@ -49,7 +49,7 @@
             "name": "dockerFile",
             "type": "filePath",
             "label": "Docker File",
-            "defaultValue": "",
+            "defaultValue": "**/Dockerfile",
             "required": true,
             "visibleRule": "action = build an image",
             "helpMarkDown": "Path to Dockerfile to use"
