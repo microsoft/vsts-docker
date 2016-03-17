@@ -58,7 +58,7 @@
             "name": "context",
             "type": "filePath",
             "label": "Context",
-            "defaultValue": "$(Build.StagingDirectory)/drop",
+            "defaultValue": "$(Build.StagingDirectory)",
             "required": true,
             "visibleRule": "action = build an image",
             "helpMarkDown": "The path to the folder to build from."
