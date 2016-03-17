@@ -42,6 +42,6 @@ function copyDockerFileToContextFolder(dockerFile: string, context: string): str
         return target;
     }
 
-    fs.createReadStream(dockerFile).pipe(<any>fs.createWriteStream(target));
+    fs.writeFileSync(target, fs.readFileSync(dockerFile));
     return target;
 }
