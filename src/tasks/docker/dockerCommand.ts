@@ -16,18 +16,40 @@ export class DockerCommand {
     public envVars: string[];
     public additionalArguments: string;
     public dockerConnectionString: string;
-    public registryConnetionDetails: tl.EndpointAuthorization;
+    public registryConnectionString: string;
+    public connectToHub: boolean;
 
     constructor(commandName: string) {
         this.commandName = commandName;
+        this.connectToHub = true;
     }
 
     public execSync(): tr.IExecResult {
-        var command = this.getBasicCommand();
         this.writeCerts();
 
+        if (this.connectToHub) {
+            var loginCmd = this.getCommand("login");
+            loginCmd.execSync();
+        }
+
+        var command = this.getCommand(this.commandName);
+        var result = command.execSync();
+
+        if (this.connectToHub) {
+            var logoutCmd = this.getCommand("logout");
+            logoutCmd.execSync();
+        }
+
+        this.clearCerts();
+
+        return result;
+    }
+
+    private getCommand(commandName: string): tr.ToolRunner {
+        var command = this.getBasicCommand();
+
         this.appendAuthArgs(command);
-        switch (this.commandName) {
+        switch (commandName) {
             case "run":
                 this.appendRunCmdArgs(command);
                 break;
@@ -50,18 +72,14 @@ export class DockerCommand {
                 this.appendRemoveContainerByNameCmdArgs(command);
                 break;
             default:
-                command.arg(this.commandName);
+                command.arg(commandName);
         }
 
         if (this.additionalArguments) {
            command.arg(this.additionalArguments);
         }
 
-        var result = command.execSync();
-
-        this.clearCerts();
-
-        return result;
+        return command;
     }
 
     private getBasicCommand(): tr.ToolRunner {
@@ -143,10 +161,11 @@ export class DockerCommand {
     }
 
     private appendLoginCmdArgs(command: tr.ToolRunner) {
+        var registryConnetionDetails = tl.getEndpointAuthorization(this.registryConnectionString, true);
         command.arg("login");
-        command.arg("-e " + this.registryConnetionDetails.parameters["email"]);
-        command.arg("-u " + this.registryConnetionDetails.parameters["username"]);
-        command.arg("-p " + this.registryConnetionDetails.parameters["password"]);
+        command.arg("-e " + registryConnetionDetails.parameters["email"]);
+        command.arg("-u " + registryConnetionDetails.parameters["username"]);
+        command.arg("-p " + registryConnetionDetails.parameters["password"]);
     }
 
     private appendLogoutCmdArgs(command: tr.ToolRunner) {

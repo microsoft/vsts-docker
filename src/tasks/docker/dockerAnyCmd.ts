@@ -8,21 +8,11 @@ export function runCommand(): void {
     tl.cd(cwd);
 
     var dockerConnectionString = tl.getInput("dockerServiceEndpoint", true);
-    var registryEndpoint = tl.getInput("dockerRegistryServiceEndpoint", true);
+    var registryConnectionString = tl.getInput("dockerRegistryServiceEndpoint", true);
     var commandLine = tl.getInput("customCommand", true);
-
-    var registryConnetionDetails = tl.getEndpointAuthorization(registryEndpoint, true);
-
-    var loginCmd = new docker.DockerCommand("login");
-    loginCmd.dockerConnectionString = dockerConnectionString;
-    loginCmd.registryConnetionDetails = registryConnetionDetails;
-    loginCmd.execSync();
 
     var cmd = new docker.DockerCommand(commandLine);
     cmd.dockerConnectionString = dockerConnectionString;
+    cmd.registryConnectionString = registryConnectionString;
     cmd.execSync();
-
-    var logoutCmd = new docker.DockerCommand("logout");
-    logoutCmd.dockerConnectionString = dockerConnectionString;
-    logoutCmd.execSync();
 }
