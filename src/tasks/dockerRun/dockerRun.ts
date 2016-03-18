@@ -4,6 +4,9 @@ import tl = require("vsts-task-lib/task");
 import * as docker from "./dockerCommand";
 
 export function dockerRun(): void {
+    var cwd = tl.getInput("cwd");
+    tl.cd(cwd);
+
     var dockerConnectionString = tl.getInput("dockerServiceEndpoint", true);
     var registryEndpoint = tl.getInput("dockerRegistryServiceEndpoint", true);
     var imageName = tl.getInput("imageName", true);
