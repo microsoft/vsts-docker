@@ -26,7 +26,7 @@ export function dockerBuild(): void {
     cmd.context = context;
     cmd.imageName = imageName;
     cmd.additionalArguments = additionalArgs;
-    cmd.execSync();
+    cmd.exec();
 }
 
 function copyDockerFileToContextFolder(dockerFile: string, context: string): string {

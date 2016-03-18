@@ -14,5 +14,5 @@ export function runCommand(): void {
     var cmd = new docker.DockerCommand(commandLine);
     cmd.dockerConnectionString = dockerConnectionString;
     cmd.registryConnectionString = registryConnectionString;
-    cmd.execSync();
+    cmd.exec();
 }

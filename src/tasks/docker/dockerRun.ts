@@ -31,7 +31,7 @@ export function dockerRun(): void {
     cmd.ports = ports;
     cmd.envVars = envVars;
     cmd.additionalArguments = additionalArgs;
-    cmd.execSync();
+    cmd.exec();
 }
 
 function removeConflictingContainersByName(containerName: string, dockerConnectionString: string): void {

@@ -45,6 +45,31 @@ export class DockerCommand {
         return result;
     }
 
+    public exec(): any {
+        this.writeCerts();
+
+        if (this.connectToHub) {
+            var loginCmd = this.getCommand("login");
+            loginCmd.execSync();
+        }
+
+        var command = this.getCommand(this.commandName);
+        return command.exec()
+        .then(function(code) {
+            tl.setResult(tl.TaskResult.Succeeded, "");
+        })
+        .fail(function(err: string) {
+            tl.setResult(tl.TaskResult.Failed, err);
+        })
+        .fin(function() {
+            if (this.connectToHub) {
+                var logoutCmd = this.getCommand("logout");
+                logoutCmd.execSync();
+            }
+            this.clearCerts();
+        });
+    }
+
     private getCommand(commandName: string): tr.ToolRunner {
         var command = this.getBasicCommand();
 

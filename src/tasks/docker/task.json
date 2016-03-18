@@ -109,7 +109,7 @@
             "type": "boolean",
             "label": "Remove image after publish",
             "defaultValue": "false",
-            "visibleRule": "action = publish image",
+            "visibleRule": "action = publish image && action = always hide for now because of async publish",
             "helpMarkDown": "When true the image is force removed after publishing."
         },
         {

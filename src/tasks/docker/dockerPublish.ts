@@ -18,7 +18,7 @@ export function dockerPublish(): void {
     publishCmd.registryConnectionString = registryConnectionString;
     publishCmd.imageName = imageName;
     publishCmd.additionalArguments = additionalArgs;
-    publishCmd.execSync();
+    publishCmd.exec();
 
     if (removeImageAfterPublish) {
         var rmiCmd = new docker.DockerCommand("removeImage");
