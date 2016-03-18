@@ -1,10 +1,10 @@
 {
     "id": "B93C4522-5BEA-4118-97AE-2B560628A157",
-    "name": "DockerRun",
-    "friendlyName": "Run Docker image",
-    "description": "run a docker image.",
-	"helpMarkDown": "[More Information](http://aka.ms/vsts-docker-run-task)",
-    "category": "Deploy",
+    "name": "Docker",
+    "friendlyName": "Docker",
+    "description": "Connect to a private docker registry. And build a docker image or push a docker image or run a docker container. Or run any docker command.",
+	"helpMarkDown": "[More Information](http://aka.ms/vsts-docker-task)",
+    "category": "Build",
 	"visibility": [
         "Build",
         "Release"
@@ -129,7 +129,7 @@
             "helpMarkDown": "Additional arguments to pass to the run command."
         }
     ],
-    "instanceNameFormat": "run $(imageName)",
+    "instanceNameFormat": "$(action)",
     "execution": {
         "Node": {
             "target": "invokeDockerAction.js",

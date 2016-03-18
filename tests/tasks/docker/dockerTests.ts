@@ -1,7 +1,7 @@
 /// <reference path="../../../typings/tsd.d.ts" />
 /// <reference path="../../../typings/vsts-task-lib/vsts-task-lib.d.ts" />
 
-import * as dockerRun from "../../../src/tasks/dockerRun/dockerRun";
+import * as dockerRun from "../../../src/tasks/docker/dockerRun";
 
 import chai = require("chai");
 import sinon = require("sinon");

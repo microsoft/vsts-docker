@@ -35,7 +35,7 @@
     },
     "files": [
         {
-            "path": "tasks/dockerRun"
+            "path": "tasks/docker"
         },
         {
             "path": "images",
@@ -154,13 +154,13 @@
             }
         },
         {
-            "id": "dockerRun-task",
+            "id": "docker-task",
             "type": "ms.vss-distributed-task.task",
             "targets": [
                 "ms.vss-distributed-task.tasks"
             ],
             "properties": {
-                "name": "tasks/dockerRun"
+                "name": "tasks/docker"
             }
         }
     ]
