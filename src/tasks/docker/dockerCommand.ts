@@ -24,9 +24,9 @@ export class DockerCommand {
 
     public execSync(): tr.IExecResult {
         var command = this.getBasicCommand();
+        this.writeCerts();
 
-        this.appendAuth(command);
-
+        this.appendAuthArgs(command);
         switch (this.commandName) {
             case "run":
                 this.appendRunCmdArgs(command);
@@ -59,7 +59,7 @@ export class DockerCommand {
 
         var result = command.execSync();
 
-        this.clearAuth();
+        this.clearCerts();
 
         return result;
     }
@@ -73,35 +73,42 @@ export class DockerCommand {
         return basicDockerCommand;
     }
 
-    private appendAuth(command: tr.ToolRunner) {
-        var serverUrl = tl.getEndpointUrl(this.dockerConnectionString, false);
+    private serverUrl: string;
+    private certsDir: string;
+    private caPath: string;
+    private certPath: string;
+    private keyPath: string;
+
+    private writeCerts(): void {
+        this.serverUrl = tl.getEndpointUrl(this.dockerConnectionString, false);
         var authDetails = tl.getEndpointAuthorization(this.dockerConnectionString, false);
 
-        var dir = path.join("", "certs");
-        if (!fs.existsSync(dir)) {
-            fs.mkdirSync(dir);
+        this.certsDir = path.join("", "certs");
+        if (!fs.existsSync(this.certsDir)) {
+            fs.mkdirSync(this.certsDir);
         }
 
-        var caPath = path.join(dir, "ca.pem");
-        fs.writeFileSync(caPath, authDetails.parameters["username"]);
+        this.caPath = path.join(this.certsDir, "ca.pem");
+        fs.writeFileSync(this.caPath, authDetails.parameters["username"]);
 
-        var certPath = path.join(dir, "cert.pem");
-        fs.writeFileSync(certPath, authDetails.parameters["password"]);
+        this.certPath = path.join(this.certsDir, "cert.pem");
+        fs.writeFileSync(this.certPath, authDetails.parameters["password"]);
 
-        var keyPath = path.join(dir, "key.pem");
-        fs.writeFileSync(keyPath, authDetails.parameters["key"]);
-
-        command.arg("--tls");
-        command.arg("--tlscacert='" + caPath + "'");
-        command.arg("--tlscert='" + certPath + "'");
-        command.arg("--tlskey='" + keyPath + "'");
-        command.arg("-H " + serverUrl);
+        this.keyPath = path.join(this.certsDir, "key.pem");
+        fs.writeFileSync(this.keyPath, authDetails.parameters["key"]);
     }
 
-    private clearAuth() {
-        var dir = path.join("", "certs");
-        if (fs.existsSync(dir)) {
-            del.sync(dir);
+    private appendAuthArgs(command: tr.ToolRunner) {
+        command.arg("--tls");
+        command.arg("--tlscacert='" + this.caPath + "'");
+        command.arg("--tlscert='" + this.certPath + "'");
+        command.arg("--tlskey='" + this.keyPath + "'");
+        command.arg("-H " + this.serverUrl);
+    }
+
+    private clearCerts() {
+        if (this.certsDir && this.certsDir.trim() != "" && fs.existsSync(this.certsDir)) {
+            del.sync(this.certsDir);
         }
     }
 
