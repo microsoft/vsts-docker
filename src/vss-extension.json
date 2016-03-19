@@ -116,22 +116,22 @@
                         "type": "ms.vss-endpoint.endpoint-auth-scheme-basic",
                         "inputDescriptors": [
                             {
-                                "id": "username",
+                                "id": "cacert",
                                 "name": "CA Certificate",
                                 "description": "Contents of ca.pem",
                                 "inputMode": "textarea",
-                                "isConfidential": false,
+                                "isConfidential": true,
                                 "validation": {
                                     "isRequired": true,
                                     "dataType": "string"
                                 }
                             },
                             {
-                                "id": "password",
+                                "id": "cert",
                                 "name": "Certificate",
                                 "description": "Contents of cert.pem",
                                 "inputMode": "textarea",
-                                "isConfidential": false,
+                                "isConfidential": true,
                                 "validation": {
                                     "isRequired": true,
                                     "dataType": "string"
@@ -142,10 +142,42 @@
                                 "name": "Key",
                                 "description": "Contents of key.pem",
                                 "inputMode": "textarea",
-                                "isConfidential": false,
+                                "isConfidential": true,
                                 "validation": {
                                     "isRequired": true,
                                     "dataType": "string"
+                                }
+                            },
+                            {
+                                "id": "username",
+                                "name": "Username",
+                                "description": "Username",
+                                "inputMode": "textbox",
+                                "isConfidential": false,
+                                "validation": {
+                                    "isRequired": false,
+                                    "dataType": "string"
+                                },
+                                "values": {
+                                    "inputId": "usernameInput",
+                                    "defaultValue": "",
+                                    "isDisabled": true
+                                }
+                            },
+                            {
+                                "id": "password",
+                                "name": "Password",
+                                "description": "Password",
+                                "inputMode": "passwordBox",
+                                "isConfidential": false,
+                                "validation": {
+                                    "isRequired": false,
+                                    "dataType": "string"
+                                },
+                                "values": {
+                                    "inputId": "passwordInput",
+                                    "defaultValue": "",
+                                    "isDisabled": true
                                 }
                             }
                         ]

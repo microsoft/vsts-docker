@@ -132,10 +132,10 @@ export class DockerCommand {
         }
 
         this.caPath = path.join(this.certsDir, "ca.pem");
-        fs.writeFileSync(this.caPath, authDetails.parameters["username"]);
+        fs.writeFileSync(this.caPath, authDetails.parameters["cacert"]);
 
         this.certPath = path.join(this.certsDir, "cert.pem");
-        fs.writeFileSync(this.certPath, authDetails.parameters["password"]);
+        fs.writeFileSync(this.certPath, authDetails.parameters["cert"]);
 
         this.keyPath = path.join(this.certsDir, "key.pem");
         fs.writeFileSync(this.keyPath, authDetails.parameters["key"]);
