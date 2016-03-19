@@ -64,6 +64,21 @@
                         "type": "ms.vss-endpoint.endpoint-auth-scheme-basic",
                         "inputDescriptors": [
                             {
+                                "id": "registry",
+                                "name": "Docker Registry",
+                                "description": "URL of the docker registry",
+                                "inputMode": "textbox",
+                                "isConfidential": false,
+                                "validation": {
+                                    "isRequired": false,
+                                    "dataType": "string"
+                                },
+                                "values": {
+                                    "inputId": "registryInput",
+                                    "defaultValue": "https://index.docker.io/v1/"
+                                }
+                            },
+                            {
                                 "id": "username",
                                 "name": "Docker ID",
                                 "description": "Your username for your Docker Hub account",

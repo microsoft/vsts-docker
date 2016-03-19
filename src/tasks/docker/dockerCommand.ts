@@ -191,6 +191,7 @@ export class DockerCommand {
         command.arg("-e " + registryConnetionDetails.parameters["email"]);
         command.arg("-u " + registryConnetionDetails.parameters["username"]);
         command.arg("-p " + registryConnetionDetails.parameters["password"]);
+        command.arg(registryConnetionDetails.parameters["registry"]);
     }
 
     private appendLogoutCmdArgs(command: tr.ToolRunner) {
