@@ -157,6 +157,9 @@ export class DockerCommand {
 
     private appendRunCmdArgs(command: tr.ToolRunner) {
         command.arg("run");
+        command.arg("-t");
+        command.arg("-d");
+
         if (this.ports) {
             this.ports.forEach(function (v, i) {
                 command.arg("-p " + v);
