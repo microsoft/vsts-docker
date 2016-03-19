@@ -53,6 +53,7 @@ export class DockerCommand {
             loginCmd.execSync();
         }
 
+        var thisRef = this;
         var command = this.getCommand(this.commandName);
         return command.exec()
         .then(function(code) {
@@ -62,11 +63,11 @@ export class DockerCommand {
             tl.setResult(tl.TaskResult.Failed, err);
         })
         .fin(function() {
-            if (this.connectToHub) {
-                var logoutCmd = this.getCommand("logout");
+            if (thisRef.connectToHub) {
+                var logoutCmd = thisRef.getCommand("logout");
                 logoutCmd.execSync();
             }
-            this.clearCerts();
+            thisRef.clearCerts();
         });
     }
 
