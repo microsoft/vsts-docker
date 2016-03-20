@@ -38,6 +38,9 @@
             "path": "tasks/docker"
         },
         {
+            "path": "tasks/dockerCompose"
+        },
+        {
             "path": "images",
             "addressable": true
         }
@@ -208,6 +211,16 @@
             ],
             "properties": {
                 "name": "tasks/docker"
+            }
+        },
+        {
+            "id": "docker-compose-task",
+            "type": "ms.vss-distributed-task.task",
+            "targets": [
+                "ms.vss-distributed-task.tasks"
+            ],
+            "properties": {
+                "name": "tasks/dockerCompose"
             }
         }
     ]

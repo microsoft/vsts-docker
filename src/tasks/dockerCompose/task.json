@@ -1,0 +1,35 @@
+{
+    "id": "0F6D0052-C8F3-450D-AA8B-364751E98B99",
+    "name": "DockerCompose",
+    "friendlyName": "Docker Compose",
+    "description": "Run a docker compose command.",
+	"helpMarkDown": "[More Information](http://aka.ms/vsts-docker-task)",
+    "category": "Build",
+	"visibility": [
+        "Build",
+        "Release"
+    ],
+    "author": "Microsoft Corporation",
+    "version": {
+        "Major": 0,
+        "Minor": 1,
+        "Patch": 0
+    },
+    "demands": [],
+    "inputs": [
+        {
+            "name": "greeting",
+            "type": "string",
+            "label": "Say something",
+            "required": true,
+            "helpMarkDown": "What do you want to say?"
+        }
+    ],
+    "instanceNameFormat": "$(greeting)",
+    "execution": {
+        "Node": {
+            "target": "invokeDockerAction.js",
+            "argumentFormat": ""
+        }
+    }
+}
