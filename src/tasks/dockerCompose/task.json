@@ -1,9 +1,9 @@
 {
-    "id": "0F6D0052-C8F3-450D-AA8B-364751E98B99",
+    "id": "ADCFA1C1-3BE7-45FC-871F-13634B2CFF1D",
     "name": "DockerCompose",
-    "friendlyName": "Docker Compose",
-    "description": "Run a docker compose command.",
-	"helpMarkDown": "[More Information](http://aka.ms/vsts-docker-task)",
+    "friendlyName": "Docker Compose Tool",
+    "description": "Run multi-container Docker applications",
+	"helpMarkDown": "[More Information](http://aka.ms/vsts-docker-run-task)",
     "category": "Build",
 	"visibility": [
         "Build",
@@ -13,22 +13,45 @@
     "version": {
         "Major": 0,
         "Minor": 1,
-        "Patch": 0
+        "Patch": 3
     },
     "demands": [],
     "inputs": [
         {
-            "name": "greeting",
-            "type": "string",
-            "label": "Say something",
+            "name": "dockerServiceEndpoint",
+            "type": "connectedService:Docker",
+            "label": "Docker connection",
+            "required": false,
+            "helpMarkDown": "The Docker endpoint, set the certs and url."
+        },
+        {
+            "name": "dockerRegistryServiceEndpoint",
+            "type": "connectedService:DockerHub",
+            "label": "Docker Hub connection",
             "required": true,
-            "helpMarkDown": "What do you want to say?"
+            "helpMarkDown": "The Docker Hub endpoint, to login to Docker Hub."
+        },                
+        {
+            "name": "dockerComposeFile",
+            "type": "filePath",
+            "label": "Docker File",
+            "defaultValue": "",
+            "required": true,
+            "helpMarkDown": "Path to Docker compose file to use. Should be a .yml or .yaml file"
+        },
+        {
+            "name": "dockerComposeCommand",
+            "type": "string",
+            "label": "Docker Compose Command",
+            "defaultValue": "",
+            "required": false,
+            "helpMarkDown": "Docker compose command along with additional arguments. Ex: up -d, (or) down --rmi all -v"
         }
     ],
-    "instanceNameFormat": "$(greeting)",
+    "instanceNameFormat": "Run Docker Compose Command: $(additionalArgs)",
     "execution": {
         "Node": {
-            "target": "invokeDockerAction.js",
+            "target": "invokeDockerComposeAction.js",
             "argumentFormat": ""
         }
     }
