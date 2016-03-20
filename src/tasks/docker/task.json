@@ -4,7 +4,7 @@
     "friendlyName": "Docker",
     "description": "Connect to a private docker registry. And build a docker image or push a docker image or run a docker container. Or run any docker command.",
 	"helpMarkDown": "[More Information](http://aka.ms/vsts-docker-task)",
-    "category": "Build",
+    "category": "Deploy",
 	"visibility": [
         "Build",
         "Release"
