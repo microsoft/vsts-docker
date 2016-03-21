@@ -5,19 +5,19 @@ var tl = require("vsts-task-lib/task");
 var action = tl.getInput("action", true);
 
 switch (action) {
-    case "run a container":
+    case "Run a container":
         var dockerRun = require("./dockerRun");
         dockerRun.dockerRun();
         break;
-    case "build an image":
+    case "Build an image":
         var dockerBuild = require("./dockerBuild");
         dockerBuild.dockerBuild();
         break;
-    case "publish image":
+    case "Publish image":
         var dockerPublish = require("./dockerPublish");
         dockerPublish.dockerPublish();
         break;
-    case "run a docker command":
+    case "Run a docker command":
         var dockerAnyCmd = require("./dockerAnyCmd");
         dockerAnyCmd.runCommand();
         break;

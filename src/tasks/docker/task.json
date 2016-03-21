@@ -43,14 +43,14 @@
             "name": "action",
             "type": "pickList",
             "label": "Action",
-            "defaultValue": "run a container",
+            "defaultValue": "Run a container",
             "required": true,
             "options":
             {
-                "build an image": "build an image",
-                "publish image": "publish image",
-                "run a container": "run a container",
-                "run a docker command": "run a docker command"
+                "Build an image": "Build an image",
+                "Publish image": "Publish image",
+                "Run a container": "Run a container",
+                "Run a docker command": "Run a docker command"
             },
             "helpMarkDown": "Select a docker action"
         },
@@ -60,7 +60,7 @@
             "label": "Docker File",
             "defaultValue": "**/Dockerfile",
             "required": true,
-            "visibleRule": "action = build an image",
+            "visibleRule": "action = Build an image",
             "helpMarkDown": "Path to Dockerfile to use"
         },
         {
@@ -69,7 +69,7 @@
             "label": "Context",
             "defaultValue": "$(Build.StagingDirectory)",
             "required": true,
-            "visibleRule": "action = build an image",
+            "visibleRule": "action = Build an image",
             "helpMarkDown": "The path to the folder to build from."
         },
         {
@@ -77,7 +77,7 @@
             "type": "string",
             "label": "Image name",
             "required": true,
-            "visibleRule": "action = build an image || action = publish image || action = run a container",
+            "visibleRule": "action = Build an image || action = Publish image || action = Run a container",
             "helpMarkDown": "name of the image to run"
         },
         {
@@ -85,7 +85,7 @@
             "type": "string",
             "label": "Container Name",
             "required": false,
-            "visibleRule": "action = run a container",
+            "visibleRule": "action = Run a container",
             "helpMarkDown": "Name to use for Docker container."
         },
         {
@@ -93,7 +93,7 @@
             "type": "multiLine",
             "label": "Environment Variables",
             "required": false,
-            "visibleRule": "action = run a container",
+            "visibleRule": "action = Run a container",
             "helpMarkDown": "Name value pairs to pass as environments variables to the run commnad in name=value format."
         },
         {
@@ -101,7 +101,7 @@
             "type": "multiLine",
             "label": "Ports",
             "required": false,
-            "visibleRule": "action = run a container",
+            "visibleRule": "action = Run a container",
             "helpMarkDown": "Port mappings to pass to the run commnad in port:port format."
         },
         {
@@ -109,7 +109,7 @@
             "type": "boolean",
             "label": "Remove image after publish",
             "defaultValue": "false",
-            "visibleRule": "action = publish image && action = always hide for now because of async publish",
+            "visibleRule": "action = Publish image && action = always hide for now because of async publish",
             "helpMarkDown": "When true the image is force removed after publishing."
         },
         {
@@ -117,7 +117,7 @@
             "type": "string",
             "label": "Command",
             "required": true,
-            "visibleRule": "action = run a docker command",
+            "visibleRule": "action = Run a docker command",
             "helpMarkDown": "Docker command with arguments to execute."
         },
         {
@@ -125,7 +125,7 @@
             "type": "string",
             "label": "Additional arguments",
             "required": false,
-            "visibleRule": "action = build an image || action = publish image || action = run a container",
+            "visibleRule": "action = Build an image || action = Publish image || action = Run a container",
             "helpMarkDown": "Additional arguments to pass to the run command."
         }
     ],
