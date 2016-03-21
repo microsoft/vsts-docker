@@ -2,11 +2,7 @@
     "manifestVersion": 1,
     "extensionId": "docker",
     "name": "Docker Deployment",
-<<<<<<< HEAD
-    "version": "0.1.1",
-=======
     "version": "0.1.2",
->>>>>>> d87fe3d... cleaning task.json and vss-extension.json
     "publisher": "ms-vscs-rm",
     "description": "Deploy to Docker",
     "public": "true",
