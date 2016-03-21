@@ -56,14 +56,14 @@
     ],
     "contributions": [
         {
-            "id": "dockerhub-endpoint-type",
+            "id": "dockerregistry-endpoint-type",
             "description": "Service Endpoint type for pushing to Docker Hub",
             "type": "ms.vss-endpoint.service-endpoint-type",
             "targets": [
                 "ms.vss-endpoint.endpoint-types"
             ],
             "properties": {
-                "name": "dockerhub",
+                "name": "dockerregistry",
                 "displayName": "Docker Registry",
                 "url": "http://hub.docker.com",
                 "authenticationSchemes": [
@@ -124,14 +124,14 @@
             }
         },
         {
-            "id": "docker-endpoint-type",
+            "id": "dockerhost-endpoint-type",
             "description": "Service Endpoint type for the Docker container host",
             "type": "ms.vss-endpoint.service-endpoint-type",
             "targets": [
                 "ms.vss-endpoint.endpoint-types"
             ],
             "properties": {
-                "name": "docker",
+                "name": "dockerhost",
                 "displayName": "Docker Host",
                 "authenticationSchemes": [
                     {

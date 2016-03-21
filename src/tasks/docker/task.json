@@ -19,14 +19,14 @@
     "inputs": [
         {
             "name": "dockerHostEndpoint",
-            "type": "connectedService:Docker",
+            "type": "connectedService:dockerhost",
             "label": "Docker Host Connection",
             "required": true,
             "helpMarkDown": "Select the connection to the Docker container host."
         },
         {
             "name": "dockerRegistryEndpoint",
-            "type": "connectedService:DockerHub",
+            "type": "connectedService:dockerregistry",
             "label": "Docker Registry Connection",
             "required": true,
             "helpMarkDown": "Select the connection to the Docker Registry."
