@@ -13,17 +13,17 @@ This extension installs the following components:
     * Push an image or a repository to a Registry
     * Run an image in a Container
     * Run a Docker command
-  * A Docke Compose Task to:
+  * A Docker Compose Task to:
     * Run a Docker Compose command
 
-##Steps
+###Steps
 
-## Create a Docker Registry Endpoint:
+####Create a Docker Registry Endpoint:
  1. Open the Services page in your Visual Studio Team Services Control Panel
  2. In the New Service Endpoint list, choose Registry
  3. Enter the Name for your connection and your Docker Hub details to create the service endpoint
 
-## Create a Docker Container Host Endpoint:
+####Create a Docker Container Host Endpoint:
 
  1. Locate your ca.pem, key.pem and cert.pem files used to secure your Docker host.
  2. Open the Services page in your Visual Studio Team Services Control Panel.
@@ -31,7 +31,7 @@ This extension installs the following components:
  4. Enter the Name for your connection and the URL to your Docker host
  5. Copy and paste the entire contents of each file into the appropiate spaces
 
-###Build your Docker image
+####Build your Docker image
  1. Open your build definition and add the Docker task. The task can be found in the Build category of the Add Tasks dialog.
  2. Enter the required parameter values for the Docker task:
   * *Docker Host Connection*: Select your Docker Container Host connection.
@@ -41,7 +41,7 @@ This extension installs the following components:
   * *Context*: The folder to upload to the Docker daemon to build the image.
   * *Working Directory*: The folder where the certs folder will be created and the certs written into.
 
-###Push your image to Docker Hub
+####Push your image to Docker Hub
   1. Open your build definition and add the Docker task. The task can be found in the Build category of the Add Tasks dialog.
   2. Enter the required parameter values for the Docker task:
    * *Docker Host Connection*: Select your Docker Container Host connection.
@@ -50,7 +50,7 @@ This extension installs the following components:
    * *Image Name*: The image you wish to create. You can tag your image by appending a : and the desired tag i.e fabrikam/webapp:$(Build.BuildId).
    * *Working Directory*: The folder where the certs folder will be created and the certs written into.
 
-###Run your image in a container
+####Run your image in a container
   1. Open your build definition and add the Docker task. The task can be found in the Build category of the Add Tasks dialog.
   2. Enter the required parameter values for the Docker task:
    * *Docker Host Connection*: Select your Docker Container Host connection.
@@ -62,7 +62,7 @@ This extension installs the following components:
    * *Environment Variables*: Name value pairs to set as environment variables in the container. Specify each name=value pair in a new line.
    * *Working Directory*: The folder where the certs folder will be created and the certs written into.
 
-###Run a Docker command
+####Run a Docker command
   1. Open your build definition and add the Docker task. The task can be found in the Build category of the Add Tasks dialog.
   2. Enter the required parameter values for the Docker task:
    * *Docker Host Connection*: Select your Docker Container Host connection.
@@ -71,7 +71,7 @@ This extension installs the following components:
    * *Command*: Docker command with the arguments to execute. For example 'rmi -f image-name' sans quotes to remove an image
    * *Working Directory*: The folder where the certs folder will be created and the certs written into.
 
-###Run Docker Compose command
+####Run Docker Compose command
   1. Open your build definition and add the Docker Compose task. The task can be found in the Build category of the Add Tasks dialog.
   2. Enter the required parameter values for the Docker Compose task:
    * *Docker Connection*: Select your Docker Container Host connection.
@@ -81,11 +81,11 @@ This extension installs the following components:
    * *Docker Compose Command*: Docker compose command along with additional arguments. For example, up -d, or down etc.
 
 
-##Contact Information
+###Contact Information
 
 For further information or to resolve issues, contact RM_Customer_Queries at Microsoft dot com.
 
-##Trademarks
+###Trademarks
 
 Docker and the Docker logo are trademarks or registered trademarks of Docker, Inc. in the United States and/or other countries. Docker, Inc. and other parties may also have trademark rights in other terms used herein
 
