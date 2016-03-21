@@ -204,7 +204,8 @@
                             }
                         ]
                     }
-                ]
+                ],
+                "helpMarkDown": "Refer <a href=\"http://aka.ms/ms-vscs-rm-secure-docker-daemon\" target=\"_blank\">link</a> to learn more"
             }
         },
         {
