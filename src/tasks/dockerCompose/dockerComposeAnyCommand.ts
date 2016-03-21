@@ -6,11 +6,18 @@ import * as docker from "./dockerComposeCommand";
 export function dockerComposeAnyCommand(): void {
     var dockerConnectionString = tl.getInput("dockerServiceEndpoint", true);
     var registryConnectionString = tl.getInput("dockerRegistryServiceEndpoint", true);
-    var dockerComposeFile = tl.getInput("dockerComposeFile", true);
+    var dockerComposeFilePattern = tl.getInput("dockerComposeFile", true);
+    var projectName = tl.getInput("projectName", false);
     var cmdToBeExecuted = tl.getInput("dockerComposeCommand", true);
 
     var cmd = new docker.DockerCommand(cmdToBeExecuted);
     cmd.dockerConnectionString = dockerConnectionString;
-    cmd.dockerComposeFile = dockerComposeFile;
+    cmd.dockerComposeFile = getDockerComposeFile(dockerComposeFilePattern);
+    cmd.projectName = projectName;
     cmd.exec();
+}
+
+function getDockerComposeFile(dockerComposeFilePattern: string): string {
+    var dockerComposeFile = tl.globFirst(dockerComposeFilePattern);
+    return dockerComposeFile;
 }

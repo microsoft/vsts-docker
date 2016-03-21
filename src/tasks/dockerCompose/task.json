@@ -21,7 +21,7 @@
             "name": "dockerServiceEndpoint",
             "type": "connectedService:Docker",
             "label": "Docker connection",
-            "required": false,
+            "required": true,
             "helpMarkDown": "The Docker endpoint, set the certs and url."
         },
         {
@@ -34,10 +34,18 @@
         {
             "name": "dockerComposeFile",
             "type": "filePath",
-            "label": "Docker File",
-            "defaultValue": "",
+            "label": "Docker Compose File",
+            "defaultValue": "**/docker-compose.yml",
             "required": true,
             "helpMarkDown": "Path to Docker compose file to use. Should be a .yml or .yaml file"
+        },
+        {
+            "name": "projectName",
+            "type": "string",
+            "label": "Project Name",
+            "defaultValue": "",
+            "required": false,
+            "helpMarkDown": "Name of the project to be deployed"
         },
         {
             "name": "dockerComposeCommand",

@@ -10,6 +10,7 @@ import child = require("child_process");
 export class DockerCommand {
     public commandName: string;
     public dockerComposeFile: string;
+    public projectName: string;
     public additionalArguments: string;
     public dockerConnectionString: string;
     public registryConnectionString: string;
@@ -57,7 +58,7 @@ export class DockerCommand {
 
     private getCommand(commandName: string): tr.ToolRunner {
         var command = this.getBasicCommand();
-        this.appendDockerComposeFileCmdArgs(command);
+        this.appendDockerComposeCmdArgs(command);
 
         switch (commandName) {
             default:
@@ -75,8 +76,6 @@ export class DockerCommand {
 
         return basicDockerCommand;
     }
-
-
 
     private writeCerts(): void {
         this.serverUrl = tl.getEndpointUrl(this.dockerConnectionString, false);
@@ -134,7 +133,10 @@ export class DockerCommand {
         command.arg("logout");
     }
 
-    private appendDockerComposeFileCmdArgs(command: tr.ToolRunner) {
+    private appendDockerComposeCmdArgs(command: tr.ToolRunner) {
         command.arg("-f " + this.dockerComposeFile);
+        if (this.projectName) {
+            command.arg("-p " + this.projectName);
+        }
     }
 }
