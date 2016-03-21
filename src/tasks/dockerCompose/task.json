@@ -18,15 +18,15 @@
     "demands": [],
     "inputs": [
         {
-            "name": "dockerServiceEndpoint",
-            "type": "connectedService:Docker",
+            "name": "dockerHostEndpoint",
+            "type": "connectedService:dockerhost",
             "label": "Docker connection",
             "required": true,
             "helpMarkDown": "The Docker endpoint, set the certs and url."
         },
         {
-            "name": "dockerRegistryServiceEndpoint",
-            "type": "connectedService:DockerHub",
+            "name": "dockerRegistryEndpoint",
+            "type": "connectedService:dockerregistry",
             "label": "Docker Hub connection",
             "required": true,
             "helpMarkDown": "The Docker Hub endpoint, to login to Docker Hub."
