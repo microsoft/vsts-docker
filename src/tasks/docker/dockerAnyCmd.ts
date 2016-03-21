@@ -7,8 +7,8 @@ export function runCommand(): void {
     var cwd = tl.getInput("cwd");
     tl.cd(cwd);
 
-    var dockerConnectionString = tl.getInput("dockerServiceEndpoint", true);
-    var registryConnectionString = tl.getInput("dockerRegistryServiceEndpoint", true);
+    var dockerConnectionString = tl.getInput("dockerHostEndpoint", true);
+    var registryConnectionString = tl.getInput("dockerRegistryEndpoint", true);
     var commandLine = tl.getInput("customCommand", true);
 
     var cmd = new docker.DockerCommand(commandLine);

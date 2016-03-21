@@ -7,13 +7,13 @@ export function dockerRun(): void {
     var cwd = tl.getInput("cwd");
     tl.cd(cwd);
 
-    var dockerConnectionString = tl.getInput("dockerServiceEndpoint", true);
-    var registryConnectionString = tl.getInput("dockerRegistryServiceEndpoint", true);
+    var dockerConnectionString = tl.getInput("dockerHostEndpoint", true);
+    var registryConnectionString = tl.getInput("dockerRegistryEndpoint", true);
     var imageName = tl.getInput("imageName", true);
     var containerName = tl.getInput("containerName", false);
     var envVars = tl.getDelimitedInput("envVars", "\n", false);
     var ports = tl.getDelimitedInput("ports", "\n", false);
-    var additionalArgs = tl.getInput("additionalArgs", false);
+    var containerCommand = tl.getInput("containerCommand", false);
 
     if (containerName) {
         removeConflictingContainersByName(containerName, dockerConnectionString);
@@ -30,7 +30,7 @@ export function dockerRun(): void {
     cmd.containerName = containerName;
     cmd.ports = ports;
     cmd.envVars = envVars;
-    cmd.additionalArguments = additionalArgs;
+    cmd.containerCommand = containerCommand;
     cmd.exec();
 }
 

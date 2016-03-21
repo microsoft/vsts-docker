@@ -14,7 +14,7 @@ export class DockerCommand {
     public containerName: string;
     public ports: string[];
     public envVars: string[];
-    public additionalArguments: string;
+    public containerCommand: string;
     public dockerConnectionString: string;
     public registryConnectionString: string;
     public connectToHub: boolean;
@@ -101,10 +101,6 @@ export class DockerCommand {
                 command.arg(commandName);
         }
 
-        if (this.additionalArguments) {
-           command.arg(this.additionalArguments);
-        }
-
         return command;
     }
 
@@ -175,6 +171,9 @@ export class DockerCommand {
             command.arg("--name " + this.containerName);
         }
         command.arg(this.imageName);
+        if (this.containerCommand) {
+            command.arg(this.containerCommand);
+        }
     }
 
     private appendBuildCmdArgs(command: tr.ToolRunner) {

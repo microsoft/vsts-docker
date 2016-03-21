@@ -9,12 +9,11 @@ export function dockerBuild(): void {
     var cwd = tl.getInput("cwd");
     tl.cd(cwd);
 
-    var dockerConnectionString = tl.getInput("dockerServiceEndpoint", true);
-    var registryConnectionString = tl.getInput("dockerRegistryServiceEndpoint", true);
+    var dockerConnectionString = tl.getInput("dockerHostEndpoint", true);
+    var registryConnectionString = tl.getInput("dockerRegistryEndpoint", true);
     var dockerFilePattern = tl.getInput("dockerFile", true);
     var context = tl.getInput("context", true);
     var imageName = tl.getInput("imageName", true);
-    var additionalArgs = tl.getInput("additionalArgs", false);
 
     var dockerFile = getDockerFile(dockerFilePattern);
     dockerFile = copyDockerFileToContextFolder(dockerFile, context);
@@ -25,7 +24,6 @@ export function dockerBuild(): void {
     cmd.dockerFile = dockerFile;
     cmd.context = context;
     cmd.imageName = imageName;
-    cmd.additionalArguments = additionalArgs;
     cmd.exec();
 }
 

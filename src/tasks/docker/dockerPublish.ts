@@ -7,20 +7,18 @@ export function dockerPublish(): void {
     var cwd = tl.getInput("cwd");
     tl.cd(cwd);
 
-    var dockerConnectionString = tl.getInput("dockerServiceEndpoint", true);
-    var registryConnectionString = tl.getInput("dockerRegistryServiceEndpoint", true);
+    var dockerConnectionString = tl.getInput("dockerHostEndpoint", true);
+    var registryConnectionString = tl.getInput("dockerRegistryEndpoint", true);
     var imageName = tl.getInput("imageName", true);
-    var removeImageAfterPublish = tl.getBoolInput("removeImageAfterPublish", true);
-    var additionalArgs = tl.getInput("additionalArgs", false);
+    var removeImageAfterPush = tl.getBoolInput("removeImageAfterPush", true);
 
     var publishCmd = new docker.DockerCommand("publish");
     publishCmd.dockerConnectionString = dockerConnectionString;
     publishCmd.registryConnectionString = registryConnectionString;
     publishCmd.imageName = imageName;
-    publishCmd.additionalArguments = additionalArgs;
     publishCmd.exec();
 
-    if (removeImageAfterPublish) {
+    if (removeImageAfterPush) {
         var rmiCmd = new docker.DockerCommand("removeImage");
         rmiCmd.dockerConnectionString = dockerConnectionString;
         rmiCmd.imageName = imageName;

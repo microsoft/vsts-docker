@@ -18,14 +18,14 @@
     "demands": [],
     "inputs": [
         {
-            "name": "dockerServiceEndpoint",
+            "name": "dockerHostEndpoint",
             "type": "connectedService:Docker",
             "label": "Docker Host Connection",
             "required": true,
             "helpMarkDown": "Select the connection to the Docker container host."
         },
         {
-            "name": "dockerRegistryServiceEndpoint",
+            "name": "dockerRegistryEndpoint",
             "type": "connectedService:DockerHub",
             "label": "Docker Registry Connection",
             "required": true,
@@ -107,7 +107,7 @@
 >>>>>>> 80b7cd6... punctuation correction in task.json
         },
         {
-            "name": "removeImageAfterPublish",
+            "name": "removeImageAfterPush",
             "type": "boolean",
             "label": "Remove image after publish",
             "defaultValue": "false",
@@ -128,7 +128,7 @@
 >>>>>>> 80b7cd6... punctuation correction in task.json
         },
         {
-            "name": "additionalArgs",
+            "name": "containerCommand",
             "type": "string",
             "label": "Command for container",
             "required": false,
