@@ -16,7 +16,6 @@ export function dockerBuild(): void {
     var imageName = tl.getInput("imageName", true);
 
     var dockerFile = getDockerFile(dockerFilePattern);
-    dockerFile = copyDockerFileToContextFolder(dockerFile, context);
 
     var cmd = new docker.DockerCommand("build");
     cmd.dockerConnectionString = dockerConnectionString;
