@@ -123,7 +123,7 @@ export class DockerCommand {
         this.serverUrl = tl.getEndpointUrl(this.dockerConnectionString, false);
         var authDetails = tl.getEndpointAuthorization(this.dockerConnectionString, false);
 
-        this.certsDir = path.join("", "certs");
+        this.certsDir = path.join("", ".dockercerts");
         if (!fs.existsSync(this.certsDir)) {
             fs.mkdirSync(this.certsDir);
         }
