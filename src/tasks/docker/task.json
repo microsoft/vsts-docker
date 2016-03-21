@@ -125,7 +125,7 @@
             "type": "string",
             "label": "Additional arguments",
             "required": false,
-            "visibleRule": "action = Build an image || action = Publish image || action = Run a container",
+            "visibleRule": "action = Run a container",
             "helpMarkDown": "Additional arguments to pass to the run command."
         }
     ],
