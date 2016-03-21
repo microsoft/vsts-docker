@@ -32,14 +32,6 @@
             "helpMarkDown": "The Docker Hub endpoint, to login to Docker Hub."
         },
         {
-            "name": "cwd",
-            "type": "filePath",
-            "label": "Working Directory",
-            "defaultValue": "$(System.DefaultWorkingDirectory)",
-            "required": false,
-            "helpMarkDown": "Current working directory where the certs folder will be created."
-        },
-        {
             "name": "action",
             "type": "pickList",
             "label": "Action",
@@ -127,6 +119,14 @@
             "required": false,
             "visibleRule": "action = Run a container",
             "helpMarkDown": "Command to run in the new container."
+        },
+        {
+            "name": "cwd",
+            "type": "filePath",
+            "label": "Working Directory",
+            "defaultValue": "$(System.DefaultWorkingDirectory)",
+            "required": false,
+            "helpMarkDown": "Current working directory where the certs folder will be created."
         }
     ],
     "instanceNameFormat": "$(action)",
