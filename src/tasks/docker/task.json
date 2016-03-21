@@ -126,7 +126,7 @@
             "label": "Additional arguments",
             "required": false,
             "visibleRule": "action = Run a container",
-            "helpMarkDown": "Additional arguments to pass to the run command."
+            "helpMarkDown": "Command to run in the new container."
         }
     ],
     "instanceNameFormat": "$(action)",
