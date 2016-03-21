@@ -2,7 +2,11 @@
     "manifestVersion": 1,
     "extensionId": "docker",
     "name": "Docker Deployment",
+<<<<<<< HEAD
     "version": "0.1.1",
+=======
+    "version": "0.1.2",
+>>>>>>> d87fe3d... cleaning task.json and vss-extension.json
     "publisher": "ms-vscs-rm",
     "description": "Deploy to Docker",
     "public": "true",
@@ -60,7 +64,7 @@
             ],
             "properties": {
                 "name": "dockerhub",
-                "displayName": "Docker Hub",
+                "displayName": "Docker Registry",
                 "url": "http://hub.docker.com",
                 "authenticationSchemes": [
                     {
@@ -69,7 +73,7 @@
                             {
                                 "id": "registry",
                                 "name": "Docker Registry",
-                                "description": "URL of the docker registry",
+                                "description": "URL for the Docker Registry",
                                 "inputMode": "textbox",
                                 "isConfidential": false,
                                 "validation": {
@@ -121,14 +125,14 @@
         },
         {
             "id": "docker-endpoint-type",
-            "description": "Service Endpoint type for all Docker connections",
+            "description": "Service Endpoint type for the Docker container host",
             "type": "ms.vss-endpoint.service-endpoint-type",
             "targets": [
                 "ms.vss-endpoint.endpoint-types"
             ],
             "properties": {
                 "name": "docker",
-                "displayName": "Docker",
+                "displayName": "Docker Host",
                 "authenticationSchemes": [
                     {
                         "type": "ms.vss-endpoint.endpoint-auth-scheme-basic",

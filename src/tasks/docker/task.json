@@ -2,7 +2,7 @@
     "id": "B93C4522-5BEA-4118-97AE-2B560628A157",
     "name": "Docker",
     "friendlyName": "Docker",
-    "description": "Build a docker image, push it to registry and run a docker container. Or run any docker command.",
+    "description": "Build a Docker image, push an image to a registry, run an image in a container or run any docker command.",
 	"helpMarkDown": "[More Information](http://aka.ms/vsts-docker-task)",
     "category": "Deploy",
 	"visibility": [
@@ -13,23 +13,23 @@
     "version": {
         "Major": 0,
         "Minor": 1,
-        "Patch": 1
+        "Patch": 2
     },
     "demands": [],
     "inputs": [
         {
             "name": "dockerServiceEndpoint",
             "type": "connectedService:Docker",
-            "label": "Docker connection",
+            "label": "Docker Host Connection",
             "required": true,
-            "helpMarkDown": "The Docker endpoint, set the certs and url."
+            "helpMarkDown": "Select the connection to the Docker container host"
         },
         {
             "name": "dockerRegistryServiceEndpoint",
             "type": "connectedService:DockerHub",
-            "label": "Docker Hub connection",
+            "label": "Docker Registry Connection",
             "required": true,
-            "helpMarkDown": "The Docker Hub endpoint, to login to Docker Hub."
+            "helpMarkDown": "Select the connection to the Docker Registry."
         },
         {
             "name": "action",
@@ -40,11 +40,11 @@
             "options":
             {
                 "Build an image": "Build an image",
-                "Publish image": "Publish image",
-                "Run a container": "Run a container",
-                "Run a docker command": "Run a docker command"
+                "Publish image": "Push an image",
+                "Run a container": "Run an image",
+                "Run a docker command": "Run a Docker command"
             },
-            "helpMarkDown": "Select a docker action"
+            "helpMarkDown": "Select a Docker action"
         },
         {
             "name": "dockerFile",
@@ -53,7 +53,15 @@
             "defaultValue": "**/Dockerfile",
             "required": true,
             "visibleRule": "action = Build an image",
-            "helpMarkDown": "Path to Dockerfile to use"
+            "helpMarkDown": "Path to Dockerfile to use with the Docker Build action. Wild cards can be used. For example **/Dockerfile. \n Note: The path must be to a file within the Docker build context"
+        },
+        {
+            "name": "imageName",
+            "type": "string",
+            "label": "Image Name",
+            "required": true,
+            "visibleRule": "action = Build an image || action = Publish image || action = Run a container",
+            "helpMarkDown": "Name of the image to use during build, run or push actions. Image name should be in lowercase only. \n Usually in the format 'your-username/image-name:tag' sans quotes for example, fabrikam/webapp:latest. When working with the Docker registry you need to specify 'username'"
         },
         {
             "name": "context",
@@ -62,15 +70,7 @@
             "defaultValue": "$(Build.StagingDirectory)",
             "required": true,
             "visibleRule": "action = Build an image",
-            "helpMarkDown": "The path to the folder to build from."
-        },
-        {
-            "name": "imageName",
-            "type": "string",
-            "label": "Image name",
-            "required": true,
-            "visibleRule": "action = Build an image || action = Publish image || action = Run a container",
-            "helpMarkDown": "name of the image to run"
+            "helpMarkDown": "The path to the folder to build from. Docker builds images from a Dockerfile and a 'context'"
         },
         {
             "name": "containerName",
@@ -78,15 +78,7 @@
             "label": "Container Name",
             "required": false,
             "visibleRule": "action = Run a container",
-            "helpMarkDown": "Name to use for Docker container."
-        },
-        {
-            "name": "envVars",
-            "type": "multiLine",
-            "label": "Environment Variables",
-            "required": false,
-            "visibleRule": "action = Run a container",
-            "helpMarkDown": "Name value pairs to pass as environments variables to the run commnad in name=value format."
+            "helpMarkDown": "Container name to use to run an image."
         },
         {
             "name": "ports",
@@ -94,7 +86,15 @@
             "label": "Ports",
             "required": false,
             "visibleRule": "action = Run a container",
-            "helpMarkDown": "Port mappings to pass to the run commnad in port:port format."
+            "helpMarkDown": "Port mappings to pass to the run commnad in hostmachine-port:container-port format. \n For example, -p 80:8080 binds port 8080 of the container to port 80 of the host machine. \n Specify each port mapping in a new line."
+        },
+        {
+            "name": "envVars",
+            "type": "multiLine",
+            "label": "Environment Variables",
+            "required": false,
+            "visibleRule": "action = Run a container",
+            "helpMarkDown": "Name value pairs to set as environment variables in the container. Specify each name=value pair in a new line"
         },
         {
             "name": "removeImageAfterPublish",
@@ -102,7 +102,7 @@
             "label": "Remove image after publish",
             "defaultValue": "false",
             "visibleRule": "action = Publish image && action = always hide for now because of async publish",
-            "helpMarkDown": "When true the image is force removed after publishing."
+            "helpMarkDown": "When set the image is force removed after publishing."
         },
         {
             "name": "customCommand",
@@ -110,15 +110,15 @@
             "label": "Command",
             "required": true,
             "visibleRule": "action = Run a docker command",
-            "helpMarkDown": "Docker command with arguments to execute."
+            "helpMarkDown": "Docker command with arguments to execute. For example, 'rmi -f image-name' sans quotes to force remove an image"
         },
         {
             "name": "additionalArgs",
             "type": "string",
-            "label": "Additional arguments",
+            "label": "Command for container",
             "required": false,
             "visibleRule": "action = Run a container",
-            "helpMarkDown": "Command to run in the new container."
+            "helpMarkDown": "Specify a command and its arguments, if any, for the container to run.\n For example, if the image contains a simple Python Flask web application you can specify 'python app.py' to launch the web application."
         },
         {
             "name": "cwd",
@@ -126,7 +126,7 @@
             "label": "Working Directory",
             "defaultValue": "$(System.DefaultWorkingDirectory)",
             "required": false,
-            "helpMarkDown": "Current working directory where the certs folder will be created."
+            "helpMarkDown": "Current working directory where the certificates will be created."
         }
     ],
     "instanceNameFormat": "$(action)",
