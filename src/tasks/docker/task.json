@@ -35,14 +35,14 @@
             "name": "action",
             "type": "pickList",
             "label": "Action",
-            "defaultValue": "Run a container",
+            "defaultValue": "Run an image",
             "required": true,
             "options":
             {
                 "Build an image": "Build an image",
-                "Publish image": "Push an image",
-                "Run a container": "Run an image",
-                "Run a docker command": "Run a Docker command"
+                "Push an image": "Push an image",
+                "Run an image": "Run an image",
+                "Run a Docker command": "Run a Docker command"
             },
             "helpMarkDown": "Select a Docker action."
         },
@@ -77,7 +77,7 @@
             "type": "string",
             "label": "Container Name",
             "required": false,
-            "visibleRule": "action = Run a container",
+            "visibleRule": "action = Run an image",
             "helpMarkDown": "Container name to use to run an image."
         },
         {
@@ -99,9 +99,9 @@
         {
             "name": "removeImageAfterPush",
             "type": "boolean",
-            "label": "Remove image after publish",
+            "label": "Remove image after push",
             "defaultValue": "false",
-            "visibleRule": "action = Publish image && action = always hide for now because of async publish",
+            "visibleRule": "action = Push an image && action = always hide for now because of async publish",
             "helpMarkDown": "When set the image is force removed after publishing."
         },
         {
