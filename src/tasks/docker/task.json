@@ -2,7 +2,7 @@
     "id": "B93C4522-5BEA-4118-97AE-2B560628A157",
     "name": "Docker",
     "friendlyName": "Docker",
-    "description": "Connect to a private docker registry. And build a docker image or push a docker image or run a docker container. Or run any docker command.",
+    "description": "Build a docker image, push it to registry and run a docker container. Or run any docker command.",
 	"helpMarkDown": "[More Information](http://aka.ms/vsts-docker-task)",
     "category": "Deploy",
 	"visibility": [
