@@ -74,11 +74,12 @@ This extension installs the following components:
 ####Run Docker Compose command
   1. Open your build definition and add the Docker Compose task. The task can be found in the Build category of the Add Tasks dialog.
   2. Enter the required parameter values for the Docker Compose task:
-   * *Docker Connection*: Select your Docker Container Host connection.
-   * *Docker Hub Connection*: Select your Docker Registry. 
+   * *Docker Host Connection*: Select your Docker Container Host connection.
+   * *Docker Registry Connection*: Select the connection to your Docker Registry. 
    * *Docker Compose File*: Path to Docker compose file to puse. Should be a '*.yml' or '*.yaml' 
-   * *Project Name*: Name of the project to be deployed. 
-   * *Docker Compose Command*: Docker compose command along with additional arguments. For example, up -d, or down etc.
+   * *Environment Variables*: Arguments that need to be passed to docker-compose file. These will be set as environment variables. Name value pairs to set as environment variables in the container. Specify each argument as name=value pair in a new line. for example, HTTP_PROXY=fabrikamweb.mydomain.com, HTTP_PORT=80
+   * *Project Name*: Specify an alternate project name. 
+   * *Docker Compose Command*: Docker Compose command along with its arguments. for example, Using 'up -d' starts the containers in the background and leaves them running, other examples are 'down --rmi all -v' or 'restart'. Note: Recommended to use detached mode (-d) to avoid blocking the agent..
 
 
 ###Contact Information
