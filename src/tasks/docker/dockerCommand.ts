@@ -63,7 +63,7 @@ export class DockerCommand {
             tl.setResult(tl.TaskResult.Failed, err);
         })
         .fin(function() {
-            if (thisRef.connectToHub) {
+            if (this.connectToHub) {
                 var logoutCmd = thisRef.getCommand("logout");
                 logoutCmd.execSync();
             }

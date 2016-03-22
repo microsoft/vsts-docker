@@ -27,7 +27,7 @@ export class DockerCommand {
 
     constructor(commandName: string) {
         this.commandName = commandName;
-        this.connectToHub = false;
+        this.connectToHub = true;
     }
 
     public exec(): any {
@@ -57,10 +57,15 @@ export class DockerCommand {
     }
 
     private getCommand(commandName: string): tr.ToolRunner {
-        var command = this.getBasicCommand();
-        this.appendDockerComposeCmdArgs(command);
+        var command = this.getBasicCommand(commandName);
 
         switch (commandName) {
+            case "login":
+                this.appendLoginCmdArgs(command);
+                break;
+            case "logout":
+                this.appendLogoutCmdArgs(command);
+                break;
             default:
                 command.arg(commandName);
         }
@@ -68,23 +73,37 @@ export class DockerCommand {
         return command;
     }
 
-    private getBasicCommand(): tr.ToolRunner {
-        var dockerComposePath = tl.which("docker-compose", true);
-        tl.debug("docker compose path: " + dockerComposePath);
+    private getBasicCommand(commandName: string): tr.ToolRunner {
+        if (commandName == "login" || commandName == "logout") {
+            var cmdPath = tl.which("docker", true);
+            tl.debug("command path: " + cmdPath);
 
-        var basicDockerCommand = tl.createToolRunner(dockerComposePath);
+            return tl.createToolRunner(cmdPath);
+        }
+        return this.getBasicDockerComposeCommand();
+    }
 
-        return basicDockerCommand;
+    private getBasicDockerComposeCommand(): tr.ToolRunner {
+        var cmdPath = tl.which("docker-compose", true);
+        tl.debug("command path: " + cmdPath);
+
+        var basicDockerComposeCommand = tl.createToolRunner(cmdPath);
+        this.appendDockerComposeCmdArgs(basicDockerComposeCommand);
+
+        return basicDockerComposeCommand;
     }
 
     private writeCerts(): void {
         this.serverUrl = tl.getEndpointUrl(this.dockerConnectionString, false);
-        this.serverUrl = this.serverUrl.substring(0, this.serverUrl.length - 1);
+        if (this.serverUrl.charAt(this.serverUrl.length - 1) == "/") {
+            this.serverUrl = this.serverUrl.substring(0, this.serverUrl.length - 1);
+        }
+
         tl.debug("server url: " + this.serverUrl);
 
         var authDetails = tl.getEndpointAuthorization(this.dockerConnectionString, false);
 
-        this.certsDir = path.join("", "certs");
+        this.certsDir = path.join("", ".dockercerts");
         if (!fs.existsSync(this.certsDir)) {
             fs.mkdirSync(this.certsDir);
         }

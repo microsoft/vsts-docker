@@ -4,6 +4,9 @@ import tl = require("vsts-task-lib/task");
 import * as docker from "./dockerComposeCommand";
 
 export function dockerComposeAnyCommand(): void {
+    var cwd = tl.getInput("cwd");
+    tl.cd(cwd);
+
     var dockerConnectionString = tl.getInput("dockerHostEndpoint", true);
     var registryConnectionString = tl.getInput("dockerRegistryEndpoint", true);
     var dockerComposeFilePattern = tl.getInput("dockerComposeFile", true);
@@ -15,6 +18,7 @@ export function dockerComposeAnyCommand(): void {
 
     var cmd = new docker.DockerCommand(cmdToBeExecuted);
     cmd.dockerConnectionString = dockerConnectionString;
+    cmd.registryConnectionString = registryConnectionString;
     cmd.dockerComposeFile = getDockerComposeFile(dockerComposeFilePattern);
     cmd.projectName = projectName;
     cmd.exec();
