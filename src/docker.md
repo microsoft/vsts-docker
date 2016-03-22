@@ -20,16 +20,24 @@ This extension installs the following components:
 
 ####Create a Docker Registry Endpoint:
  1. Open the Services page in your Visual Studio Team Services Control Panel
+  ![Services Tab](Images/ServicesTab.png)
  2. In the New Service Endpoint list, choose Registry
+  ![Services Control Panel](Images/ServicesControlPanel.png)
+  ![Services Control Panel](Images/NewDockerRegistry.png)
  3. Enter the Name for your connection and your Docker Hub details to create the service endpoint
+  ![New Docker Host Connection](Images/DockerRegistry.png)
 
 ####Create a Docker Container Host Endpoint:
 
  1. Locate your ca.pem, key.pem and cert.pem files used to secure your Docker host.
  2. Open the Services page in your Visual Studio Team Services Control Panel.
+  ![Services Tab](Images/ServicesTab.png)
  3. In the New Service Endpoint list, choose Docker Host
+  ![Services Control Panel](Images/ServicesControlPanel.png)
+  ![New Docker Host EndPoint](Images/NewDockerHostEndPoint.png)
  4. Enter the Name for your connection and the URL to your Docker host
  5. Copy and paste the entire contents of each file into the appropiate spaces
+  ![New Docker Host Connection](Images/DockerHostEndPoint.png)
 
 ####Build your Docker image
  1. Open your build definition and add the Docker task. The task can be found in the Build category of the Add Tasks dialog.
