@@ -25,6 +25,7 @@ This extension installs the following components:
  2. In the New Service Endpoint list, choose Registry
 
   ![Services Control Panel](Images/ServicesControlPanel.png)
+  
   ![Services Control Panel](Images/NewDockerRegistry.png)
 
  3. Enter the Name for your connection and your Docker Hub details to create the service endpoint
@@ -40,6 +41,7 @@ This extension installs the following components:
  3. In the New Service Endpoint list, choose Docker Host
 
   ![Services Control Panel](Images/ServicesControlPanel.png)
+  
   ![New Docker Host EndPoint](Images/NewDockerHostEndPoint.png)
  4. Enter the Name for your connection and the URL to your Docker host
  5. Copy and paste the entire contents of each file into the appropiate spaces
