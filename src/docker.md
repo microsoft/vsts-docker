@@ -20,23 +20,30 @@ This extension installs the following components:
 
 ####Create a Docker Registry Endpoint:
  1. Open the Services page in your Visual Studio Team Services Control Panel
-  ![Services Tab](Images/ServicesTab.png)
+ 
+ ![Services Tab](Images/ServicesTab.png)
  2. In the New Service Endpoint list, choose Registry
+
   ![Services Control Panel](Images/ServicesControlPanel.png)
   ![Services Control Panel](Images/NewDockerRegistry.png)
+
  3. Enter the Name for your connection and your Docker Hub details to create the service endpoint
+
   ![New Docker Host Connection](Images/DockerRegistry.png)
 
 ####Create a Docker Container Host Endpoint:
 
  1. Locate your ca.pem, key.pem and cert.pem files used to secure your Docker host.
  2. Open the Services page in your Visual Studio Team Services Control Panel.
+
   ![Services Tab](Images/ServicesTab.png)
  3. In the New Service Endpoint list, choose Docker Host
+
   ![Services Control Panel](Images/ServicesControlPanel.png)
   ![New Docker Host EndPoint](Images/NewDockerHostEndPoint.png)
  4. Enter the Name for your connection and the URL to your Docker host
  5. Copy and paste the entire contents of each file into the appropiate spaces
+
   ![New Docker Host Connection](Images/DockerHostEndPoint.png)
 
 ####Build your Docker image
@@ -49,6 +56,8 @@ This extension installs the following components:
   * *Context*: The folder to upload to the Docker daemon to build the image.
   * *Working Directory*: The folder where the certs folder will be created and the certs written into.
 
+  ![New Docker Host Connection](Images/BuildDockerImage.png)
+
 ####Push your image to Docker Hub
   1. Open your build definition and add the Docker task. The task can be found in the Build category of the Add Tasks dialog.
   2. Enter the required parameter values for the Docker task:
@@ -57,6 +66,8 @@ This extension installs the following components:
    * *Action*: Select Push an image
    * *Image Name*: The image you wish to create. You can tag your image by appending a : and the desired tag i.e fabrikam/webapp:$(Build.BuildId).
    * *Working Directory*: The folder where the certs folder will be created and the certs written into.
+
+  ![New Docker Host Connection](Images/PushDockerImage.png)
 
 ####Run your image in a container
   1. Open your build definition and add the Docker task. The task can be found in the Build category of the Add Tasks dialog.
@@ -70,6 +81,8 @@ This extension installs the following components:
    * *Environment Variables*: Name value pairs to set as environment variables in the container. Specify each name=value pair in a new line.
    * *Working Directory*: The folder where the certs folder will be created and the certs written into.
 
+  ![New Docker Host Connection](Images/RunDockerImage.png)
+
 ####Run a Docker command
   1. Open your build definition and add the Docker task. The task can be found in the Build category of the Add Tasks dialog.
   2. Enter the required parameter values for the Docker task:
@@ -78,6 +91,8 @@ This extension installs the following components:
    * *Action*: Select Run a Docker command
    * *Command*: Docker command with the arguments to execute. For example 'rmi -f image-name' sans quotes to remove an image
    * *Working Directory*: The folder where the certs folder will be created and the certs written into.
+
+  ![New Docker Host Connection](Images/RunDockerCommand.png)
 
 ####Run Docker Compose command
   1. Open your build definition and add the Docker Compose task. The task can be found in the Build category of the Add Tasks dialog.
@@ -89,6 +104,7 @@ This extension installs the following components:
    * *Project Name*: Specify an alternate project name. 
    * *Docker Compose Command*: Docker Compose command along with its arguments. for example, Using 'up -d' starts the containers in the background and leaves them running, other examples are 'down --rmi all -v' or 'restart'. Note: Recommended to use detached mode (-d) to avoid blocking the agent..
 
+  ![New Docker Host Connection](Images/DockerComposeUp.png)
 
 ###Contact Information
 
