@@ -10,6 +10,9 @@ export function dockerComposeAnyCommand(): void {
     var projectName = tl.getInput("projectName", false);
     var cmdToBeExecuted = tl.getInput("dockerComposeCommand", true);
 
+    var dockerComposeFileArgs = tl.getInput("dockerComposeFileArgs", false);
+    addArgumentsAsEnvironmentVariables(dockerComposeFileArgs);
+
     var cmd = new docker.DockerCommand(cmdToBeExecuted);
     cmd.dockerConnectionString = dockerConnectionString;
     cmd.dockerComposeFile = getDockerComposeFile(dockerComposeFilePattern);
@@ -20,4 +23,23 @@ export function dockerComposeAnyCommand(): void {
 function getDockerComposeFile(dockerComposeFilePattern: string): string {
     var dockerComposeFile = tl.globFirst(dockerComposeFilePattern);
     return dockerComposeFile;
+}
+
+function addArgumentsAsEnvironmentVariables(dockerComposeFileArgs: string): void {
+    if (dockerComposeFileArgs) {
+        dockerComposeFileArgs = dockerComposeFileArgs.trim();
+        var argsArr = dockerComposeFileArgs.split("\n");
+        argsArr.forEach(function(argEntry) {
+            argEntry = argEntry.trim();
+            if (argEntry) {
+                var argKvp = argEntry.split("=");
+                if (argKvp && argKvp.length == 2) {
+                    process.env[argKvp[0].trim()] = argKvp[1].trim();
+                }
+                else {
+                    throw ("Docker compose file arguments are invalid, argument: %s. Please refer the Docker compose file help markdown.", argKvp);
+                }
+            }
+        });
+    }
 }

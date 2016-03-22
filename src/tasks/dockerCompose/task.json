@@ -1,7 +1,7 @@
 {
     "id": "ADCFA1C1-3BE7-45FC-871F-13634B2CFF1D",
     "name": "DockerCompose",
-    "friendlyName": "Docker Compose Tool",
+    "friendlyName": "Docker Compose",
     "description": "Run multi-container Docker applications",
 	"helpMarkDown": "[More Information](http://aka.ms/vsts-docker-run-task)",
     "category": "Build",
@@ -13,7 +13,7 @@
     "version": {
         "Major": 0,
         "Minor": 1,
-        "Patch": 1
+        "Patch": 6
     },
     "demands": [],
     "inputs": [
@@ -40,6 +40,14 @@
             "helpMarkDown": "Path to Docker compose file to use. Should be a .yml or .yaml file"
         },
         {
+            "name": "dockerComposeFileArgs",
+            "type": "multiLine",
+            "label": "Docker Compose File Arguments",
+            "required": false,
+            "defaultValue": "",
+            "helpMarkDown": "Arguments that need to be passed to Docker compose file. For more than one argument use line separator, e.g., <br/> CONTAINER_PORT=5000 <br/> HTTP_PORT=80"
+        },
+        {
             "name": "projectName",
             "type": "string",
             "label": "Project Name",
@@ -52,8 +60,8 @@
             "type": "string",
             "label": "Docker Compose Command",
             "defaultValue": "",
-            "required": false,
-            "helpMarkDown": "Docker compose command along with additional arguments. Ex: up -d, (or) down --rmi all -v"
+            "required": true,
+            "helpMarkDown": "Docker compose command along with additional arguments. e.g., up -d, (or) down --rmi all -v"
         }
     ],
     "instanceNameFormat": "Run Docker Compose Command: $(additionalArgs)",
