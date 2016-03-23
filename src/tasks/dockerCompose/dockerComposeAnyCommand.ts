@@ -36,8 +36,11 @@ function addArgumentsAsEnvironmentVariables(dockerComposeFileArgs: string): void
         argsArr.forEach(function(argEntry) {
             argEntry = argEntry.trim();
             if (argEntry) {
-                var argKvp = argEntry.split("=");
-                if (argKvp && argKvp.length == 2) {
+                var tokens = argEntry.split("=");
+                if (tokens && tokens.length >= 2) {
+                    var argKvp = tokens.splice(0, 1);
+                    argKvp.push(tokens.join("="));
+
                     process.env[argKvp[0].trim()] = argKvp[1].trim();
                 }
                 else {
