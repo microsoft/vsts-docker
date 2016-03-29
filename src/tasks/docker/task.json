@@ -61,7 +61,7 @@
             "label": "Image Name",
             "required": true,
             "visibleRule": "action = Build an image || action = Push an image || action = Run an image",
-            "helpMarkDown": "Name of the image to use during build, run or push actions. Image name should be in lowercase only. \nUsually in the format 'your-username/image-name:tag' sans quotes for example, fabrikam/webapp:latest. When working with the Docker registry you need to specify 'username'."
+            "helpMarkDown": "Name of the image to use during build, run or push actions. Image name should be in lowercase only. \nUsually in the format 'your-username/image-name:tag' sans quotes for example, fabrikam/webapp:latest or fabrikam/webapp:$(Build.BuildId). When working with the Docker registry you need to specify 'username'."
         },
         {
             "name": "context",
