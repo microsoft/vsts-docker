@@ -83,6 +83,10 @@
         {
             "name": "ports",
             "type": "multiLine",
+            "properties": {
+                "resizable": "true",
+                "rows": "2"
+            },
             "label": "Ports",
             "required": false,
             "visibleRule": "action = Run an image",
@@ -91,6 +95,10 @@
         {
             "name": "envVars",
             "type": "multiLine",
+            "properties": {
+                "resizable": "true",
+                "rows": "2"
+            },
             "label": "Environment Variables",
             "required": false,
             "visibleRule": "action = Run an image",
