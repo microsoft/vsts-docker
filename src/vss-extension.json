@@ -2,7 +2,7 @@
     "manifestVersion": 1,
     "extensionId": "docker",
     "name": "Docker Deployment",
-    "version": "0.1.3",
+    "version": "0.1.4",
     "publisher": "ms-vscs-rm",
     "description": "Deploy to Docker",
     "public": "true",
