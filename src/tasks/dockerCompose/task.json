@@ -4,7 +4,7 @@
     "friendlyName": "Docker Compose",
     "description": "Define and run multi-container applications with Docker Compose",
 	"helpMarkDown": "[More Information](http://aka.ms/vsts-docker-run-task)",
-    "category": "Build",
+    "category": "Deploy",
 	"visibility": [
         "Build",
         "Release"
