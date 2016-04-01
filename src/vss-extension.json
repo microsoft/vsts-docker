@@ -17,7 +17,8 @@
         "Build and release"
     ],
     "tags": [
-        "docker"
+        "docker",
+        "docker-compose"
     ],
     "links": {
         "home": {
