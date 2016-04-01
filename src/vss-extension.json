@@ -44,6 +44,12 @@
         {
             "path": "images",
             "addressable": true
+        },
+        {
+            "path": "ThirdPartyNotices.txt"
+        },
+        {
+            "path": "DockerIntegration_ExtensionForVisualStudioTeamServices_Pre-ReleaseEULA.docx"
         }
     ],
     "targets": [
