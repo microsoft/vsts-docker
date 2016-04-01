@@ -57,6 +57,7 @@ This extension installs the following components:
   * *Docker File*: Path to Dockerflle to use with the Docker Build action. For example **/Dockerfile. 
   * *Context*: The folder to upload to the Docker daemon to build the image.
   * *Working Directory*: The folder where the certs folder will be created and the certs written into.
+  * *Image Name*: The image you wish to create. You can tag your image by appending a : and the desired tag i.e fabrikam/webapp:$(Build.BuildId).
 
   ![New Docker Host Connection](Images/BuildDockerImage.png)
 
