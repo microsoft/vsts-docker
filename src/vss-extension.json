@@ -1,11 +1,11 @@
 {
     "manifestVersion": 1,
     "extensionId": "docker",
-    "name": "Docker Deployment",
-    "version": "0.1.3",
+    "name": "Docker Integration",
+    "version": "0.1.4",
     "publisher": "ms-vscs-rm",
-    "description": "Deploy to Docker",
-    "public": "true",
+    "description": "Tools to work with Docker as part of your continuous integration or continuous deployment flow in Visual Studio Team Services.",
+    "public": false,
     "galleryFlags": [
         "Preview"
     ],
@@ -17,7 +17,8 @@
         "Build and release"
     ],
     "tags": [
-        "docker"
+        "docker",
+        "docker-compose"
     ],
     "links": {
         "home": {
@@ -43,6 +44,12 @@
         {
             "path": "images",
             "addressable": true
+        },
+        {
+            "path": "ThirdPartyNotices.txt"
+        },
+        {
+            "path": "DockerIntegration_ExtensionForVisualStudioTeamServices_Pre-ReleaseEULA.docx"
         }
     ],
     "targets": [

@@ -57,6 +57,7 @@ This extension installs the following components:
   * *Docker File*: Path to Dockerflle to use with the Docker Build action. For example **/Dockerfile. 
   * *Context*: The folder to upload to the Docker daemon to build the image.
   * *Working Directory*: The folder where the certs folder will be created and the certs written into.
+  * *Image Name*: The image you wish to create. You can tag your image by appending a : and the desired tag i.e fabrikam/webapp:$(Build.BuildId).
 
   ![New Docker Host Connection](Images/BuildDockerImage.png)
 
@@ -81,6 +82,7 @@ This extension installs the following components:
    * *Container Name*: Optional, Assign a name to the container
    * *Port*: Optional, Port mappings to pass to the run comamnd in hostmachine-port:container-port format. For example, -p 80:8080 binds port 8080 of the container to port 80 of the host machine. Specify each port mapping in a new line. 
    * *Environment Variables*: Name value pairs to set as environment variables in the container. Specify each name=value pair in a new line.
+   * *Command for container*: Specify a command and its arguments, if any, for the container to run. For example, if the image contains a simple Python Flask web application you can specify 'python app.py' to launch the web application.
    * *Working Directory*: The folder where the certs folder will be created and the certs written into.
 
   ![New Docker Host Connection](Images/RunDockerImage.png)

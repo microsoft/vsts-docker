@@ -4,7 +4,7 @@
     "friendlyName": "Docker Compose",
     "description": "Define and run multi-container applications with Docker Compose",
 	"helpMarkDown": "[More Information](http://aka.ms/vsts-docker-run-task)",
-    "category": "Build",
+    "category": "Deploy",
 	"visibility": [
         "Build",
         "Release"
@@ -13,7 +13,7 @@
     "version": {
         "Major": 0,
         "Minor": 1,
-        "Patch": 9
+        "Patch": 10
     },
     "demands": [],
     "inputs": [
@@ -42,6 +42,10 @@
         {
             "name": "dockerComposeFileArgs",
             "type": "multiLine",
+            "properties": {
+                "resizable": "true",
+                "rows": "2"
+            },
             "label": "Environment Variables",
             "required": false,
             "defaultValue": "",
