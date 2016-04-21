@@ -1,0 +1,86 @@
+{
+    "id": "ADCFA1C1-3BE7-45FC-871F-13634B2CFF1D",
+    "name": "DockerCompose",
+    "friendlyName": "Docker Compose",
+    "description": "Define and run multi-container applications with Docker Compose",
+	"helpMarkDown": "[More Information](http://aka.ms/vsts-docker-run-task)",
+    "category": "Deploy",
+	"visibility": [
+        "Build",
+        "Release"
+    ],
+    "author": "Microsoft Corporation",
+    "version": {
+        "Major": 0,
+        "Minor": 1,
+        "Patch": 10
+    },
+    "demands": [],
+    "inputs": [
+        {
+            "name": "dockerHostEndpoint",
+            "type": "connectedService:dockerhost",
+            "label": "Docker Host Connetion",
+            "required": true,
+            "helpMarkDown": "Select the connection to the Docker container host."
+        },
+        {
+            "name": "dockerRegistryEndpoint",
+            "type": "connectedService:dockerregistry",
+            "label": "Docker Registry Connection",
+            "required": true,
+            "helpMarkDown": "Select the connection to the Docker Registry."
+        },                
+        {
+            "name": "dockerComposeFile",
+            "type": "filePath",
+            "label": "Docker Compose File",
+            "defaultValue": "**/docker-compose.yml",
+            "required": true,
+            "helpMarkDown": "Path to docker-compose file to use with the Docker Compose. Wild cards can be used. For example ' \\*\\*/docker-compose.yml' or '\\*\\*/docker-compose.yaml'."
+        },
+        {
+            "name": "dockerComposeFileArgs",
+            "type": "multiLine",
+            "properties": {
+                "resizable": "true",
+                "rows": "2"
+            },
+            "label": "Environment Variables",
+            "required": false,
+            "defaultValue": "",
+            "helpMarkDown": "Arguments that need to be passed to Docker compose file. These will be set as environment variables. Specify each argument as name=value pair in a new line, for example, <br> HTTP_PROXY=fabrikamweb.mydomain.com <br/> HTTP_PORT=80"
+        },
+        {
+            "name": "projectName",
+            "type": "string",
+            "label": "Project Name",
+            "defaultValue": "",
+            "required": false,
+            "helpMarkDown": "Specify an alternate project name."
+        },
+        {
+            "name": "dockerComposeCommand",
+            "type": "string",
+            "label": "Docker Compose Command",
+            "defaultValue": "",
+            "required": true,
+            "helpMarkDown": "Docker Compose command along with its arguments. for example, Using 'up -d' starts the containers in the background and leaves them running, other examples are 'down --rmi all -v' or 'restart'. <br> Note: Recommended to use detached mode (-d) to avoid blocking the agent."
+        },
+        {
+            "name": "cwd",
+            "type": "filePath",
+            "label": "Working Directory",
+            "defaultValue": "$(System.DefaultWorkingDirectory)",
+            "required": false,
+            "helpMarkDown": "Current working directory where the certificates will be created."
+        }
+    ],
+    "instanceNameFormat": "Docker Compose: $(dockerComposeCommand)",
+    "execution": {
+        "Node": {
+            "target": "invokeDockerComposeAction.js",
+            "argumentFormat": ""
+        }
+    }
+}

@@ -1,11 +1,11 @@
 {
     "manifestVersion": 1,
     "extensionId": "docker",
-    "name": "Docker Deployment",
-    "version": "0.1.0",
+    "name": "Docker Integration",
+    "version": "0.1.4",
     "publisher": "ms-vscs-rm",
-    "description": "Deploy to Docker",
-    "public": "true",
+    "description": "Tools to work with Docker as part of your continuous integration or continuous deployment flow in Visual Studio Team Services.",
+    "public": false,
     "galleryFlags": [
         "Preview"
     ],
@@ -17,7 +17,8 @@
         "Build and release"
     ],
     "tags": [
-        "docker"
+        "docker",
+        "docker-compose"
     ],
     "links": {
         "home": {
@@ -35,11 +36,20 @@
     },
     "files": [
         {
-            "path": "tasks/dockerRun"
+            "path": "tasks/docker"
+        },
+        {
+            "path": "tasks/dockerCompose"
         },
         {
             "path": "images",
             "addressable": true
+        },
+        {
+            "path": "ThirdPartyNotices.txt"
+        },
+        {
+            "path": "DockerIntegration_ExtensionForVisualStudioTeamServices_Pre-ReleaseEULA.docx"
         }
     ],
     "targets": [
@@ -49,20 +59,35 @@
     ],
     "contributions": [
         {
-            "id": "dockerhub-endpoint-type",
+            "id": "dockerregistry-endpoint-type",
             "description": "Service Endpoint type for pushing to Docker Hub",
             "type": "ms.vss-endpoint.service-endpoint-type",
             "targets": [
                 "ms.vss-endpoint.endpoint-types"
             ],
             "properties": {
-                "name": "dockerhub",
-                "displayName": "Docker Hub",
+                "name": "dockerregistry",
+                "displayName": "Docker Registry",
                 "url": "http://hub.docker.com",
                 "authenticationSchemes": [
                     {
                         "type": "ms.vss-endpoint.endpoint-auth-scheme-basic",
                         "inputDescriptors": [
+                            {
+                                "id": "registry",
+                                "name": "Docker Registry",
+                                "description": "URL for the Docker Registry",
+                                "inputMode": "textbox",
+                                "isConfidential": false,
+                                "validation": {
+                                    "isRequired": false,
+                                    "dataType": "string"
+                                },
+                                "values": {
+                                    "inputId": "registryInput",
+                                    "defaultValue": "https://index.docker.io/v1/"
+                                }
+                            },
                             {
                                 "id": "username",
                                 "name": "Docker ID",
@@ -102,36 +127,36 @@
             }
         },
         {
-            "id": "docker-endpoint-type",
-            "description": "Service Endpoint type for all Docker connections",
+            "id": "dockerhost-endpoint-type",
+            "description": "Service Endpoint type for the Docker container host",
             "type": "ms.vss-endpoint.service-endpoint-type",
             "targets": [
                 "ms.vss-endpoint.endpoint-types"
             ],
             "properties": {
-                "name": "docker",
-                "displayName": "Docker",
+                "name": "dockerhost",
+                "displayName": "Docker Host",
                 "authenticationSchemes": [
                     {
                         "type": "ms.vss-endpoint.endpoint-auth-scheme-basic",
                         "inputDescriptors": [
                             {
-                                "id": "username",
+                                "id": "cacert",
                                 "name": "CA Certificate",
                                 "description": "Contents of ca.pem",
                                 "inputMode": "textarea",
-                                "isConfidential": false,
+                                "isConfidential": true,
                                 "validation": {
                                     "isRequired": true,
                                     "dataType": "string"
                                 }
                             },
                             {
-                                "id": "password",
+                                "id": "cert",
                                 "name": "Certificate",
                                 "description": "Contents of cert.pem",
                                 "inputMode": "textarea",
-                                "isConfidential": false,
+                                "isConfidential": true,
                                 "validation": {
                                     "isRequired": true,
                                     "dataType": "string"
@@ -142,25 +167,68 @@
                                 "name": "Key",
                                 "description": "Contents of key.pem",
                                 "inputMode": "textarea",
-                                "isConfidential": false,
+                                "isConfidential": true,
                                 "validation": {
                                     "isRequired": true,
                                     "dataType": "string"
                                 }
+                            },
+                            {
+                                "id": "username",
+                                "name": "Username",
+                                "description": "Username",
+                                "inputMode": "textbox",
+                                "isConfidential": false,
+                                "validation": {
+                                    "isRequired": false,
+                                    "dataType": "string"
+                                },
+                                "values": {
+                                    "inputId": "usernameInput",
+                                    "defaultValue": "",
+                                    "isDisabled": true
+                                }
+                            },
+                            {
+                                "id": "password",
+                                "name": "Password",
+                                "description": "Password",
+                                "inputMode": "passwordBox",
+                                "isConfidential": false,
+                                "validation": {
+                                    "isRequired": false,
+                                    "dataType": "string"
+                                },
+                                "values": {
+                                    "inputId": "passwordInput",
+                                    "defaultValue": "",
+                                    "isDisabled": true
+                                }
                             }
                         ]
                     }
-                ]
+                ],
+                "helpMarkDown": "Refer <a href=\"http://aka.ms/ms-vscs-rm-secure-docker-daemon\" target=\"_blank\">link</a> to learn more"
             }
         },
         {
-            "id": "dockerRun-task",
+            "id": "docker-task",
             "type": "ms.vss-distributed-task.task",
             "targets": [
                 "ms.vss-distributed-task.tasks"
             ],
             "properties": {
-                "name": "tasks/dockerRun"
+                "name": "tasks/docker"
+            }
+        },
+        {
+            "id": "docker-compose-task",
+            "type": "ms.vss-distributed-task.task",
+            "targets": [
+                "ms.vss-distributed-task.tasks"
+            ],
+            "properties": {
+                "name": "tasks/dockerCompose"
             }
         }
     ]

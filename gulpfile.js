@@ -15,6 +15,7 @@ var packageDirectory = buildDirectory + "/package";
 var sourcePaths = {
     typescriptFiles: "src/**/*.ts",
     copyFiles: ["src/**/*.png", "src/**/*.json", "src/**/*.md", "src/tasks/**/invoke*.js"],
+    lcaFiles: ["ThirdPartyNotices.txt", "DockerIntegration_ExtensionForVisualStudioTeamServices_Pre-ReleaseEULA.docx"],
     tasksPath: "src/tasks"
 };
 var testPaths = {
@@ -50,7 +51,7 @@ gulp.task("compile", ["lint"], function () {
 });
 
 gulp.task("build", ["compile"], function() {
-    return gulp.src(sourcePaths.copyFiles, { base: "." })
+    return gulp.src(sourcePaths.copyFiles.concat(sourcePaths.lcaFiles), { base: "." })
         .pipe(gulp.dest(buildDirectory));
 });
 
@@ -61,10 +62,11 @@ gulp.task("test", ["build"], function() {
         .pipe(istanbul.enforceThresholds({thresholds: {global: 100}}));
 });
 
-gulp.task("default", ["test"]);
+gulp.task("default", ["build"]);
 
-gulp.task("package", ["test"], function() {
+gulp.task("package", ["build"], function() {
     getNodeDependencies(function() {
+        copyLcaFiles();
         copyNodeModulesToTasks();
         createVsixPackage();        
     });
@@ -82,6 +84,17 @@ var getNodeDependencies = function(callback) {
         shell.popd();
         callback();
     });
+}
+
+var copyLcaFiles = function() {
+    gulp.src(sourcePaths.lcaFiles, { base: "."})
+        .pipe(gulp.dest(srcBuildDirectory));
+       
+    fs.readdirSync(sourcePaths.tasksPath).forEach(function (taskName) {
+        var taskpath = path.join(buildDirectory, sourcePaths.tasksPath, taskName);
+        gulp.src(sourcePaths.lcaFiles, { base: "."})
+            .pipe(gulp.dest(taskpath));
+    })
 }
 
 var copyNodeModulesToTasks = function() {
