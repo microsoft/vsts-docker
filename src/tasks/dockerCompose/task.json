@@ -13,9 +13,16 @@
     "version": {
         "Major": 0,
         "Minor": 1,
-        "Patch": 10
+        "Patch": 11
     },
     "demands": [],
+    "groups": [
+        {
+            "name": "advanced",
+            "displayName": "Advanced Options",
+            "isExpanded": false
+        }
+    ],
     "inputs": [
         {
             "name": "dockerHostEndpoint",
@@ -73,7 +80,8 @@
             "label": "Working Directory",
             "defaultValue": "$(System.DefaultWorkingDirectory)",
             "required": false,
-            "helpMarkDown": "Current working directory where the certificates will be created."
+            "helpMarkDown": "Current working directory where the certificates will be created.",
+            "groupName": "advanced"
         }
     ],
     "instanceNameFormat": "Docker Compose: $(dockerComposeCommand)",
