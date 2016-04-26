@@ -2,7 +2,7 @@
     "manifestVersion": 1,
     "extensionId": "docker",
     "name": "Docker Integration",
-    "version": "0.1.4",
+    "version": "0.1.5",
     "publisher": "ms-vscs-rm",
     "description": "Tools to work with Docker as part of your continuous integration or continuous deployment flow in Visual Studio Team Services.",
     "public": false,
