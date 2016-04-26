@@ -138,7 +138,7 @@
                 "displayName": "Docker Host",
                 "authenticationSchemes": [
                     {
-                        "type": "ms.vss-endpoint.endpoint-auth-scheme-basic",
+                        "type": "ms.vss-endpoint.endpoint-auth-scheme-cert",
                         "inputDescriptors": [
                             {
                                 "id": "cacert",
@@ -174,33 +174,17 @@
                                 }
                             },
                             {
-                                "id": "username",
-                                "name": "Username",
-                                "description": "Username",
-                                "inputMode": "textbox",
-                                "isConfidential": false,
+                                "id": "certificate",
+                                "name": "Certificate",
+                                "description": "Content of the certificate",
+                                "inputMode": "TextArea",
+                                "isConfidential": true,
                                 "validation": {
                                     "isRequired": false,
                                     "dataType": "string"
                                 },
                                 "values": {
-                                    "inputId": "usernameInput",
-                                    "defaultValue": "",
-                                    "isDisabled": true
-                                }
-                            },
-                            {
-                                "id": "password",
-                                "name": "Password",
-                                "description": "Password",
-                                "inputMode": "passwordBox",
-                                "isConfidential": false,
-                                "validation": {
-                                    "isRequired": false,
-                                    "dataType": "string"
-                                },
-                                "values": {
-                                    "inputId": "passwordInput",
+                                    "inputId": "certificateInput",
                                     "defaultValue": "",
                                     "isDisabled": true
                                 }
