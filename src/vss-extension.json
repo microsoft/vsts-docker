@@ -22,7 +22,7 @@
     ],
     "links": {
         "home": {
-            "uri": "http://aka.ms/vsts-docker"
+            "uri": "http://aka.ms/dockertoolsforvsts"
         }
     },
     "branding": {
