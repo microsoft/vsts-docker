@@ -3,7 +3,7 @@
     "name": "Docker",
     "friendlyName": "Docker",
     "description": "Build a Docker image, push an image to a registry, run an image in a container or run any docker command.",
-	"helpMarkDown": "[More Information](http://aka.ms/vsts-docker-task)",
+	"helpMarkDown": "[More Information](http://aka.ms/dockertoolsforvsts)",
     "category": "Build",
 	"visibility": [
         "Build",
@@ -13,7 +13,7 @@
     "version": {
         "Major": 0,
         "Minor": 1,
-        "Patch": 4
+        "Patch": 5
     },
     "demands": [],
     "groups": [
