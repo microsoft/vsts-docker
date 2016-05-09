@@ -16,6 +16,12 @@ This extension installs the following components:
   * A Docker Compose Task to:
     * Run a Docker Compose command
 
+###Video
+  * Video [link](https://youtu.be/wXZ7qsmVTpw)
+
+###Note
+  * You need private agents to run these tasks. Hosted agents doesn't have Docker binaries yet.
+  
 ###Steps
 
 ####Create a Docker Registry Endpoint:
