@@ -34,6 +34,17 @@
             "path": "docker.md"
         }
     },
+    "screenshots": [
+        {
+            "path": "images/DockerHostEndPoint.png"
+        },
+        {
+            "path": "images/RunDockerImage.png"
+        },
+        {
+            "path": "images/DockerComposeUp.png"
+        }
+    ],
     "files": [
         {
             "path": "tasks/docker"
