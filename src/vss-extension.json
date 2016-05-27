@@ -36,28 +36,10 @@
     },
     "screenshots": [
         {
-            "path": "images/NewDockerRegistry.png"
-        },
-        {
-            "path": "images/DockerRegistry.png"
-        },
-        {
-            "path": "images/NewDockerHostEndPoint.png"
-        },
-        {
             "path": "images/DockerHostEndPoint.png"
         },
         {
-            "path": "images/BuildDockerImage.png"
-        },
-        {
-            "path": "images/PushDockerImage.png"
-        },
-        {
             "path": "images/RunDockerImage.png"
-        },
-        {
-            "path": "images/RunDockerCommand.png"
         },
         {
             "path": "images/DockerComposeUp.png"
