@@ -16,12 +16,6 @@ This extension installs the following components:
   * A Docker Compose Task to:
     * Run a Docker Compose command
 
-###Video
-  * Video [link](https://youtu.be/wXZ7qsmVTpw)
-
-###Note
-  * You need private agents to run these tasks. Hosted agents doesn't have Docker binaries yet.
-  
 ###Steps
 
 ####Create a Docker Registry Endpoint:
@@ -115,6 +109,14 @@ This extension installs the following components:
    * *Docker Compose Command*: Docker Compose command along with its arguments. for example, Using 'up -d' starts the containers in the background and leaves them running, other examples are 'down --rmi all -v' or 'restart'. Note: Recommended to use detached mode (-d) to avoid blocking the agent..
 
   ![New Docker Host Connection](Images/DockerComposeUp.png)
+
+###Note
+  * You need private agents to run these tasks. Hosted agents doesn't have Docker binaries yet.
+  * Not supported in Team Foundation Server 2015 Update 2 or earlier releases. 
+  * We are working on adding support for Docker extension in TFS Update 3
+
+###Video
+  * Video [link](https://youtu.be/wXZ7qsmVTpw)
 
 ###Contact Information
 
