@@ -3,9 +3,9 @@
     "name": "Docker",
     "friendlyName": "Docker",
     "description": "Run a Docker command.",
-	"helpMarkDown": "[More Information](http://aka.ms/dockertoolsforvsts)",
+    "helpMarkDown": "[More Information](http://aka.ms/dockertoolsforvsts)",
     "category": "Build",
-	"visibility": [
+    "visibility": [
         "Build",
         "Release"
     ],
@@ -25,13 +25,6 @@
     ],
     "inputs": [
         {
-            "name": "dockerHostEndpoint",
-            "type": "connectedService:dockerhost",
-            "label": "Docker Host Connection",
-            "helpMarkDown": "Select the connection to the Docker container host.",
-            "group": "advanced"
-       },
-       {
             "name": "dockerRegistryEndpoint",
             "type": "connectedService:dockerregistry",
             "label": "Docker Registry Connection",
@@ -61,6 +54,13 @@
             "helpMarkDown": "Path to the Docker file to use. Must be within the Docker build context."
         },
         {
+            "name": "context",
+            "type": "filePath",
+            "label": "Context",
+            "visibleRule": "action = Build an image",
+            "helpMarkDown": "Path to the build context. Defaults to the directory that contains the Docker file."
+        },
+        {
             "name": "buildArguments",
             "type": "multiLine",
             "properties": {
@@ -70,23 +70,16 @@
             "label": "Build Arguments",
             "visibleRule": "action = Build an image",
             "helpMarkDown": "Build-time variables for the Docker file. Specify each name=value pair on a new line."
-       },
-       {
+        },
+        {
             "name": "imageName",
             "type": "string",
             "label": "Image Name",
             "required": true,
             "visibleRule": "action = Build an image || action = Push an image || action = Run an image",
             "helpMarkDown": "Name of the Docker image to build, push or run, for instance 'fabrikam/webapp:$(Build.BuildId)'."
-       },
-       {
-            "name": "context",
-            "type": "filePath",
-            "label": "Context",
-            "visibleRule": "action = Build an image",
-            "helpMarkDown": "Path to the build context. Defaults to the directory that contains the Docker file."
-       },
-       {
+        },
+        {
             "name": "additionalImageTags",
             "type": "multiLine",
             "properties": {
@@ -97,32 +90,40 @@
             "defaultValue": "$(Build.SourceVersion)\n$(Build.SourceBranchName)",
             "visibleRule": "action = Build an image || action = Push an image",
             "helpMarkDown": "Additional tags for the Docker image being built or pushed."
-       },
-       {
+        },
+        {
             "name": "includeGitTags",
             "type": "boolean",
             "label": "Include Git Tags",
             "defaultValue": "true",
             "visibleRule": "action = Build an image || action = Push an image",
             "helpMarkDown": "Include Git tags when building or pushing the Docker image."
-       },
-       {
+        },
+        {
             "name": "includeLatestTag",
             "type": "boolean",
             "label": "Include Latest Tag",
             "defaultValue": "true",
             "visibleRule": "action = Build an image || action = Push an image",
             "helpMarkDown": "Include the 'latest' tag when building or pushing the Docker image."
-       },
-       {
+        },
+        {
             "name": "imageDigestFile",
             "type": "filePath",
             "label": "Image Digest File",
             "defaultValue": "$(Build.StagingDirectory)/Dockerfile.image",
             "visibleRule": "action = Push an image",
             "helpMarkDown": "Path to a file that is created and populated with the registry-qualified name and full repository digest of the Docker image that was pushed."
-       },
-       {
+        },
+        {
+            "name": "removeImageAfterPush",
+            "type": "boolean",
+            "label": "Remove image after push",
+            "defaultValue": "false",
+            "visibleRule": "action = Push an image && action = always hide for now because of async publish",
+            "helpMarkDown": "Remove the image after pushing."
+        },
+        {
             "name": "containerName",
             "type": "string",
             "label": "Container Name",
@@ -163,19 +164,18 @@
             "helpMarkDown": "Environment variables for the Docker container. Specify each name=value pair on a new line."
         },
         {
-            "name": "removeImageAfterPush",
-            "type": "boolean",
-            "label": "Remove image after push",
-            "defaultValue": "false",
-            "visibleRule": "action = Push an image && action = always hide for now because of async publish",
-            "helpMarkDown": "Remove the image after pushing."
-        },
-        {
             "name": "entrypoint",
             "type": "string",
             "label": "Entrypoint Override",
             "visibleRule": "action = Run an image",
             "helpMarkDown": "Override the default entrypoint for the Docker container."
+        },
+        {
+            "name": "containerCommand",
+            "type": "string",
+            "label": "Command",
+            "visibleRule": "action = Run an image",
+            "helpMarkDown": "Command to run in the Docker container. For example, if the image contains a simple Python Flask web application you can specify 'python app.py' to launch the web application."
         },
         {
             "name": "customCommand",
@@ -186,11 +186,11 @@
             "helpMarkDown": "Docker command to execute, with arguments. For example, 'rmi -f image-name' to force remove an image."
         },
         {
-            "name": "containerCommand",
-            "type": "string",
-            "label": "Command",
-            "visibleRule": "action = Run an image",
-            "helpMarkDown": "Command to run in the Docker container. For example, if the image contains a simple Python Flask web application you can specify 'python app.py' to launch the web application."
+            "name": "dockerHostEndpoint",
+            "type": "connectedService:dockerhost",
+            "label": "Docker Host Connection",
+            "helpMarkDown": "Select the connection to the Docker container host.",
+            "group": "advanced"
         },
         {
             "name": "cwd",
@@ -201,7 +201,7 @@
             "groupName": "advanced"
         }
     ],
-    "instanceNameFormat": "$(action)",
+    "instanceNameFormat": "Docker: $(action)",
     "execution": {
         "Node": {
             "target": "invokeDockerAction.js",
