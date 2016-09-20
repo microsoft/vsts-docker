@@ -1,7 +1,7 @@
 {
     "id": "ADCFA1C1-3BE7-45FC-871F-13634B2CFF1D",
     "name": "DockerCompose",
-    "friendlyName": "Docker Compose (preview)",
+    "friendlyName": "Docker Compose",
     "description": "Build, push or run multi-container Docker applications",
     "helpMarkDown": "[More Information](http://aka.ms/dockertoolsforvsts)",
     "category": "Build",
@@ -13,7 +13,7 @@
     "version": {
         "Major": 0,
         "Minor": 1,
-        "Patch": 15
+        "Patch": 16
     },
     "demands": [],
     "groups": [
