@@ -3,9 +3,9 @@
     "name": "DockerCompose",
     "friendlyName": "Docker Compose (preview)",
     "description": "Build, push or run multi-container Docker applications",
-	"helpMarkDown": "[More Information](http://aka.ms/dockertoolsforvsts)",
+    "helpMarkDown": "[More Information](http://aka.ms/dockertoolsforvsts)",
     "category": "Build",
-	"visibility": [
+    "visibility": [
         "Build",
         "Release"
     ],
@@ -25,18 +25,11 @@
     ],
     "inputs": [
         {
-            "name": "dockerHostEndpoint",
-            "type": "connectedService:dockerhost",
-            "label": "Docker Host Connection",
-            "helpMarkDown": "Select a Docker host connection. Defaults to the agent's host.",
-            "groupName": "advanced"
-        },
-        {
             "name": "dockerRegistryEndpoint",
             "type": "connectedService:dockerregistry",
             "label": "Docker Registry Connection",
             "helpMarkDown": "Select a Docker registry connection. Only required for commands that need to authenticate with a registry."
-        },                
+        },
         {
             "name": "dockerComposeFile",
             "type": "filePath",
@@ -145,6 +138,13 @@
             "required": true,
             "visibleRule": "action = Run a command",
             "helpMarkDown": "Docker Compose command to execute with arguments. For example, 'rm --all' to remove all stopped service containers."
+        },
+        {
+            "name": "dockerHostEndpoint",
+            "type": "connectedService:dockerhost",
+            "label": "Docker Host Connection",
+            "helpMarkDown": "Select a Docker host connection. Defaults to the agent's host.",
+            "groupName": "advanced"
         },
         {
             "name": "cwd",
