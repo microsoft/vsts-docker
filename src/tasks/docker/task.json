@@ -13,7 +13,7 @@
     "version": {
         "Major": 0,
         "Minor": 1,
-        "Patch": 8
+        "Patch": 15
     },
     "demands": [],
     "groups": [
@@ -164,6 +164,13 @@
             "helpMarkDown": "Environment variables for the Docker container. Specify each name=value pair on a new line."
         },
         {
+            "name": "workDir",
+            "type": "string",
+            "label": "Working Directory",
+            "visibleRule": "action = Run an image",
+            "helpMarkDown": "The working directory for the Docker container."
+        },
+        {
             "name": "entrypoint",
             "type": "string",
             "label": "Entrypoint Override",
@@ -197,7 +204,7 @@
             "type": "filePath",
             "label": "Working Directory",
             "defaultValue": "$(System.DefaultWorkingDirectory)",
-            "helpMarkDown": "Working directory for the Docker command or container.",
+            "helpMarkDown": "Working directory for the Docker command.",
             "groupName": "advanced"
         }
     ],
