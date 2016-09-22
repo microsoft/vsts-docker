@@ -13,7 +13,7 @@
     "version": {
         "Major": 0,
         "Minor": 1,
-        "Patch": 19
+        "Patch": 23
     },
     "demands": [],
     "groups": [
@@ -183,6 +183,14 @@
             "label": "Command",
             "visibleRule": "action = Run an image",
             "helpMarkDown": "Command to run in the Docker container. For example, if the image contains a simple Python Flask web application you can specify 'python app.py' to launch the web application."
+        },
+        {
+            "name": "detached",
+            "type": "boolean",
+            "label": "Run In Background",
+            "defaultValue": "true",
+            "visibleRule": "action = Run an image",
+            "helpMarkDown": "Run the Docker container in the background."
         },
         {
             "name": "customCommand",

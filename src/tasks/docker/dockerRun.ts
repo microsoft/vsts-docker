@@ -8,6 +8,11 @@ export function run(connection: DockerConnection): any {
     var command = connection.createCommand();
     command.arg("run");
 
+    var detached = tl.getBoolInput("detached");
+    if (detached) {
+        command.arg("-d");
+    }
+
     var entrypoint = tl.getInput("entrypoint");
     if (entrypoint) {
         command.arg(["--entrypoint", entrypoint]);
@@ -32,8 +37,9 @@ export function run(connection: DockerConnection): any {
         });
     }
 
-    // Automatically remove the container when it exits
-    command.arg("--rm");
+    if (!detached) {
+        command.arg("--rm");
+    }
 
     var volumes = tl.getDelimitedInput("volumes", "\n");
     if (volumes) {
