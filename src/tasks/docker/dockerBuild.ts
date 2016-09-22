@@ -3,18 +3,7 @@
 import * as path from "path";
 import * as tl from "vsts-task-lib/task";
 import DockerConnection from "./dockerConnection";
-
-function imageNameWithoutTag(imageName: string) {
-    var endIndex = 0;
-    if (imageName.indexOf(".") < imageName.indexOf("/")) {
-        // Contains a registry component, which may include ":", so omit
-        // this part of the name from the main delimiter determination
-        endIndex = imageName.indexOf("/");
-    }
-    endIndex = imageName.indexOf(":", endIndex);
-
-    return endIndex < 0 ? imageName : imageName.substr(0, endIndex);
-}
+import * as imageUtils from "./dockerImageUtils";
 
 export function run(connection: DockerConnection): any {
     var command = connection.createCommand();
@@ -32,7 +21,7 @@ export function run(connection: DockerConnection): any {
 
     var imageName = tl.getInput("imageName", true);
     command.arg(["-t", imageName]);
-    var baseImageName = imageNameWithoutTag(imageName);
+    var baseImageName = imageUtils.imageNameWithoutTag(imageName);
     var additionalImageTags = tl.getDelimitedInput("additionalImageTags", "\n");
     if (additionalImageTags) {
         additionalImageTags.forEach(tag => {
