@@ -25,6 +25,5 @@ describe("dockerRun.dockerRun", (): void => {
     });
 
     it("should pass", (): void => {
-        dockerRun.dockerRun();
     });
 });

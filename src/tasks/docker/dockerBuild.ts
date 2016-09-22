@@ -1,43 +1,58 @@
-/// <reference path="../../../typings/vsts-task-lib/vsts-task-lib.d.ts" />
+"use strict";
 
-import fs = require("fs");
-import path = require("path");
-import tl = require("vsts-task-lib/task");
-import * as docker from "./dockerCommand";
+import * as path from "path";
+import * as tl from "vsts-task-lib/task";
+import DockerConnection from "./dockerConnection";
 
-export function dockerBuild(): void {
-    var cwd = tl.getInput("cwd");
-    tl.cd(cwd);
+function imageNameWithoutTag(imageName: string) {
+    var endIndex = 0;
+    if (imageName.indexOf(".") < imageName.indexOf("/")) {
+        // Contains a registry component, which may include ":", so omit
+        // this part of the name from the main delimiter determination
+        endIndex = imageName.indexOf("/");
+    }
+    endIndex = imageName.indexOf(":", endIndex);
 
-    var dockerConnectionString = tl.getInput("dockerHostEndpoint", true);
-    var registryConnectionString = tl.getInput("dockerRegistryEndpoint", true);
-    var dockerFilePattern = tl.getInput("dockerFile", true);
-    var context = tl.getInput("context", true);
-    var imageName = tl.getInput("imageName", true);
-
-    var dockerFile = getDockerFile(dockerFilePattern);
-
-    var cmd = new docker.DockerCommand("build");
-    cmd.dockerConnectionString = dockerConnectionString;
-    cmd.registryConnectionString = registryConnectionString;
-    cmd.dockerFile = dockerFile;
-    cmd.context = context;
-    cmd.imageName = imageName;
-    cmd.exec();
+    return endIndex < 0 ? imageName : imageName.substr(0, endIndex);
 }
 
-function copyDockerFileToContextFolder(dockerFile: string, context: string): string {
-    var target = path.join(context, path.basename(dockerFile));
+export function run(connection: DockerConnection): any {
+    var command = connection.createCommand();
+    command.arg("build");
 
-    if (dockerFile == target) {
-        return target;
+    var dockerFile = tl.globFirst(tl.getInput("dockerFile", true));
+    command.arg(["-f", dockerFile]);
+
+    var buildArguments = tl.getDelimitedInput("buildArguments", "\n");
+    if (buildArguments) {
+        buildArguments.forEach(buildArgument => {
+            command.arg(["--build-arg", buildArgument]);
+        });
     }
 
-    fs.writeFileSync(target, fs.readFileSync(dockerFile));
-    return target;
-}
+    var imageName = tl.getInput("imageName", true);
+    command.arg(["-t", imageName]);
+    var baseImageName = imageNameWithoutTag(imageName);
+    var additionalImageTags = tl.getDelimitedInput("additionalImageTags", "\n");
+    if (additionalImageTags) {
+        additionalImageTags.forEach(tag => {
+            command.arg(["-t", baseImageName + ":" + tag]);
+        });
+    }
+    var includeGitTags = tl.getBoolInput("includeGitTags");
+    // TODO: include Git tags
+    var includeLatestTag = tl.getBoolInput("includeLatestTag");
+    if (baseImageName !== imageName && includeLatestTag) {
+        command.arg(["-t", baseImageName]);
+    }
 
-function getDockerFile(dockerFilePattern: string): string {
-    var dockerFile = tl.globFirst(dockerFilePattern);
-    return dockerFile;
+    var context: string;
+    if (!tl.filePathSupplied("context")) {
+        context = path.dirname(dockerFile);
+    } else {
+        context = tl.getPathInput("buildContext");
+    }
+    command.arg(context);
+
+    return command.exec();
 }
