@@ -44,10 +44,6 @@ export function run(connection: DockerConnection): any {
     var volumes = tl.getDelimitedInput("volumes", "\n");
     if (volumes) {
         volumes.forEach(volume => {
-            // If the host directory is relative, resolve it
-            if (volume.indexOf("/") !== 0) {
-                volume = path.join(process.cwd(), volume);
-            }
             command.arg(["-v", volume]);
         });
     }
