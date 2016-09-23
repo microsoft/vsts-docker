@@ -22,7 +22,7 @@ switch (action) {
         promise = require("./dockerPush").run(connection);
         break;
     case "Run a Docker command":
-        promise = require("./dockerAnyCmd").run(connection);
+        promise = require("./dockerCommand").run(connection);
         break;
     /* tslint:enable:no-var-requires */
 }
