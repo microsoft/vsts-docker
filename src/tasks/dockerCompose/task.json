@@ -87,7 +87,7 @@
                 "rows": "2"
             },
             "label": "Additional Image Tags",
-            "defaultValue": "$(Build.SourceVersion)\n$(Build.SourceBranchName)",
+            "defaultValue": "$(Build.SourceBranchName)\n$(Build.SourceVersion)",
             "visibleRule": "action = Build services || action = Push services",
             "helpMarkDown": "Additional tags for the Docker images being built or pushed."
         },
@@ -113,7 +113,7 @@
             "label": "Write Image Digests",
             "defaultValue": "true",
             "visibleRule": "action = Combine files",
-            "helpMarkDown": "Lock down image references by replacing them with their registry-qualified names and full repository digests."
+            "helpMarkDown": "Lock down image references by using their full repository digests."
         },
         {
             "name": "outputDockerComposeFile",
@@ -158,7 +158,7 @@
     "instanceNameFormat": "Docker Compose: $(action)",
     "execution": {
         "Node": {
-            "target": "invokeDockerComposeAction.js",
+            "target": "dockerCompose.ts",
             "argumentFormat": ""
         }
     }
