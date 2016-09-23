@@ -17,7 +17,7 @@ require({
     "Build services": "./dockerComposeBuild",
     "Push services": "./dockerComposePush",
     "Run services": "./dockerComposeUp",
-    "Run a Docker Compose command": "./dockerComposeAnyCommand"
+    "Run a Docker Compose command": "./dockerComposeCommand"
 }[action]).run(connection)
 /* tslint:enable:no-var-requires */
 .fin(function cleanup() {
