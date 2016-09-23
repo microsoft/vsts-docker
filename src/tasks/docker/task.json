@@ -13,7 +13,7 @@
     "version": {
         "Major": 0,
         "Minor": 1,
-        "Patch": 41
+        "Patch": 45
     },
     "demands": [],
     "groups": [
@@ -78,7 +78,7 @@
             "defaultValue": "$(Build.Repository.Name):$(Build.BuildNumber)",
             "required": true,
             "visibleRule": "action = Build an image || action = Push an image || action = Run an image",
-            "helpMarkDown": "Name of the Docker image to build, push or run, for instance 'fabrikam/webapp:$(Build.BuildNumber)'."
+            "helpMarkDown": "Name of the Docker image to build, push or run."
         },
         {
             "name": "additionalImageTags",
@@ -114,15 +114,7 @@
             "label": "Image Digest File",
             "defaultValue": "$(Build.StagingDirectory)/Dockerfile.image",
             "visibleRule": "action = Push an image",
-            "helpMarkDown": "Path to a file that is created and populated with the registry-qualified name and full repository digest of the Docker image that was pushed."
-        },
-        {
-            "name": "removeImageAfterPush",
-            "type": "boolean",
-            "label": "Remove image after push",
-            "defaultValue": "false",
-            "visibleRule": "action = Push an image && action = always hide for now because of async publish",
-            "helpMarkDown": "Remove the image after pushing."
+            "helpMarkDown": "Path to a file that is created and populated with the name and full repository digest of the Docker image that was pushed."
         },
         {
             "name": "containerName",
@@ -151,7 +143,7 @@
             },
             "label": "Volumes",
             "visibleRule": "action = Run an image",
-            "helpMarkDown": "Volumes to bind mount from the host. Specify each host-dir:container-dir binding on a new line."
+            "helpMarkDown": "Volumes to bind mount from the host. Host directories may be relative to the working directory. Specify each host-dir:container-dir binding on a new line."
         },
         {
             "name": "envVars",

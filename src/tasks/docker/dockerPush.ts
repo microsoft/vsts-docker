@@ -17,6 +17,7 @@ function dockerPush(connection: DockerConnection, image: string, imageDigestFile
             output += data;
         });
         return command.exec().then(() => {
+            // Parse the output to find the repository digest
             var imageDigest = output.match(/^[^:]*: digest: ([^ ]*) size: \d*$/m)[1];
             if (imageDigest) {
                 fs.writeFileSync(imageDigestFile, imageUtils.imageNameWithoutTag(image) + "@" + imageDigest);

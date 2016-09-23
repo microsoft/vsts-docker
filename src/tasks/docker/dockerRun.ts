@@ -58,7 +58,7 @@ export function run(connection: DockerConnection): any {
     }
 
     var imageName = tl.getInput("imageName", true);
-    command.arg(imageName);
+    command.arg(imageName, true);
 
     var containerCommand = tl.getInput("containerCommand");
     if (containerCommand) {

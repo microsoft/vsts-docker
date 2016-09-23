@@ -3,31 +3,23 @@
 import * as tl from "vsts-task-lib/task";
 import DockerConnection from "./dockerConnection";
 
+// Change to any specified working directory
 tl.cd(tl.getInput("cwd"));
 
+// Connect to any specified Docker host and/or registry 
 var connection = new DockerConnection();
 connection.open(tl.getInput("dockerHostEndpoint"), tl.getInput("dockerRegistryEndpoint"));
 
+// Run the specified action
 var action = tl.getInput("action", true);
-var promise: any;
-switch (action) {
-    /* tslint:disable:no-var-requires */
-    case "Run an image":
-        promise = require("./dockerRun").run(connection);
-        break;
-    case "Build an image":
-        promise = require("./dockerBuild").run(connection);
-        break;
-    case "Push an image":
-        promise = require("./dockerPush").run(connection);
-        break;
-    case "Run a Docker command":
-        promise = require("./dockerCommand").run(connection);
-        break;
-    /* tslint:enable:no-var-requires */
-}
-
-promise
+/* tslint:disable:no-var-requires */
+require({
+    "Run an image": "./dockerRun",
+    "Build an image": "./dockerBuild",
+    "Push an image": "./dockerPush",
+    "Run a Docker command": "./dockerCommand"
+}[action]).run(connection)
+/* tslint:enable:no-var-requires */
 .fin(function cleanup() {
     connection.close();
 })

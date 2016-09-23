@@ -41,7 +41,7 @@ export function run(connection: DockerConnection): any {
     } else {
         context = tl.getPathInput("buildContext");
     }
-    command.arg(context);
+    command.arg(context, true);
 
     return command.exec();
 }
