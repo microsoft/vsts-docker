@@ -14,9 +14,9 @@ connection.open(tl.getInput("dockerHostEndpoint"), tl.getInput("dockerRegistryEn
 var action = tl.getInput("action", true);
 /* tslint:disable:no-var-requires */
 require({
-    "Run an image": "./dockerRun",
     "Build an image": "./dockerBuild",
     "Push an image": "./dockerPush",
+    "Run an image": "./dockerRun",
     "Run a Docker command": "./dockerCommand"
 }[action]).run(connection)
 /* tslint:enable:no-var-requires */
