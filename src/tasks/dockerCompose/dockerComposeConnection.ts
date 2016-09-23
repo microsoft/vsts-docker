@@ -1,8 +1,10 @@
 "use strict";
 
+import * as cp from "child_process";
 import * as path from "path";
 import * as tl from "vsts-task-lib/task";
 import * as tr from "vsts-task-lib/toolrunner";
+import * as yaml from "js-yaml";
 import DockerConnection from "./dockerConnection";
 
 export default class DockerComposeConnection extends DockerConnection {
@@ -54,5 +56,33 @@ export default class DockerComposeConnection extends DockerConnection {
             command.arg(["-p", this.projectName]);
         }
         return command;
+    }
+
+    public getCombinedConfig(): any {
+        var command = this.createComposeCommand();
+        command.arg("config");
+        var result = "";
+        command.on("stdout", data => {
+            result += data;
+        });
+        return command.exec({ silent: true } as any).then(() => result);
+    }
+
+    public getBuiltImages(): any {
+        return this.getCombinedConfig().then(input => {
+            var doc = yaml.safeLoad(input);
+            var images = [];
+            for (var serviceName in doc.services) {
+                var service = doc.services[serviceName];
+                if (service.build) {
+                    var image = service.image;
+                    if (!image) {
+                        throw new Error("Missing image name for service '" + serviceName + "'.");
+                    }
+                    images.push(image);
+                }
+            }
+            return images;
+        });
     }
 }

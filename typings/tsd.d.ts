@@ -2,6 +2,7 @@
 /// <reference path="chai/chai.d.ts" />
 /// <reference path="del/del.d.ts" />
 /// <reference path="glob/glob.d.ts" />
+/// <reference path="js-yaml/js-yaml.d.ts" />
 /// <reference path="minimatch/minimatch.d.ts" />
 /// <reference path="mocha/mocha.d.ts" />
 /// <reference path="node/node.d.ts" />

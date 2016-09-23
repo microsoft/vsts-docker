@@ -13,7 +13,7 @@
     "version": {
         "Major": 0,
         "Minor": 1,
-        "Patch": 21
+        "Patch": 30
     },
     "demands": [],
     "groups": [
@@ -62,6 +62,7 @@
             "name": "projectName",
             "type": "string",
             "label": "Project Name",
+            "defaultValue": "$(Build.Repository.Name)",
             "helpMarkDown": "Alternate project name. Defaults to the name of the current working directory."
         },
         {
@@ -87,7 +88,7 @@
                 "rows": "2"
             },
             "label": "Additional Image Tags",
-            "defaultValue": "$(Build.SourceBranchName)\n$(Build.SourceVersion)",
+            "defaultValue": "$(Build.BuildNumber)\n$(Build.SourceBranchName)\n$(Build.SourceVersion)",
             "visibleRule": "action = Build services || action = Push services",
             "helpMarkDown": "Additional tags for the Docker images being built or pushed."
         },
