@@ -19,7 +19,7 @@ switch (action) {
         promise = require("./dockerBuild").run(connection);
         break;
     case "Push an image":
-        promise = require("./dockerPublish").run(connection);
+        promise = require("./dockerPush").run(connection);
         break;
     case "Run a Docker command":
         promise = require("./dockerAnyCmd").run(connection);
