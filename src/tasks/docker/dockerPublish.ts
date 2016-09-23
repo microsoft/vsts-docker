@@ -1,28 +1,62 @@
-/// <reference path="../../../typings/vsts-task-lib/vsts-task-lib.d.ts" />
+"use strict";
 
-import tl = require("vsts-task-lib/task");
-import * as docker from "./dockerCommand";
+import * as fs from "fs";
+import * as tl from "vsts-task-lib/task";
+import DockerConnection from "./dockerConnection";
+import * as imageUtils from "./dockerImageUtils";
 
-export function dockerPublish(): void {
-    var cwd = tl.getInput("cwd");
-    tl.cd(cwd);
-
-    var dockerConnectionString = tl.getInput("dockerHostEndpoint", true);
-    var registryConnectionString = tl.getInput("dockerRegistryEndpoint", true);
-    var imageName = tl.getInput("imageName", true);
-    var removeImageAfterPush = tl.getBoolInput("removeImageAfterPush", true);
-
-    var publishCmd = new docker.DockerCommand("publish");
-    publishCmd.dockerConnectionString = dockerConnectionString;
-    publishCmd.registryConnectionString = registryConnectionString;
-    publishCmd.imageName = imageName;
-    publishCmd.exec();
-
-    if (removeImageAfterPush) {
-        var rmiCmd = new docker.DockerCommand("removeImage");
-        rmiCmd.dockerConnectionString = dockerConnectionString;
-        rmiCmd.imageName = imageName;
-        rmiCmd.connectToHub = false;
-        rmiCmd.execSync();
+function dockerPush(connection: DockerConnection, image: string, imageDigestFile?: string) {
+    var command = connection.createCommand();
+    command.arg("push");
+    command.arg(image);
+    if (!imageDigestFile) {
+        return command.exec();
+    } else {
+        var output = "";
+        command.on("stdout", data => {
+            output += data;
+        });
+        return command.exec().then(() => {
+            var imageDigest = output.match(/^[^:]*: digest: ([^ ]*) size: \d*$/m)[1];
+            if (imageDigest) {
+                fs.writeFileSync(imageDigestFile, imageUtils.imageNameWithoutTag(image) + "@" + imageDigest);
+            }
+        });
     }
+}
+
+export function run(connection: DockerConnection): any {
+    var images = [];
+    var imageName = tl.getInput("imageName", true);
+    var baseImageName = imageUtils.imageNameWithoutTag(imageName);
+    if (baseImageName === imageName) {
+        images.push(imageName + ":latest");
+    } else {
+        images.push(imageName);
+    }
+    var additionalImageTags = tl.getDelimitedInput("additionalImageTags", "\n");
+    if (additionalImageTags) {
+        additionalImageTags.forEach(tag => {
+            images.push(baseImageName + ":" + tag);
+        });
+    }
+    var includeGitTags = tl.getBoolInput("includeGitTags");
+    // TODO: include Git tags
+    var includeLatestTag = tl.getBoolInput("includeLatestTag");
+    if (baseImageName !== imageName && includeLatestTag) {
+        images.push(baseImageName + ":latest");
+    }
+
+    var imageDigestFile = tl.getPathInput("imageDigestFile");
+
+    var promise: any;
+    images.forEach(image => {
+        if (!promise) {
+            promise = dockerPush(connection, image, imageDigestFile);
+        } else {
+            promise = promise.then(() => dockerPush(connection, image));
+        }
+    });
+
+    return promise;
 }
