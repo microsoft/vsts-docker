@@ -71,7 +71,7 @@ export default class DockerComposeConnection extends DockerConnection {
     public getBuiltImages(): any {
         return this.getCombinedConfig().then(input => {
             var doc = yaml.safeLoad(input);
-            var images = [];
+            var images: any = {};
             for (var serviceName in doc.services) {
                 var service = doc.services[serviceName];
                 if (service.build) {
@@ -79,7 +79,7 @@ export default class DockerComposeConnection extends DockerConnection {
                     if (!image) {
                         throw new Error("Missing image name for service '" + serviceName + "'.");
                     }
-                    images.push(image);
+                    images[serviceName] = image;
                 }
             }
             return images;

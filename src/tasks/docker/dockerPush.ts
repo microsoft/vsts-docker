@@ -6,10 +6,10 @@ import DockerConnection from "./dockerConnection";
 import * as gitUtils from "./gitUtils";
 import * as imageUtils from "./dockerImageUtils";
 
-function dockerPush(connection: DockerConnection, image: string, imageDigestFile?: string) {
+function dockerPush(connection: DockerConnection, imageName: string, imageDigestFile?: string) {
     var command = connection.createCommand();
     command.arg("push");
-    command.arg(image);
+    command.arg(imageName);
     if (!imageDigestFile) {
         return command.exec();
     } else {
@@ -21,7 +21,8 @@ function dockerPush(connection: DockerConnection, image: string, imageDigestFile
             // Parse the output to find the repository digest
             var imageDigest = output.match(/^[^:]*: digest: ([^ ]*) size: \d*$/m)[1];
             if (imageDigest) {
-                fs.writeFileSync(imageDigestFile, imageUtils.imageNameWithoutTag(image) + "@" + imageDigest);
+                var baseImageName = imageUtils.imageNameWithoutTag(imageName);
+                fs.writeFileSync(imageDigestFile, baseImageName + "@" + imageDigest);
             }
         });
     }
@@ -61,11 +62,11 @@ export function run(connection: DockerConnection): any {
     var imageDigestFile = tl.getPathInput("imageDigestFile");
 
     var promise: any;
-    images.forEach(image => {
+    images.forEach(imageName => {
         if (!promise) {
-            promise = dockerPush(connection, image, imageDigestFile);
+            promise = dockerPush(connection, imageName, imageDigestFile);
         } else {
-            promise = promise.then(() => dockerPush(connection, image));
+            promise = promise.then(() => dockerPush(connection, imageName));
         }
     });
 
