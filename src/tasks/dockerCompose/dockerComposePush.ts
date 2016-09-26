@@ -80,7 +80,7 @@ function writeImageDigestComposeFile(imageDigests: any): void {
         };
     });
     fs.writeFileSync(imageDigestComposeFile, yaml.safeDump({
-        version: 2,
+        version: "2",
         services: services
     }, { lineWidth: -1 } as any));
 }
@@ -89,7 +89,7 @@ export function run(connection: DockerComposeConnection): any {
     return connection.getBuiltImages()
     .then(images => {
         var promise: any;
-        var imageDigests = tl.filePathSupplied("imageDigestComposeFile") ? {} : null;
+        var imageDigests = tl.getPathInput("imageDigestComposeFile") ? {} : null;
         Object.keys(images).forEach(serviceName => {
             (imageName => {
                 if (!promise) {

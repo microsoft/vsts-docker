@@ -13,7 +13,7 @@
     "version": {
         "Major": 0,
         "Minor": 1,
-        "Patch": 66
+        "Patch": 75
     },
     "demands": [],
     "groups": [
@@ -125,20 +125,37 @@
             "helpMarkDown": "Build images before starting service containers."
         },
         {
+            "name": "detached",
+            "type": "boolean",
+            "label": "Run In Background",
+            "defaultValue": "true",
+            "visibleRule": "action = Run services",
+            "helpMarkDown": "Run the service containers in the background."
+        },
+        {
+            "name": "baseResolveDirectory",
+            "type": "filePath",
+            "label": "Base Resolve Directory",
+            "defaultValue": "$(Build.Repository.LocalPath)",
+            "visibleRule": "action = Combine configuration",
+            "helpMarkDown": "The base directory from which relative paths in the output Docker Compose file should be resolved."
+        },
+        {
+            "name": "outputDockerComposeFile",
+            "type": "filePath",
+            "label": "Output Docker Compose File",
+            "defaultValue": "$(Build.StagingDirectory)/docker-compose.yml",
+            "required": true,
+            "visibleRule": "action = Combine configuration",
+            "helpMarkDown": "Path to an output Docker Compose file."
+        },
+        {
             "name": "dockerComposeCommand",
             "type": "string",
             "label": "Command",
             "required": true,
             "visibleRule": "action = Run a Docker Compose command",
             "helpMarkDown": "Docker Compose command to execute with arguments. For example, 'rm --all' to remove all stopped service containers."
-        },
-        {
-            "name": "combinedDockerComposeFile",
-            "type": "filePath",
-            "label": "Combined Docker Compose File",
-            "defaultValue": "$(Build.StagingDirectory)/docker-compose.yml",
-            "visibleRule": "action = Combine configuration",
-            "helpMarkDown": "Path to an output combined Docker Compose file."
         },
         {
             "name": "dockerHostEndpoint",
