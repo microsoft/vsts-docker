@@ -1,6 +1,6 @@
 "use strict";
 
-export function imageNameWithoutTag(imageName: string) {
+export function imageNameWithoutTag(imageName: string): string {
     var endIndex = 0;
     if (imageName.indexOf(".") < imageName.indexOf("/")) {
         // Contains a registry component, which may include ":", so omit

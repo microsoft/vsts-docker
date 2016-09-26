@@ -13,7 +13,7 @@
     "version": {
         "Major": 0,
         "Minor": 1,
-        "Patch": 56
+        "Patch": 57
     },
     "demands": [],
     "groups": [
@@ -28,7 +28,7 @@
             "name": "dockerRegistryEndpoint",
             "type": "connectedService:dockerregistry",
             "label": "Docker Registry Connection",
-            "helpMarkDown": "Select a Docker registry connection. Only required for commands that need to authenticate with a registry."
+            "helpMarkDown": "Select a Docker registry connection. Required for commands that need to authenticate with a registry."
         },
         {
             "name": "action",
@@ -75,7 +75,7 @@
             "name": "imageName",
             "type": "string",
             "label": "Image Name",
-            "defaultValue": "$(Build.Repository.Name):$(Build.BuildNumber)",
+            "defaultValue": "$(Build.Repository.Name):$(Build.BuildId)",
             "required": true,
             "visibleRule": "action = Build an image || action = Push an image || action = Run an image",
             "helpMarkDown": "Name of the Docker image to build, push or run."
@@ -93,12 +93,12 @@
             "helpMarkDown": "Additional tags for the Docker image being built or pushed."
         },
         {
-            "name": "includeGitTags",
+            "name": "includeSourceTags",
             "type": "boolean",
-            "label": "Include Git Tags",
+            "label": "Include Source Tags",
             "defaultValue": "true",
             "visibleRule": "action = Build an image || action = Push an image",
-            "helpMarkDown": "Include Git tags when building or pushing the Docker image."
+            "helpMarkDown": "Include source tags like TFVC labels or Git tags when building or pushing the Docker image."
         },
         {
             "name": "includeLatestTag",
@@ -114,7 +114,7 @@
             "label": "Image Digest File",
             "defaultValue": "$(Build.StagingDirectory)/Dockerfile.image",
             "visibleRule": "action = Push an image",
-            "helpMarkDown": "Path to a file that is created and populated with the name and full repository digest of the Docker image that was pushed."
+            "helpMarkDown": "Path to a file that is created and populated with the full image repository digest of the Docker image that was pushed."
         },
         {
             "name": "containerName",

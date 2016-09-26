@@ -19,11 +19,11 @@ export default class DockerConnection {
         this.dockerPath = tl.which("docker", true);
     }
 
-    private createBaseCommand() {
+    private createBaseCommand(): tr.ToolRunner {
         return tl.createToolRunner(this.dockerPath);
     }
 
-    public open(hostEndpoint?: string, registryEndpoint?: string) {
+    public open(hostEndpoint?: string, registryEndpoint?: string): void {
         if (hostEndpoint) {
             this.hostUrl = tl.getEndpointUrl(hostEndpoint, false);
 
@@ -32,33 +32,33 @@ export default class DockerConnection {
                 fs.mkdirSync(this.certsDir);
             }
 
-            var authDetails = tl.getEndpointAuthorization(hostEndpoint, false);
+            var authDetails = tl.getEndpointAuthorization(hostEndpoint, false).parameters;
 
             this.caPath = path.join(this.certsDir, "ca.pem");
-            fs.writeFileSync(this.caPath, authDetails.parameters["cacert"]);
+            fs.writeFileSync(this.caPath, authDetails["cacert"]);
 
             this.certPath = path.join(this.certsDir, "cert.pem");
-            fs.writeFileSync(this.certPath, authDetails.parameters["cert"]);
+            fs.writeFileSync(this.certPath, authDetails["cert"]);
 
             this.keyPath = path.join(this.certsDir, "key.pem");
-            fs.writeFileSync(this.keyPath, authDetails.parameters["key"]);
+            fs.writeFileSync(this.keyPath, authDetails["key"]);
         }
 
         if (registryEndpoint) {
-            var loginCmd = this.createBaseCommand();
+            var command = this.createBaseCommand();
             var registryAuth = tl.getEndpointAuthorization(registryEndpoint, true).parameters;
             if (registryAuth) {
-                loginCmd.arg("login");
-                loginCmd.arg(["-u", registryAuth["username"]]);
-                loginCmd.arg(["-p", registryAuth["password"]]);
-                loginCmd.arg(registryAuth["registry"]);
-                loginCmd.execSync();
+                command.arg("login");
+                command.arg(["-u", registryAuth["username"]]);
+                command.arg(["-p", registryAuth["password"]]);
+                command.arg(registryAuth["registry"]);
+                command.execSync();
                 this.loggedIn = true;
             }
         }
     }
 
-    protected addAuthArgs(command: tr.ToolRunner) {
+    protected addAuthArgs(command: tr.ToolRunner): void {
         if (this.hostUrl) {
             command.arg(["-H", this.hostUrl]);
             command.arg("--tls");
@@ -76,11 +76,11 @@ export default class DockerConnection {
 
     public close(): void {
         if (this.loggedIn) {
-            var logoutCmd = this.createBaseCommand();
-            logoutCmd.arg("logout");
-            logoutCmd.execSync();
+            var command = this.createBaseCommand();
+            command.arg("logout");
+            command.execSync();
         }
-        if (this.certsDir && this.certsDir.trim() != "" && fs.existsSync(this.certsDir)) {
+        if (this.certsDir && fs.existsSync(this.certsDir)) {
             del.sync(this.certsDir);
         }
     }
