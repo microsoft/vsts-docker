@@ -1,6 +1,5 @@
 "use strict";
 
-import * as cp from "child_process";
 import * as path from "path";
 import * as tl from "vsts-task-lib/task";
 import * as tr from "vsts-task-lib/toolrunner";
@@ -21,12 +20,11 @@ export default class DockerComposeConnection extends DockerConnection {
         this.projectName = tl.getInput("projectName");
     }
 
-    public open(hostEndpoint?: string, registryEndpoint?: string) {
+    public open(hostEndpoint?: string, registryEndpoint?: string): void {
         super.open(hostEndpoint, registryEndpoint);
         var envVars = tl.getDelimitedInput("dockerComposeFileArgs", "\n");
         if (envVars) {
             envVars.forEach(envVar => {
-                tl.debug("setting environment variable: " + envVar);
                 var tokens = envVar.split("=");
                 if (tokens.length < 2) {
                     throw new Error("Environment variable '" + envVar + "' is invalid.");
@@ -39,7 +37,9 @@ export default class DockerComposeConnection extends DockerConnection {
     public createComposeCommand(): tr.ToolRunner {
         var command = tl.createToolRunner(this.dockerComposePath);
         this.addAuthArgs(command);
+
         command.arg(["-f", this.dockerComposeFile]);
+
         if (this.additionalDockerComposeFiles) {
             var basePath = path.dirname(this.dockerComposeFile);
             this.additionalDockerComposeFiles.forEach(file => {
@@ -47,14 +47,17 @@ export default class DockerComposeConnection extends DockerConnection {
                 if (file.indexOf("/") !== 0) {
                     file = path.join(basePath, file);
                 }
+                // Only include the file if it exists
                 if (tl.exist(file)) {
                     command.arg(["-f", file]);
                 }
             });
         }
+
         if (this.projectName) {
             command.arg(["-p", this.projectName]);
         }
+
         return command;
     }
 

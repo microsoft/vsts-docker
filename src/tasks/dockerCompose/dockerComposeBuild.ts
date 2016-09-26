@@ -2,7 +2,7 @@
 
 import * as tl from "vsts-task-lib/task";
 import DockerComposeConnection from "./dockerComposeConnection";
-import * as gitUtils from "./gitUtils";
+import * as sourceUtils from "./sourceUtils";
 import * as imageUtils from "./dockerImageUtils";
 
 function dockerTag(connection: DockerComposeConnection, source: string, target: string) {
@@ -33,16 +33,11 @@ function addOtherTags(connection: DockerComposeConnection, imageName: string): a
         }
         return promise;
     })()
-    .then(function addGitTags() {
+    .then(function addSourceTags() {
         var promise: any;
-        var includeGitTags = tl.getBoolInput("includeGitTags");
-        if (includeGitTags) {
-            var sourceVersion = tl.getVariable("Build.SourceVersion");
-            if (!sourceVersion) {
-                throw new Error("Cannot retrieve git tags because Build.SourceVersion is not set.");
-            }
-            var tags = gitUtils.tagsAt(sourceVersion);
-            tags.forEach(tag => {
+        var includeSourceTags = tl.getBoolInput("includeSourceTags");
+        if (includeSourceTags) {
+            sourceUtils.getSourceTags().forEach(tag => {
                 promise = addTag(promise, connection, imageName, baseImageName + ":" + tag);
             });
         }
@@ -51,7 +46,7 @@ function addOtherTags(connection: DockerComposeConnection, imageName: string): a
     .then(function addLatestTag() {
         var includeLatestTag = tl.getBoolInput("includeLatestTag");
         if (baseImageName !== imageName && includeLatestTag) {
-            return addTag(null, connection, imageName, baseImageName);
+            return dockerTag(connection, imageName, baseImageName);
         }
     });
 }
@@ -63,8 +58,7 @@ export function run(connection: DockerComposeConnection): any {
     .then(() => connection.getBuiltImages())
     .then(images => {
         var promise: any;
-        Object.keys(images).forEach(serviceName => {
-            var imageName = images[serviceName];
+        Object.keys(images).map(serviceName => images[serviceName]).forEach(imageName => {
             if (!promise) {
                 promise = addOtherTags(connection, imageName);
             } else {

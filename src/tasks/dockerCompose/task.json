@@ -13,7 +13,7 @@
     "version": {
         "Major": 0,
         "Minor": 1,
-        "Patch": 39
+        "Patch": 66
     },
     "demands": [],
     "groups": [
@@ -28,7 +28,7 @@
             "name": "dockerRegistryEndpoint",
             "type": "connectedService:dockerregistry",
             "label": "Docker Registry Connection",
-            "helpMarkDown": "Select a Docker registry connection. Only required for commands that need to authenticate with a registry."
+            "helpMarkDown": "Select a Docker registry connection. Required for commands that need to authenticate with a registry."
         },
         {
             "name": "dockerComposeFile",
@@ -63,7 +63,7 @@
             "type": "string",
             "label": "Project Name",
             "defaultValue": "$(Build.Repository.Name)",
-            "helpMarkDown": "Alternate project name. Defaults to the name of the current working directory."
+            "helpMarkDown": "Project name used for default naming of images and containers."
         },
         {
             "name": "action",
@@ -74,7 +74,7 @@
                 "Build services": "Build services",
                 "Push services": "Push services",
                 "Run services": "Run services",
-                "Combine files": "Combine files",
+                "Combine configuration": "Combine configuration",
                 "Run a Docker Compose command": "Run a Docker Compose command"
             },
             "defaultValue": "Run a Docker Compose command",
@@ -88,17 +88,17 @@
                 "rows": "2"
             },
             "label": "Additional Image Tags",
-            "defaultValue": "$(Build.BuildNumber)\n$(Build.SourceBranchName)\n$(Build.SourceVersion)",
+            "defaultValue": "$(Build.BuildId)\n$(Build.SourceBranchName)\n$(Build.SourceVersion)",
             "visibleRule": "action = Build services || action = Push services",
             "helpMarkDown": "Additional tags for the Docker images being built or pushed."
         },
         {
-            "name": "includeGitTags",
+            "name": "includeSourceTags",
             "type": "boolean",
-            "label": "Include Git Tags",
+            "label": "Include Source Tags",
             "defaultValue": "true",
             "visibleRule": "action = Build services || action = Push services",
-            "helpMarkDown": "Include Git tags when building or pushing Docker images."
+            "helpMarkDown": "Include source tags like TFVC labels or Git tags when building or pushing Docker images."
         },
         {
             "name": "includeLatestTag",
@@ -109,20 +109,12 @@
             "helpMarkDown": "Include the 'latest' tag when building or pushing Docker images."
         },
         {
-            "name": "writeImageDigests",
-            "type": "boolean",
-            "label": "Write Image Digests",
-            "defaultValue": "true",
-            "visibleRule": "action = Combine files",
-            "helpMarkDown": "Lock down image references by using their full repository digests."
-        },
-        {
-            "name": "outputDockerComposeFile",
+            "name": "imageDigestComposeFile",
             "type": "filePath",
-            "label": "Output Docker Compose File",
-            "defaultValue": "$(Build.StagingDirectory)/docker-compose.yml",
-            "visibleRule": "action = Combine files",
-            "helpMarkDown": "Path to an output Docker Compose file."
+            "label": "Image Digest Compose File",
+            "defaultValue": "$(Build.StagingDirectory)/docker-compose.images.yml",
+            "visibleRule": "action = Push services",
+            "helpMarkDown": "Path to a Docker Compose file that is created and populated with the full image repository digests of the Docker images that were pushed."
         },
         {
             "name": "buildImages",
@@ -130,7 +122,7 @@
             "label": "Build Images",
             "defaultValue": "true",
             "visibleRule": "action = Run services",
-            "helpMarkDown": "Build images before starting containers."
+            "helpMarkDown": "Build images before starting service containers."
         },
         {
             "name": "dockerComposeCommand",
@@ -139,6 +131,14 @@
             "required": true,
             "visibleRule": "action = Run a Docker Compose command",
             "helpMarkDown": "Docker Compose command to execute with arguments. For example, 'rm --all' to remove all stopped service containers."
+        },
+        {
+            "name": "combinedDockerComposeFile",
+            "type": "filePath",
+            "label": "Combined Docker Compose File",
+            "defaultValue": "$(Build.StagingDirectory)/docker-compose.yml",
+            "visibleRule": "action = Combine configuration",
+            "helpMarkDown": "Path to an output combined Docker Compose file."
         },
         {
             "name": "dockerHostEndpoint",

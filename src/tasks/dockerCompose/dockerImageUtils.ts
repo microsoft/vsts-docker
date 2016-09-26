@@ -2,8 +2,8 @@
 
 export function imageNameWithoutTag(imageName: string): string {
     var endIndex = 0;
-    if (imageName.indexOf(".") < imageName.indexOf("/")) {
-        // Contains a registry component, which may include ":", so omit
+    if (imageName.indexOf(":") < imageName.indexOf("/")) {
+        // Contains a registry component that includes ":", so omit
         // this part of the name from the main delimiter determination
         endIndex = imageName.indexOf("/");
     }
