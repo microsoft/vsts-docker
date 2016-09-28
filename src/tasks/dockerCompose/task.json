@@ -13,7 +13,7 @@
     "version": {
         "Major": 0,
         "Minor": 1,
-        "Patch": 75
+        "Patch": 77
     },
     "demands": [],
     "groups": [
@@ -74,6 +74,7 @@
                 "Build services": "Build services",
                 "Push services": "Push services",
                 "Run services": "Run services",
+                "Write service image digests": "Write service image digests",
                 "Combine configuration": "Combine configuration",
                 "Run a Docker Compose command": "Run a Docker Compose command"
             },
@@ -109,14 +110,6 @@
             "helpMarkDown": "Include the 'latest' tag when building or pushing Docker images."
         },
         {
-            "name": "imageDigestComposeFile",
-            "type": "filePath",
-            "label": "Image Digest Compose File",
-            "defaultValue": "$(Build.StagingDirectory)/docker-compose.images.yml",
-            "visibleRule": "action = Push services",
-            "helpMarkDown": "Path to a Docker Compose file that is created and populated with the full image repository digests of the Docker images that were pushed."
-        },
-        {
             "name": "buildImages",
             "type": "boolean",
             "label": "Build Images",
@@ -131,6 +124,15 @@
             "defaultValue": "true",
             "visibleRule": "action = Run services",
             "helpMarkDown": "Run the service containers in the background."
+        },
+        {
+            "name": "imageDigestComposeFile",
+            "type": "filePath",
+            "label": "Image Digest Compose File",
+            "defaultValue": "$(Build.StagingDirectory)/docker-compose.images.yml",
+            "required": true,
+            "visibleRule": "action = Write service image digests",
+            "helpMarkDown": "Path to a Docker Compose file that is created and populated with the full image repository digests of each service's Docker image."
         },
         {
             "name": "baseResolveDirectory",

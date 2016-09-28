@@ -71,17 +71,17 @@ export default class DockerComposeConnection extends DockerConnection {
         return command.exec({ silent: true } as any).then(() => result);
     }
 
-    public getBuiltImages(): any {
+    public getImages(builtOnly?: boolean): any {
         return this.getCombinedConfig().then(input => {
             var doc = yaml.safeLoad(input);
             var images: any = {};
             for (var serviceName in doc.services) {
                 var service = doc.services[serviceName];
-                if (service.build) {
-                    var image = service.image;
-                    if (!image) {
-                        throw new Error("Missing image name for service '" + serviceName + "'.");
-                    }
+                var image = service.image;
+                if (!image) {
+                    throw new Error("Missing image name for service '" + serviceName + "'.");
+                }
+                if (!builtOnly || service.build) {
                     images[serviceName] = image;
                 }
             }

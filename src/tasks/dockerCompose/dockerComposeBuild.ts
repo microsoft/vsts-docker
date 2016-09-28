@@ -55,7 +55,7 @@ export function run(connection: DockerComposeConnection): any {
     var command = connection.createComposeCommand();
     command.arg("build");
     return command.exec()
-    .then(() => connection.getBuiltImages())
+    .then(() => connection.getImages(true))
     .then(images => {
         var promise: any;
         Object.keys(images).map(serviceName => images[serviceName]).forEach(imageName => {
