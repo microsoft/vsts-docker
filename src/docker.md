@@ -1,126 +1,141 @@
-#Docker
-The world's largest enterprises rely on Docker to develop the world’s best applications. With the Docker extension you can now integrate your existing agile and DevOps workflows with Docker to easily manage distribution of your images. 
+The world's largest enterprises rely on Docker to develop the world’s best applications. With the Docker extension, you can integrate Docker images and containers into your existing agile and DevOps workflows.
 
-Take advantage of the Visual Studio Team Services cloud based build capabilities to build your Docker image, and upload that image to Docker Hub as part of your continuous integration flow. 
+The Docker extension adds a task that enables you to build Docker images, push Docker images to an authenticated Docker registry, run Docker images or execute any other operation offered by the Docker CLI. It also adds a Docker Compose task that enables you to build, push and run multi-container Docker applications or execute any other operation offered by the Docker Compose CLI.
 
-##Usage
+The Docker extension introduces two new service endpoints for Docker hosts and registries. The tasks default to using a local Docker host if available (this currently requires a custom VSTS agent), otherwise they require a Docker Host connection to be provided. Actions that depend on being authenticated with a Docker registry, such as pushing an image, require a Docker Registry connection to be provided.
 
-This extension installs the following components:
-  * A service endpoint for connecting to Docker Registry
-  * A service endpoint for connecting to Docker Container Host
-  * A Docker task to:
-    * Build an image
-    * Push an image or a repository to a Registry
-    * Run an image in a Container
-    * Run a Docker command
-  * A Docker Compose Task to:
-    * Run a Docker Compose command
+## Build Docker Images
+Easily build a Dockerfile into an image with a specific name with multiple tags, such as the build ID, source branch name or Git tags:
 
-###Steps
+![Docker Build](images/DockerBuild.png)
 
-####Create a Docker Registry Endpoint:
+## Push Docker Images
+Push Docker images with multiple tags to an authenticated Docker Registry and save the resulting repository image digest to a file:
+
+![Docker Push](images/DockerPush.png)
+
+> NOTE: As opposed to docker name:tag references, which may change over time, a repository image digest provides the underlying identifier of an image in a registry that can be used to guarantee that exactly the same image binary is deployed during release through multiple environments.
+
+## Run Docker Images
+Perform isolated workloads inside a container by running a Docker image. For instance, a repository that contains a Node.JS application can install a set of node modules into the repository using the node:argon image:
+
+![Docker Run](images/DockerRunWorkload.png)
+
+Docker images can also be run in the background to enable subsequent tasks to communicate with them:
+
+![Docker Run](images/DockerRun.png)
+
+> NOTE: When Docker images are run in the background, a subsequent task should be used to stop the container so that it does not persist beyond the lifetime of the build or release. This task should set its control options to "Continue on error" and "Always run" to ensure that even if another task fails, it still cleans up the running container.
+
+## Run Docker commands
+Issue arbitrary Docker commands, such as stopping containers that were previously started using the Docker Run action:
+
+![Docker Command](images/DockerCommand.png)
+
+## Multi-Container Docker applications
+A multi-container Docker application is a set of related services that are built, pushed and deployed as a group. They are defined using one or more docker-compose.yml files which can be combined together in a particular order to produce an effective configuration.
+
+### Build Services
+Easily build a docker-compose.yml file into a set of service images named in accordance with the image name:tag values in the compose file, as well as with additional tags, such as the build ID, source branch name or Git tags:
+
+![Docker Compose Build](images/DockerComposeBuild.png)
+
+In this example, if the docker compose file contains two services, `service-a` and `service-b`, with image names like `sample-app/service-a` and `sample-app/service-b:v1.2`, then the resulting images will be tagged as follows:
+
+- `sample-app/service-a`
+- `sample-app/service-a:<build id>`
+- `sample-app/service-a:<source branch name>`
+- `sample-app/service-b:v1.2`
+- `sample-app/service-b:<build id>`
+- `sample-app/service-b:<source branch name>`
+- `sample-app/service-b`
+
+### Push Services
+Push a set of service images defined by a docker-compose.yml file, with multiple tags, to an authenticated Docker Registry:
+
+![Docker Compose Push](images/DockerComposePush.png)
+
+### Run Services
+Docker compose files can be brought "up" to run one or more services in an isolated environment to enable workloads such as integration testing:
+
+![Docker Compose Up](images/DockerComposeUp.png)
+
+In this example, the docker-compose.test.yml file, which sits alongside the identified docker-compose.yml file, contains an additional integration test service that performs its testing by calling into the other services defined in the original docker-compose.yml file. Since "Run in Background" is unchecked, when the test container exits, the other services are brought down and the task ends. If "Run In Background" is checked, the services remain up for additional tasks that may want to call into the running services. In this case, an additional task should be used to bring down the running services (see the last section about issuing arbitrary Docker Compose commands).
+
+### Write Service Image Digests
+Produce an image digest compose file that contains the specific repository image digests of a set of service images identified by an input docker-compose.yml file:
+
+![Docker Compose Write Image Digests](images/DockerComposeLock.png)
+
+In this example, if the docker compose file contains two services, `service-a` and `service-b`, with image names like `sample-app/service-a` and `sample-app/service-b:v1.2`, then the resulting image digest compose file would look like this:
+
+```
+version: '2'
+services:
+  service-a:
+    image: 'sample-app/service-a@sha256:a108925595bae8f536277e8e08cb7f472422cd118d9451ff4c3c0e32a148095f'
+  service-b:
+    image: 'sample-app/service-b@sha256:2ca9a72f7ec08e6c4ad25b306c239579742d91afebca11afc672255d8ed949e2'
+```
+
+> NOTE: As opposed to docker name:tag references, which may change over time, a repository image digest provides the underlying identifier of an image in a registry that can be used to guarantee that exactly the same image binary is deployed during release through multiple environments.
+
+### Combine Configuration
+Combine the configuration from multiple docker compose files to create a merged docker compose file for input to a release or other tasks:
+
+![Docker Compose Config](images/DockerComposeConfig.png)
+
+This example illustrates how an original docker-compose.yml is combined with a previously generated image digest compose file to produce a final docker compose file that equals the original content except that the image names have been overridden with the repository image digests.
+
+### Run Docker Compose commands
+Issue arbitrary Docker Compose commands, such as bringing down containers that were previously started using the Docker Compose Run services action:
+
+![Docker Compose Command](images/DockerComposeCommand.png)
+
+## Authenticate with a Docker Registry
+Actions that require authentication with a Docker Registry, whether specific credentials to the official Docker Hub or to another private registry, can be enabled by configuring a Docker Registry connection. To create a Docker Registry endpoint:
+
  1. Open the Services page in your Visual Studio Team Services Control Panel
- 
- ![Services Tab](Images/ServicesTab.png)
+
+    ![Services Tab](Images/ServicesTab.png)
+
  2. In the New Service Endpoint list, choose Registry
 
-  ![Services Control Panel](Images/ServicesControlPanel.png)
-  
-  ![Services Control Panel](Images/NewDockerRegistry.png)
+    ![Services Control Panel](Images/ServicesControlPanel.png)
+
+    ![Services Control Panel](Images/NewDockerRegistry.png)
 
  3. Enter the Name for your connection and your Docker Hub details to create the service endpoint
 
-  ![New Docker Host Connection](Images/DockerRegistry.png)
+    ![New Docker Host Connection](Images/DockerRegistry.png)
 
-####Create a Docker Container Host Endpoint:
+## Connect to a custom Docker Host
+When a VSTS agent does not have local access to a Docker host, a custom Docker host must be provided. To create a Docker Host endpoint:
 
  1. Locate your ca.pem, key.pem and cert.pem files used to secure your Docker host.
+
  2. Open the Services page in your Visual Studio Team Services Control Panel.
 
-  ![Services Tab](Images/ServicesTab.png)
+    ![Services Tab](Images/ServicesTab.png)
+
  3. In the New Service Endpoint list, choose Docker Host
 
-  ![Services Control Panel](Images/ServicesControlPanel.png)
+    ![Services Control Panel](Images/ServicesControlPanel.png)
   
-  ![New Docker Host EndPoint](Images/NewDockerHostEndPoint.png)
+    ![New Docker Host EndPoint](Images/NewDockerHostEndPoint.png)
+
  4. Enter the Name for your connection and the URL to your Docker host
+
  5. Copy and paste the entire contents of each file into the appropriate spaces
 
-  ![New Docker Host Connection](Images/DockerHostEndPoint.png)
+    ![New Docker Host Connection](Images/DockerHostEndPoint.png)
 
-####Build your Docker image
- 1. Open your build definition and add the Docker task. The task can be found in the Build category of the Add Tasks dialog.
- 2. Enter the required parameter values for the Docker task:
-  * *Docker Host Connection*: Select your Docker Container Host connection.
-  * *Docker Registry Connection*: Select your Docker Registry 
-  * *Action*: Select Build an image
-  * *Docker File*: Path to Dockerfile to use with the Docker Build action. For example **/Dockerfile. 
-  * *Context*: The folder to upload to the Docker daemon to build the image.
-  * *Working Directory*: The folder where the certs folder will be created and the certs written into.
-  * *Image Name*: The image you wish to create. You can tag your image by appending a : and the desired tag i.e fabrikam/webapp:$(Build.BuildId).
+## Requirements
+  * Visual Studio Team Services is required, or for on-premises installations, Team Foundation Server 2015 Update 3 or later.
+  * A VSTS agent that has the Docker binaries. An easy way to create one of these is to use Docker to run the VSTS agent. See [https://hub.docker.com/r/microsoft/vsts-agent] for more information.
 
-  ![New Docker Host Connection](Images/BuildDockerImage.png)
-
-####Push your image to Docker Hub
-  1. Open your build definition and add the Docker task. The task can be found in the Build category of the Add Tasks dialog.
-  2. Enter the required parameter values for the Docker task:
-   * *Docker Host Connection*: Select your Docker Container Host connection.
-   * *Docker Registry Connection*: Select your Docker Registry 
-   * *Action*: Select Push an image
-   * *Image Name*: The image you wish to create. You can tag your image by appending a : and the desired tag i.e fabrikam/webapp:$(Build.BuildId).
-   * *Working Directory*: The folder where the certs folder will be created and the certs written into.
-
-  ![New Docker Host Connection](Images/PushDockerImage.png)
-
-####Run your image in a container
-  1. Open your build definition and add the Docker task. The task can be found in the Build category of the Add Tasks dialog.
-  2. Enter the required parameter values for the Docker task:
-   * *Docker Host Connection*: Select your Docker Container Host connection.
-   * *Docker Registry Connection*: Select your Docker Registry 
-   * *Action*: Select Run an image
-   * *Image Name*: The name of the image you wish to run.
-   * *Container Name*: Optional, Assign a name to the container
-   * *Port*: Optional, Port mappings to pass to the run command in hostmachine-port:container-port format. For example, -p 80:8080 binds port 8080 of the container to port 80 of the host machine. Specify each port mapping in a new line. 
-   * *Environment Variables*: Name value pairs to set as environment variables in the container. Specify each name=value pair in a new line.
-   * *Command for container*: Specify a command and its arguments, if any, for the container to run. For example, if the image contains a simple Python Flask web application you can specify 'python app.py' to launch the web application.
-   * *Working Directory*: The folder where the certs folder will be created and the certs written into.
-
-  ![New Docker Host Connection](Images/RunDockerImage.png)
-
-####Run a Docker command
-  1. Open your build definition and add the Docker task. The task can be found in the Build category of the Add Tasks dialog.
-  2. Enter the required parameter values for the Docker task:
-   * *Docker Host Connection*: Select your Docker Container Host connection.
-   * *Docker Registry Connection*: Select your Docker Registry 
-   * *Action*: Select Run a Docker command
-   * *Command*: Docker command with the arguments to execute. For example 'rmi -f image-name' sans quotes to remove an image
-   * *Working Directory*: The folder where the certs folder will be created and the certs written into.
-
-  ![New Docker Host Connection](Images/RunDockerCommand.png)
-
-####Run Docker Compose command
-  1. Open your build definition and add the Docker Compose task. The task can be found in the Build category of the Add Tasks dialog.
-  2. Enter the required parameter values for the Docker Compose task:
-   * *Docker Host Connection*: Select your Docker Container Host connection.
-   * *Docker Registry Connection*: Select the connection to your Docker Registry. 
-   * *Docker Compose File*: Path to Docker compose file to use. Should be a '*.yml' or '*.yaml' 
-   * *Environment Variables*: Arguments that need to be passed to docker-compose file. These will be set as environment variables. Specify each argument as name=value pair in a new line. For example, HTTP_PROXY=fabrikamweb.mydomain.com, HTTP_PORT=80
-   * *Project Name*: Specify an alternate project name. 
-   * *Docker Compose Command*: Docker Compose command along with its arguments. for example, Using 'up -d' starts the containers in the background and leaves them running, other examples are 'down --rmi all -v' or 'restart'. Note: Recommended to use detached mode (-d) to avoid blocking the agent.
-
-  ![New Docker Host Connection](Images/DockerComposeUp.png)
-
-###Note
-  * You need private agents to run these tasks. Hosted agents don't have Docker binaries yet.
-  * Team Services is required, or for on-premises installations, Team Foundation Server 2015 Update 3 or later.
-
-###Video
-  * Video [link](https://youtu.be/wXZ7qsmVTpw)
-
-###Contact Information
-
+## Contact Information
 For further information or to resolve issues, contact RM_Customer_Queries at Microsoft dot com.
 
-###Trademarks
-
+## Trademarks
 Docker and the Docker logo are trademarks or registered trademarks of Docker, Inc. in the United States and/or other countries. Docker, Inc. and other parties may also have trademark rights in other terms used herein

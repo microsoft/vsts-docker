@@ -51,7 +51,7 @@ export function run(connection: DockerConnection): any {
 
     var containerCommand = tl.getInput("containerCommand");
     if (containerCommand) {
-        command.arg(containerCommand);
+        command.line(containerCommand);
     }
 
     return command.exec();

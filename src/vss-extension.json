@@ -1,11 +1,10 @@
 {
     "manifestVersion": 1,
-    "extensionId": "docker",
+    "id": "docker",
     "name": "Docker Integration",
-    "version": "0.1.8",
+    "version": "0.2.0",
     "publisher": "ms-vscs-rm",
-    "description": "Tools to work with Docker as part of your continuous integration or continuous deployment flow in Visual Studio Team Services.",
-    "public": true,
+    "description": "Build, push or run Docker images and multi-container Docker applications.",
     "galleryFlags": [
         "Preview"
     ],
@@ -34,17 +33,6 @@
             "path": "docker.md"
         }
     },
-    "screenshots": [
-        {
-            "path": "images/DockerHostEndPoint.png"
-        },
-        {
-            "path": "images/RunDockerImage.png"
-        },
-        {
-            "path": "images/DockerComposeUp.png"
-        }
-    ],
     "files": [
         {
             "path": "tasks/docker"
@@ -71,7 +59,7 @@
     "contributions": [
         {
             "id": "dockerregistry-endpoint-type",
-            "description": "Service Endpoint type for pushing to Docker Hub",
+            "description": "Service Endpoint type for a Docker Registry",
             "type": "ms.vss-endpoint.service-endpoint-type",
             "targets": [
                 "ms.vss-endpoint.endpoint-types"
@@ -87,7 +75,7 @@
                             {
                                 "id": "registry",
                                 "name": "Docker Registry",
-                                "description": "URL for the Docker Registry",
+                                "description": "The URL for your Docker Registry",
                                 "inputMode": "textbox",
                                 "isConfidential": false,
                                 "validation": {
@@ -102,7 +90,7 @@
                             {
                                 "id": "username",
                                 "name": "Docker ID",
-                                "description": "Your username for your Docker Hub account",
+                                "description": "The username for your Docker Registry",
                                 "inputMode": "textbox",
                                 "isConfidential": false,
                                 "validation": {
@@ -113,7 +101,7 @@
                             {
                                 "id": "password",
                                 "name": "Password",
-                                "description": "Your password for your Docker Hub account",
+                                "description": "The password for your Docker Registry",
                                 "inputMode": "passwordBox",
                                 "isConfidential": true,
                                 "validation": {
@@ -124,11 +112,11 @@
                             {
                                 "id": "email",
                                 "name": "Email",
-                                "description": "Your email address for your Docker Hub account",
+                                "description": "The email address for your Docker Registry",
                                 "inputMode": "textbox",
                                 "isConfidential": false,
                                 "validation": {
-                                    "isRequired": true,
+                                    "isRequired": false,
                                     "dataType": "string"
                                 }
                             }
@@ -139,7 +127,7 @@
         },
         {
             "id": "dockerhost-endpoint-type",
-            "description": "Service Endpoint type for the Docker container host",
+            "description": "Service Endpoint type for a Docker Host",
             "type": "ms.vss-endpoint.service-endpoint-type",
             "targets": [
                 "ms.vss-endpoint.endpoint-types"
