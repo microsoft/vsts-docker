@@ -8,8 +8,8 @@ import * as imageUtils from "./dockerImageUtils";
 function dockerTag(connection: DockerComposeConnection, source: string, target: string) {
     var command = connection.createCommand();
     command.arg("tag");
-    command.arg(source, true);
-    command.arg(target, true);
+    command.arg(source);
+    command.arg(target);
     return command.exec();
 }
 
@@ -25,12 +25,9 @@ function addOtherTags(connection: DockerComposeConnection, imageName: string): a
     var baseImageName = imageUtils.imageNameWithoutTag(imageName);
     return (function addAdditionalTags() {
         var promise: any;
-        var additionalImageTags = tl.getDelimitedInput("additionalImageTags", "\n");
-        if (additionalImageTags) {
-            additionalImageTags.forEach(tag => {
-                promise = addTag(promise, connection, imageName, baseImageName + ":" + tag);
-            });
-        }
+        tl.getDelimitedInput("additionalImageTags", "\n").forEach(tag => {
+            promise = addTag(promise, connection, imageName, baseImageName + ":" + tag);
+        });
         return promise;
     })()
     .then(function addSourceTags() {

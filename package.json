@@ -15,6 +15,6 @@
   "dependencies": {
     "del": "^2.2.0",
     "js-yaml": "^3.6.1",
-    "vsts-task-lib": "^0.6.2"
+    "vsts-task-lib": "^0.9.20"
   }
 }

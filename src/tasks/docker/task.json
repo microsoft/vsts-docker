@@ -13,7 +13,7 @@
     "version": {
         "Major": 0,
         "Minor": 1,
-        "Patch": 58
+        "Patch": 61
     },
     "demands": [],
     "groups": [
@@ -98,7 +98,7 @@
             "label": "Include Source Tags",
             "defaultValue": "true",
             "visibleRule": "action = Build an image || action = Push an image",
-            "helpMarkDown": "Include source tags like TFVC labels or Git tags when building or pushing the Docker image."
+            "helpMarkDown": "Include Git tags when building or pushing the Docker image."
         },
         {
             "name": "includeLatestTag",

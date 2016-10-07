@@ -9,7 +9,7 @@ import * as imageUtils from "./dockerImageUtils";
 function dockerPull(connection: DockerComposeConnection, imageName: string, imageDigests: any, serviceName: string) {
     var command = connection.createCommand();
     command.arg("pull");
-    command.arg(imageName, true);
+    command.arg(imageName);
 
     var output = "";
     command.on("stdout", data => {

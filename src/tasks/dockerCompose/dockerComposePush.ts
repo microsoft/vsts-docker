@@ -8,7 +8,7 @@ import * as imageUtils from "./dockerImageUtils";
 function dockerPush(connection: DockerComposeConnection, imageName: string) {
     var command = connection.createCommand();
     command.arg("push");
-    command.arg(imageName, true);
+    command.arg(imageName);
     return command.exec();
 }
 
@@ -26,12 +26,9 @@ function pushTags(connection: DockerComposeConnection, imageName: string): any {
     return dockerPush(connection, builtImageName)
     .then(function pushAdditionalTags() {
         var promise: any;
-        var additionalImageTags = tl.getDelimitedInput("additionalImageTags", "\n");
-        if (additionalImageTags) {
-            additionalImageTags.forEach(tag => {
-                promise = pushTag(promise, connection, baseImageName + ":" + tag);
-            });
-        }
+        tl.getDelimitedInput("additionalImageTags", "\n").forEach(tag => {
+            promise = pushTag(promise, connection, baseImageName + ":" + tag);
+        });
         return promise;
     })
     .then(function pushSourceTags() {

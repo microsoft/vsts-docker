@@ -9,7 +9,7 @@ import * as imageUtils from "./dockerImageUtils";
 function dockerPush(connection: DockerConnection, imageName: string, imageDigestFile?: string): any {
     var command = connection.createCommand();
     command.arg("push");
-    command.arg(imageName, true);
+    command.arg(imageName);
 
     if (!imageDigestFile) {
         return command.exec();
@@ -41,12 +41,9 @@ export function run(connection: DockerConnection): any {
         images.push(imageName);
     }
 
-    var additionalImageTags = tl.getDelimitedInput("additionalImageTags", "\n");
-    if (additionalImageTags) {
-        additionalImageTags.forEach(tag => {
-            images.push(baseImageName + ":" + tag);
-        });
-    }
+    tl.getDelimitedInput("additionalImageTags", "\n").forEach(tag => {
+        images.push(baseImageName + ":" + tag);
+    });
 
     var includeSourceTags = tl.getBoolInput("includeSourceTags");
     if (includeSourceTags) {

@@ -18,35 +18,28 @@ export function run(connection: DockerConnection): any {
         command.arg(["--entrypoint", entrypoint]);
     }
 
-    var envVars = tl.getDelimitedInput("envVars", "\n");
-    if (envVars) {
-        envVars.forEach(envVar => {
-            command.arg(["-e", envVar]);
-        });
-    }
+    tl.getDelimitedInput("envVars", "\n").forEach(envVar => {
+        command.arg(["-e", envVar]);
+    });
 
     var containerName = tl.getInput("containerName");
     if (containerName) {
         command.arg(["--name", containerName]);
     }
 
-    var ports = tl.getDelimitedInput("ports", "\n");
-    if (ports) {
-        ports.forEach(port => {
-            command.arg(["-p", port]);
-        });
-    }
+    tl.getDelimitedInput("ports", "\n").forEach(port => {
+        command.arg(["-p", port]);
+    });
 
     if (!detached) {
         command.arg("--rm");
     }
 
-    var volumes = tl.getDelimitedInput("volumes", "\n");
-    if (volumes) {
-        volumes.forEach(volume => {
-            command.arg(["-v", volume]);
-        });
-    }
+    command.arg("-t");
+
+    tl.getDelimitedInput("volumes", "\n").forEach(volume => {
+        command.arg(["-v", volume]);
+    });
 
     var workDir = tl.getInput("workDir");
     if (workDir) {
@@ -54,7 +47,7 @@ export function run(connection: DockerConnection): any {
     }
 
     var imageName = tl.getInput("imageName", true);
-    command.arg(imageName, true);
+    command.arg(imageName);
 
     var containerCommand = tl.getInput("containerCommand");
     if (containerCommand) {

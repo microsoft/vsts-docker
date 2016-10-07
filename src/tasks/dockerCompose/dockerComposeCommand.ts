@@ -5,6 +5,6 @@ import DockerComposeConnection from "./dockerComposeConnection";
 
 export function run(connection: DockerComposeConnection): any {
     var command = connection.createComposeCommand();
-    command.arg(tl.getInput("dockerComposeCommand", true));
+    command.line(tl.getInput("dockerComposeCommand", true));
     return command.exec();
 }

@@ -20,7 +20,7 @@ export default class DockerConnection {
     }
 
     private createBaseCommand(): tr.ToolRunner {
-        return tl.createToolRunner(this.dockerPath);
+        return tl.tool(this.dockerPath);
     }
 
     public open(hostEndpoint?: string, registryEndpoint?: string): void {

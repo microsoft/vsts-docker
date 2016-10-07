@@ -1,5 +1,4 @@
 /// <reference path="../../../typings/tsd.d.ts" />
-/// <reference path="../../../typings/vsts-task-lib/vsts-task-lib.d.ts" />
 
 import * as dockerRun from "../../../src/tasks/docker/dockerRun";
 

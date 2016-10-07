@@ -13,24 +13,18 @@ export function run(connection: DockerConnection): any {
     var dockerFile = tl.globFirst(tl.getInput("dockerFile", true));
     command.arg(["-f", dockerFile]);
 
-    var buildArguments = tl.getDelimitedInput("buildArguments", "\n");
-    if (buildArguments) {
-        buildArguments.forEach(buildArgument => {
-            command.arg(["--build-arg", buildArgument]);
-        });
-    }
+    tl.getDelimitedInput("buildArguments", "\n").forEach(buildArgument => {
+        command.arg(["--build-arg", buildArgument]);
+    });
 
     var imageName = tl.getInput("imageName", true);
     command.arg(["-t", imageName]);
 
     var baseImageName = imageUtils.imageNameWithoutTag(imageName);
 
-    var additionalImageTags = tl.getDelimitedInput("additionalImageTags", "\n");
-    if (additionalImageTags) {
-        additionalImageTags.forEach(tag => {
-            command.arg(["-t", baseImageName + ":" + tag]);
-        });
-    }
+    tl.getDelimitedInput("additionalImageTags", "\n").forEach(tag => {
+        command.arg(["-t", baseImageName + ":" + tag]);
+    });
 
     var includeSourceTags = tl.getBoolInput("includeSourceTags");
     if (includeSourceTags) {
@@ -50,7 +44,7 @@ export function run(connection: DockerConnection): any {
     } else {
         context = tl.getPathInput("buildContext");
     }
-    command.arg(context, true);
+    command.arg(context);
 
     return command.exec();
 }

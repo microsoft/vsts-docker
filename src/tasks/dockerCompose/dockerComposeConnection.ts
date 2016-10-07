@@ -22,37 +22,32 @@ export default class DockerComposeConnection extends DockerConnection {
 
     public open(hostEndpoint?: string, registryEndpoint?: string): void {
         super.open(hostEndpoint, registryEndpoint);
-        var envVars = tl.getDelimitedInput("dockerComposeFileArgs", "\n");
-        if (envVars) {
-            envVars.forEach(envVar => {
-                var tokens = envVar.split("=");
-                if (tokens.length < 2) {
-                    throw new Error("Environment variable '" + envVar + "' is invalid.");
-                }
-                process.env[tokens[0].trim()] = tokens.slice(1).join("=").trim();
-            });
-        }
+        tl.getDelimitedInput("dockerComposeFileArgs", "\n").forEach(envVar => {
+            var tokens = envVar.split("=");
+            if (tokens.length < 2) {
+                throw new Error("Environment variable '" + envVar + "' is invalid.");
+            }
+            process.env[tokens[0].trim()] = tokens.slice(1).join("=").trim();
+        });
     }
 
     public createComposeCommand(): tr.ToolRunner {
-        var command = tl.createToolRunner(this.dockerComposePath);
+        var command = tl.tool(this.dockerComposePath);
         this.addAuthArgs(command);
 
         command.arg(["-f", this.dockerComposeFile]);
 
-        if (this.additionalDockerComposeFiles) {
-            var basePath = path.dirname(this.dockerComposeFile);
-            this.additionalDockerComposeFiles.forEach(file => {
-                // If the path is relative, resolve it
-                if (file.indexOf("/") !== 0) {
-                    file = path.join(basePath, file);
-                }
-                // Only include the file if it exists
-                if (tl.exist(file)) {
-                    command.arg(["-f", file]);
-                }
-            });
-        }
+        var basePath = path.dirname(this.dockerComposeFile);
+        this.additionalDockerComposeFiles.forEach(file => {
+            // If the path is relative, resolve it
+            if (file.indexOf("/") !== 0) {
+                file = path.join(basePath, file);
+            }
+            // Only include the file if it exists
+            if (tl.exist(file)) {
+                command.arg(["-f", file]);
+            }
+        });
 
         if (this.projectName) {
             command.arg(["-p", this.projectName]);
