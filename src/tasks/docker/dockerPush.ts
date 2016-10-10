@@ -33,6 +33,10 @@ function dockerPush(connection: DockerConnection, imageName: string, imageDigest
 export function run(connection: DockerConnection): any {
     var images = [];
     var imageName = tl.getInput("imageName", true);
+    var qualifyImageName = tl.getBoolInput("qualifyImageName");
+    if (qualifyImageName) {
+        imageName = connection.getFullImageName(imageName);
+    }
     var baseImageName = imageUtils.imageNameWithoutTag(imageName);
 
     if (baseImageName === imageName) {

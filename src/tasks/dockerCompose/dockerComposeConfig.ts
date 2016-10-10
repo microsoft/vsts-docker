@@ -5,15 +5,7 @@ import * as tl from "vsts-task-lib/task";
 import DockerComposeConnection from "./dockerComposeConnection";
 
 export function run(connection: DockerComposeConnection): any {
-    var command = connection.createComposeCommand();
-    command.arg("config");
-
-    var output = "";
-    command.on("stdout", data => {
-        output += data;
-    });
-
-    return command.exec().then(() => {
+    return connection.getCombinedConfig().then(output => {
         var baseResolveDir = tl.getPathInput("baseResolveDirectory");
         if (baseResolveDir) {
             // This just searches the output string and replaces all

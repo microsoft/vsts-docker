@@ -8,20 +8,21 @@ tl.cd(tl.getInput("cwd"));
 
 // Connect to any specified Docker host and/or registry 
 var connection = new DockerComposeConnection();
-connection.open(tl.getInput("dockerHostEndpoint"), tl.getInput("dockerRegistryEndpoint"));
-
-// Run the specified action
-var action = tl.getInput("action", true);
-/* tslint:disable:no-var-requires */
-require({
-    "Build services": "./dockerComposeBuild",
-    "Push services": "./dockerComposePush",
-    "Run services": "./dockerComposeUp",
-    "Write service image digests": "./dockerComposeLock",
-    "Combine configuration": "./dockerComposeConfig",
-    "Run a Docker Compose command": "./dockerComposeCommand"
-}[action]).run(connection)
-/* tslint:enable:no-var-requires */
+connection.open(tl.getInput("dockerHostEndpoint"), tl.getInput("dockerRegistryEndpoint"))
+.then(function runAction() {
+    // Run the specified action
+    var action = tl.getInput("action", true);
+    /* tslint:disable:no-var-requires */
+    return require({
+        "Build services": "./dockerComposeBuild",
+        "Push services": "./dockerComposePush",
+        "Run services": "./dockerComposeUp",
+        "Write service image digests": "./dockerComposeLock",
+        "Combine configuration": "./dockerComposeConfig",
+        "Run a Docker Compose command": "./dockerComposeCommand"
+    }[action]).run(connection);
+    /* tslint:enable:no-var-requires */
+})
 .fin(function cleanup() {
     connection.close();
 })

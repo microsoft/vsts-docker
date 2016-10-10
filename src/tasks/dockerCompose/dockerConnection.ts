@@ -3,8 +3,10 @@
 import * as del from "del";
 import * as fs from "fs";
 import * as path from "path";
+import * as url from "url";
 import * as tl from "vsts-task-lib/task";
 import * as tr from "vsts-task-lib/toolrunner";
+import * as imageUtils from "./dockerImageUtils";
 
 export default class DockerConnection {
     private dockerPath: string;
@@ -13,6 +15,7 @@ export default class DockerConnection {
     private caPath: string;
     private certPath: string;
     private keyPath: string;
+    private registryAuth: { [key: string]: string };
     private loggedIn: boolean;
 
     constructor() {
@@ -46,12 +49,12 @@ export default class DockerConnection {
 
         if (registryEndpoint) {
             var command = this.createBaseCommand();
-            var registryAuth = tl.getEndpointAuthorization(registryEndpoint, true).parameters;
-            if (registryAuth) {
+            this.registryAuth = tl.getEndpointAuthorization(registryEndpoint, true).parameters;
+            if (this.registryAuth) {
                 command.arg("login");
-                command.arg(["-u", registryAuth["username"]]);
-                command.arg(["-p", registryAuth["password"]]);
-                command.arg(registryAuth["registry"]);
+                command.arg(["-u", this.registryAuth["username"]]);
+                command.arg(["-p", this.registryAuth["password"]]);
+                command.arg(this.registryAuth["registry"]);
                 command.execSync();
                 this.loggedIn = true;
             }
@@ -72,6 +75,26 @@ export default class DockerConnection {
         var command = this.createBaseCommand();
         this.addAuthArgs(command);
         return command;
+    }
+
+    public getFullImageName(imageName: string) {
+        if (this.registryAuth) {
+            var regUrl = url.parse(this.registryAuth["registry"]),
+                hostname = !regUrl.slashes ? regUrl.href : regUrl.host,
+                username = this.registryAuth["username"],
+                slashIndex = imageName.indexOf("/");
+            if (hostname.toLowerCase() === "index.docker.io") {
+                hostname = "";
+            } else {
+                hostname = hostname + "/";
+            }
+            if (slashIndex < 0) {
+                imageName = hostname + username + "/" + imageName;
+            } else if (!imageUtils.hasRegistryComponent(imageName)) {
+                imageName = hostname + imageName;
+            }
+        }
+        return imageName;
     }
 
     public close(): void {

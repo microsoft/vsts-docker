@@ -42,8 +42,7 @@ function writeImageDigestComposeFile(imageDigests: any): void {
 
 export function run(connection: DockerComposeConnection): any {
     var imageDigestComposeFile = tl.getPathInput("imageDigestComposeFile", true);
-    return connection.getImages()
-    .then(images => {
+    return connection.getImages().then(images => {
         var promise: any;
         var imageDigests = imageDigestComposeFile ? {} : null;
         Object.keys(images).forEach(serviceName => {

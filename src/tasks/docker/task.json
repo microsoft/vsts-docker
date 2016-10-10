@@ -13,7 +13,7 @@
     "version": {
         "Major": 0,
         "Minor": 2,
-        "Patch": 0
+        "Patch": 1
     },
     "demands": [],
     "groups": [
@@ -79,6 +79,14 @@
             "required": true,
             "visibleRule": "action = Build an image || action = Push an image || action = Run an image",
             "helpMarkDown": "Name of the Docker image to build, push or run."
+        },
+        {
+            "name": "qualifyImageName",
+            "type": "boolean",
+            "label": "Qualify Image Name",
+            "defaultValue": "false",
+            "visibleRule": "action = Build an image || action = Push an image || action = Run an image",
+            "helpMarkDown": "Automatically qualify the image name with the selected Docker registry connection's hostname and username if not otherwise specified."
         },
         {
             "name": "additionalImageTags",

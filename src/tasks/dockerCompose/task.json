@@ -13,7 +13,7 @@
     "version": {
         "Major": 0,
         "Minor": 2,
-        "Patch": 0
+        "Patch": 1
     },
     "demands": [],
     "groups": [
@@ -64,6 +64,13 @@
             "label": "Project Name",
             "defaultValue": "$(Build.Repository.Name)",
             "helpMarkDown": "Project name used for default naming of images and containers."
+        },
+        {
+            "name": "qualifyImageNames",
+            "type": "boolean",
+            "label": "Qualify Image Names",
+            "defaultValue": "false",
+            "helpMarkDown": "Automatically qualify image names for built services with the selected Docker registry connection's hostname and username if not otherwise specified."
         },
         {
             "name": "action",
