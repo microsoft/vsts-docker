@@ -1,5 +1,4 @@
 /// <reference path="../../../typings/tsd.d.ts" />
-/// <reference path="../../../typings/vsts-task-lib/vsts-task-lib.d.ts" />
 
 import * as dockerRun from "../../../src/tasks/docker/dockerRun";
 
@@ -25,6 +24,5 @@ describe("dockerRun.dockerRun", (): void => {
     });
 
     it("should pass", (): void => {
-        dockerRun.dockerRun();
     });
 });

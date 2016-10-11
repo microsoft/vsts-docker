@@ -1,43 +1,54 @@
-/// <reference path="../../../typings/vsts-task-lib/vsts-task-lib.d.ts" />
+"use strict";
 
-import fs = require("fs");
-import path = require("path");
-import tl = require("vsts-task-lib/task");
-import * as docker from "./dockerCommand";
+import * as path from "path";
+import * as tl from "vsts-task-lib/task";
+import DockerConnection from "./dockerConnection";
+import * as sourceUtils from "./sourceUtils";
+import * as imageUtils from "./dockerImageUtils";
 
-export function dockerBuild(): void {
-    var cwd = tl.getInput("cwd");
-    tl.cd(cwd);
+export function run(connection: DockerConnection): any {
+    var command = connection.createCommand();
+    command.arg("build");
 
-    var dockerConnectionString = tl.getInput("dockerHostEndpoint", true);
-    var registryConnectionString = tl.getInput("dockerRegistryEndpoint", true);
-    var dockerFilePattern = tl.getInput("dockerFile", true);
-    var context = tl.getInput("context", true);
+    var dockerFile = tl.globFirst(tl.getInput("dockerFile", true));
+    command.arg(["-f", dockerFile]);
+
+    tl.getDelimitedInput("buildArguments", "\n").forEach(buildArgument => {
+        command.arg(["--build-arg", buildArgument]);
+    });
+
     var imageName = tl.getInput("imageName", true);
+    var qualifyImageName = tl.getBoolInput("qualifyImageName");
+    if (qualifyImageName) {
+        imageName = connection.getFullImageName(imageName);
+    }
+    command.arg(["-t", imageName]);
 
-    var dockerFile = getDockerFile(dockerFilePattern);
+    var baseImageName = imageUtils.imageNameWithoutTag(imageName);
 
-    var cmd = new docker.DockerCommand("build");
-    cmd.dockerConnectionString = dockerConnectionString;
-    cmd.registryConnectionString = registryConnectionString;
-    cmd.dockerFile = dockerFile;
-    cmd.context = context;
-    cmd.imageName = imageName;
-    cmd.exec();
-}
+    tl.getDelimitedInput("additionalImageTags", "\n").forEach(tag => {
+        command.arg(["-t", baseImageName + ":" + tag]);
+    });
 
-function copyDockerFileToContextFolder(dockerFile: string, context: string): string {
-    var target = path.join(context, path.basename(dockerFile));
-
-    if (dockerFile == target) {
-        return target;
+    var includeSourceTags = tl.getBoolInput("includeSourceTags");
+    if (includeSourceTags) {
+        sourceUtils.getSourceTags().forEach(tag => {
+            command.arg(["-t", baseImageName + ":" + tag]);
+        });
     }
 
-    fs.writeFileSync(target, fs.readFileSync(dockerFile));
-    return target;
-}
+    var includeLatestTag = tl.getBoolInput("includeLatestTag");
+    if (baseImageName !== imageName && includeLatestTag) {
+        command.arg(["-t", baseImageName]);
+    }
 
-function getDockerFile(dockerFilePattern: string): string {
-    var dockerFile = tl.globFirst(dockerFilePattern);
-    return dockerFile;
+    var context: string;
+    if (!tl.filePathSupplied("context")) {
+        context = path.dirname(dockerFile);
+    } else {
+        context = tl.getPathInput("buildContext");
+    }
+    command.arg(context);
+
+    return command.exec();
 }

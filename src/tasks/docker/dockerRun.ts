@@ -1,27 +1,62 @@
-/// <reference path="../../../typings/vsts-task-lib/vsts-task-lib.d.ts" />
+"use strict";
 
-import tl = require("vsts-task-lib/task");
-import * as docker from "./dockerCommand";
+import * as path from "path";
+import * as tl from "vsts-task-lib/task";
+import DockerConnection from "./dockerConnection";
 
-export function dockerRun(): void {
-    var cwd = tl.getInput("cwd");
-    tl.cd(cwd);
+export function run(connection: DockerConnection): any {
+    var command = connection.createCommand();
+    command.arg("run");
 
-    var dockerConnectionString = tl.getInput("dockerHostEndpoint", true);
-    var registryConnectionString = tl.getInput("dockerRegistryEndpoint", true);
+    var detached = tl.getBoolInput("detached");
+    if (detached) {
+        command.arg("-d");
+    }
+
+    var entrypoint = tl.getInput("entrypoint");
+    if (entrypoint) {
+        command.arg(["--entrypoint", entrypoint]);
+    }
+
+    tl.getDelimitedInput("envVars", "\n").forEach(envVar => {
+        command.arg(["-e", envVar]);
+    });
+
+    var containerName = tl.getInput("containerName");
+    if (containerName) {
+        command.arg(["--name", containerName]);
+    }
+
+    tl.getDelimitedInput("ports", "\n").forEach(port => {
+        command.arg(["-p", port]);
+    });
+
+    if (!detached) {
+        command.arg("--rm");
+    }
+
+    command.arg("-t");
+
+    tl.getDelimitedInput("volumes", "\n").forEach(volume => {
+        command.arg(["-v", volume]);
+    });
+
+    var workDir = tl.getInput("workDir");
+    if (workDir) {
+        command.arg(["-w", workDir]);
+    }
+
     var imageName = tl.getInput("imageName", true);
-    var containerName = tl.getInput("containerName", false);
-    var envVars = tl.getDelimitedInput("envVars", "\n", false);
-    var ports = tl.getDelimitedInput("ports", "\n", false);
-    var containerCommand = tl.getInput("containerCommand", false);
+    var qualifyImageName = tl.getBoolInput("qualifyImageName");
+    if (qualifyImageName) {
+        imageName = connection.getFullImageName(imageName);
+    }
+    command.arg(imageName);
 
-    var cmd = new docker.DockerCommand("run");
-    cmd.dockerConnectionString = dockerConnectionString;
-    cmd.registryConnectionString = registryConnectionString;
-    cmd.imageName = imageName;
-    cmd.containerName = containerName;
-    cmd.ports = ports;
-    cmd.envVars = envVars;
-    cmd.containerCommand = containerCommand;
-    cmd.exec();
+    var containerCommand = tl.getInput("containerCommand");
+    if (containerCommand) {
+        command.line(containerCommand);
+    }
+
+    return command.exec();
 }

@@ -106,7 +106,7 @@ var copyNodeModulesToTasks = function() {
 }
 
 var createVsixPackage = function() {
-    var packagingCmd = "tfx extension create --manifeset-globs " + packageManifestFile + " --root " + srcBuildDirectory + " --output-path " + packageDirectory;
+    var packagingCmd = "tfx extension create --manifest-globs " + packageManifestFile + " --root " + srcBuildDirectory + " --output-path " + packageDirectory;
     executeCommand(packagingCmd, function() {});
 }
 
