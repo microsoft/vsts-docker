@@ -2,9 +2,9 @@
     "manifestVersion": 1,
     "id": "docker",
     "name": "Docker Integration",
-    "version": "0.2.0",
+    "version": "0.2.1",
     "publisher": "ms-vscs-rm",
-    "description": "Build, push or run Docker images and multi-container Docker applications.",
+    "description": "Build, push, run or deploy Docker images and multi-container Docker applications.",
     "galleryFlags": [
         "Preview"
     ],
@@ -13,7 +13,7 @@
         "large": "images/docker_logo_large.png"
     },
     "categories": [
-        "Build and release"
+        "Build and Release"
     ],
     "tags": [
         "docker",
@@ -39,6 +39,9 @@
         },
         {
             "path": "tasks/dockerCompose"
+        },
+        {
+            "path": "tasks/dockerDeploy"
         },
         {
             "path": "images",
@@ -212,6 +215,16 @@
             ],
             "properties": {
                 "name": "tasks/dockerCompose"
+            }
+        },
+        {
+            "id": "docker-deploy-task",
+            "type": "ms.vss-distributed-task.task",
+            "targets": [
+                "ms.vss-distributed-task.tasks"
+            ],
+            "properties": {
+                "name": "tasks/dockerDeploy"
             }
         }
     ]

@@ -13,7 +13,7 @@
     "version": {
         "Major": 0,
         "Minor": 2,
-        "Patch": 0
+        "Patch": 3
     },
     "demands": [],
     "groups": [
@@ -140,6 +140,14 @@
             "required": true,
             "visibleRule": "action = Write service image digests",
             "helpMarkDown": "Path to a Docker Compose file that is created and populated with the full image repository digests of each service's Docker image."
+        },
+        {
+            "name": "removeBuildOptions",
+            "type": "boolean",
+            "label": "Remove Build Options",
+            "defaultValue": "false",
+            "visibleRule": "action = Combine configuration",
+            "helpMarkDown": "Remove the build options from the output Docker Compose file."
         },
         {
             "name": "baseResolveDirectory",

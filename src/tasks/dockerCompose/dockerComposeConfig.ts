@@ -2,10 +2,20 @@
 
 import * as fs from "fs";
 import * as tl from "vsts-task-lib/task";
+import * as yaml from "js-yaml";
 import DockerComposeConnection from "./dockerComposeConnection";
 
 export function run(connection: DockerComposeConnection): any {
     return connection.getCombinedConfig().then(output => {
+        var removeBuildOptions = tl.getBoolInput("removeBuildOptions");
+        if (removeBuildOptions) {
+            var doc = yaml.safeLoad(output);
+            for (var serviceName in doc.services || {}) {
+                delete doc.services[serviceName].build;
+            }
+            output = yaml.safeDump(doc, {lineWidth: -1} as any);
+        }
+
         var baseResolveDir = tl.getPathInput("baseResolveDirectory");
         if (baseResolveDir) {
             // This just searches the output string and replaces all
