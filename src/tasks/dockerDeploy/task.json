@@ -13,7 +13,7 @@
     "version": {
         "Major": 0,
         "Minor": 1,
-        "Patch": 19
+        "Patch": 25
     },
     "demands": [],
     "groups": [
@@ -116,31 +116,31 @@
             "helpMarkDown": "Select an Azure Container Service DC/OS SSH connection."
         },
         {
+            "name": "acsDcosAppGroupName",
+            "type": "string",
+            "label": "Application Group Name",
+            "required": true,
+            "defaultValue": "$(Release.EnvironmentName)/$(Release.DefinitionName)",
+            "visibleRule": "targetType = ACS DCOS",
+            "helpMarkDown": "Name of the Marathon application group to deploy."
+        },
+        {
             "name": "acsDcosAppGroupQualifier",
             "type": "string",
             "label": "Application Group Qualifier",
             "required": true,
             "defaultValue": "$(System.TeamFoundationCollectionUri)/$(System.TeamProject)",
             "visibleRule": "targetType = ACS DCOS",
-            "helpMarkDown": "Qualifier for the Marathon application group name that is hashed and appended to create a unique release identifier."
-        },
-        {
-            "name": "acsDcosAppGroupName",
-            "type": "string",
-            "label": "Application Group Name",
-            "required": true,
-            "defaultValue": "$(Release.DefinitionName)",
-            "visibleRule": "targetType = ACS DCOS",
-            "helpMarkDown": "Name of the Marathon application group to deploy."
+            "helpMarkDown": "Qualifier for the Marathon application group name that is hashed and appended to create a unique identifier for all deployments."
         },
         {
             "name": "acsDcosAppGroupVersion",
             "type": "string",
             "label": "Application Group Version",
             "required": true,
-            "defaultValue": "$(Release.ReleaseId)",
+            "defaultValue": "$(Release.ReleaseId).$(Release.AttemptNumber)",
             "visibleRule": "targetType = ACS DCOS",
-            "helpMarkDown": "Version of the Marathon application group that is appended to create a unique deployment identifier."
+            "helpMarkDown": "Version for the Marathon application group name that is appended to create a unique identifier for a specific deployment."
         },
         {
             "name": "acsDcosMinimumHealthCapacity",
