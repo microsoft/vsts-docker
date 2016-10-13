@@ -6,7 +6,7 @@
     "publisher": "ms-vscs-rm",
     "description": "Build, push, run or deploy Docker images and multi-container Docker applications.",
     "galleryFlags": [
-        "Preview"
+        "Public"
     ],
     "icons": {
         "default": "images/docker_logo.png",
