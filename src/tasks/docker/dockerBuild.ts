@@ -43,10 +43,11 @@ export function run(connection: DockerConnection): any {
     }
 
     var context: string;
-    if (!tl.filePathSupplied("context")) {
+    var defaultContext = tl.getBoolInput("defaultContext");
+    if (defaultContext) {
         context = path.dirname(dockerFile);
     } else {
-        context = tl.getPathInput("buildContext");
+        context = tl.getPathInput("context");
     }
     command.arg(context);
 

@@ -13,7 +13,7 @@
     "version": {
         "Major": 0,
         "Minor": 2,
-        "Patch": 1
+        "Patch": 2
     },
     "demands": [],
     "groups": [
@@ -65,11 +65,19 @@
             "helpMarkDown": "Build-time variables for the Docker file. Specify each name=value pair on a new line."
         },
         {
+            "name": "defaultContext",
+            "type": "boolean",
+            "label": "Use Default Build Context",
+            "defaultValue": "false",
+            "visibleRule": "action = Build an image",
+            "helpMarkDown": "Set the build context to the directory that contains the Docker file."
+        },
+        {
             "name": "context",
             "type": "filePath",
             "label": "Build Context",
-            "visibleRule": "action = Build an image",
-            "helpMarkDown": "Path to the build context. Defaults to the directory that contains the Docker file."
+            "visibleRule": "action = Build an image && defaultContext = false",
+            "helpMarkDown": "Path to the build context."
         },
         {
             "name": "imageName",
