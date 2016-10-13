@@ -26,6 +26,22 @@ export default class DockerConnection {
         return tl.tool(this.dockerPath);
     }
 
+    protected addAuthArgs(command: tr.ToolRunner): void {
+        if (this.hostUrl) {
+            command.arg(["-H", this.hostUrl]);
+            command.arg("--tls");
+            command.arg("--tlscacert='" + this.caPath + "'");
+            command.arg("--tlscert='" + this.certPath + "'");
+            command.arg("--tlskey='" + this.keyPath + "'");
+        }
+    }
+
+    public createCommand(): tr.ToolRunner {
+        var command = this.createBaseCommand();
+        this.addAuthArgs(command);
+        return command;
+    }
+
     public open(hostEndpoint?: string, registryEndpoint?: string): void {
         if (hostEndpoint) {
             this.hostUrl = tl.getEndpointUrl(hostEndpoint, false);
@@ -48,7 +64,7 @@ export default class DockerConnection {
         }
 
         if (registryEndpoint) {
-            var command = this.createBaseCommand();
+            var command = this.createCommand();
             this.registryAuth = tl.getEndpointAuthorization(registryEndpoint, true).parameters;
             if (this.registryAuth) {
                 command.arg("login");
@@ -59,22 +75,6 @@ export default class DockerConnection {
                 this.loggedIn = true;
             }
         }
-    }
-
-    protected addAuthArgs(command: tr.ToolRunner): void {
-        if (this.hostUrl) {
-            command.arg(["-H", this.hostUrl]);
-            command.arg("--tls");
-            command.arg("--tlscacert='" + this.caPath + "'");
-            command.arg("--tlscert='" + this.certPath + "'");
-            command.arg("--tlskey='" + this.keyPath + "'");
-        }
-    }
-
-    public createCommand(): tr.ToolRunner {
-        var command = this.createBaseCommand();
-        this.addAuthArgs(command);
-        return command;
     }
 
     public getFullImageName(imageName: string) {
@@ -99,7 +99,7 @@ export default class DockerConnection {
 
     public close(): void {
         if (this.loggedIn) {
-            var command = this.createBaseCommand();
+            var command = this.createCommand();
             command.arg("logout");
             command.execSync();
         }
