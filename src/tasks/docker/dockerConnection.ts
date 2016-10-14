@@ -10,11 +10,11 @@ import * as imageUtils from "./dockerImageUtils";
 
 export default class DockerConnection {
     private dockerPath: string;
-    private hostUrl: string;
-    private certsDir: string;
-    private caPath: string;
-    private certPath: string;
-    private keyPath: string;
+    protected hostUrl: string;
+    protected certsDir: string;
+    protected caPath: string;
+    protected certPath: string;
+    protected keyPath: string;
     private registryAuth: { [key: string]: string };
     private loggedIn: boolean;
 
@@ -22,11 +22,8 @@ export default class DockerConnection {
         this.dockerPath = tl.which("docker", true);
     }
 
-    private createBaseCommand(): tr.ToolRunner {
-        return tl.tool(this.dockerPath);
-    }
-
-    protected addAuthArgs(command: tr.ToolRunner): void {
+    public createCommand(): tr.ToolRunner {
+        var command = tl.tool(this.dockerPath);
         if (this.hostUrl) {
             command.arg(["-H", this.hostUrl]);
             command.arg("--tls");
@@ -34,17 +31,15 @@ export default class DockerConnection {
             command.arg("--tlscert='" + this.certPath + "'");
             command.arg("--tlskey='" + this.keyPath + "'");
         }
-    }
-
-    public createCommand(): tr.ToolRunner {
-        var command = this.createBaseCommand();
-        this.addAuthArgs(command);
         return command;
     }
 
     public open(hostEndpoint?: string, registryEndpoint?: string): void {
         if (hostEndpoint) {
             this.hostUrl = tl.getEndpointUrl(hostEndpoint, false);
+            if (this.hostUrl.charAt(this.hostUrl.length - 1) == "/") {
+                this.hostUrl = this.hostUrl.substring(0, this.hostUrl.length - 1);
+            }
 
             this.certsDir = path.join("", ".dockercerts");
             if (!fs.existsSync(this.certsDir)) {

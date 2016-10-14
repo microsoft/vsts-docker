@@ -26,6 +26,12 @@ export default class DockerComposeConnection extends DockerConnection {
     public open(hostEndpoint?: string, registryEndpoint?: string): any {
         super.open(hostEndpoint, registryEndpoint);
 
+        if (this.hostUrl) {
+            process.env["DOCKER_HOST"] = this.hostUrl;
+            process.env["DOCKER_TLS_VERIFY"] = 1;
+            process.env["DOCKER_CERT_PATH"] = this.certsDir;
+        }
+
         tl.getDelimitedInput("dockerComposeFileArgs", "\n").forEach(envVar => {
             var tokens = envVar.split("=");
             if (tokens.length < 2) {
@@ -57,7 +63,6 @@ export default class DockerComposeConnection extends DockerConnection {
 
     public createComposeCommand(): tr.ToolRunner {
         var command = tl.tool(this.dockerComposePath);
-        this.addAuthArgs(command);
 
         command.arg(["-f", this.dockerComposeFile]);
 
