@@ -20,7 +20,7 @@ export function run(connection: DockerConnection): any {
     var imageName = tl.getInput("imageName", true);
     var qualifyImageName = tl.getBoolInput("qualifyImageName");
     if (qualifyImageName) {
-        imageName = connection.getFullImageName(imageName);
+        imageName = connection.qualifyImageName(imageName);
     }
     command.arg(["-t", imageName]);
 

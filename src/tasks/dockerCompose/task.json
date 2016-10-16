@@ -70,7 +70,7 @@
             "type": "boolean",
             "label": "Qualify Image Names",
             "defaultValue": "false",
-            "helpMarkDown": "Automatically qualify image names for built services with the selected Docker registry connection's hostname and username if not otherwise specified."
+            "helpMarkDown": "Qualify image names for built services with the Docker registry connection's hostname if not otherwise specified."
         },
         {
             "name": "action",
