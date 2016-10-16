@@ -13,7 +13,7 @@
     "version": {
         "Major": 0,
         "Minor": 2,
-        "Patch": 3
+        "Patch": 4
     },
     "demands": [],
     "groups": [
@@ -94,7 +94,7 @@
             "label": "Qualify Image Name",
             "defaultValue": "false",
             "visibleRule": "action = Build an image || action = Push an image || action = Run an image",
-            "helpMarkDown": "Automatically qualify the image name with the selected Docker registry connection's hostname and username if not otherwise specified."
+            "helpMarkDown": "Qualify the image name with the Docker registry connection's hostname if not otherwise specified."
         },
         {
             "name": "additionalImageTags",

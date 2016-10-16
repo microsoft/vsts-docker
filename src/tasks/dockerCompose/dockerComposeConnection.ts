@@ -46,7 +46,7 @@ export default class DockerComposeConnection extends DockerConnection {
             var services = {};
             if (qualifyImageNames) {
                 for (var serviceName in images) {
-                    images[serviceName] = this.getFullImageName(images[serviceName]);
+                    images[serviceName] = this.qualifyImageName(images[serviceName]);
                 }
             }
             for (var serviceName in images) {
@@ -105,7 +105,7 @@ export default class DockerComposeConnection extends DockerConnection {
         return this.getCombinedConfig().then(input => {
             var doc = yaml.safeLoad(input);
             var images: any = {};
-            for (var serviceName in doc.services) {
+            for (var serviceName in doc.services || {}) {
                 var service = doc.services[serviceName];
                 var image = service.image;
                 if (!image) {

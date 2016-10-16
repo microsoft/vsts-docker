@@ -72,21 +72,12 @@ export default class DockerConnection {
         }
     }
 
-    public getFullImageName(imageName: string) {
-        if (this.registryAuth) {
+    public qualifyImageName(imageName: string) {
+        if (!imageUtils.hasRegistryComponent(imageName) && this.registryAuth) {
             var regUrl = url.parse(this.registryAuth["registry"]),
-                hostname = !regUrl.slashes ? regUrl.href : regUrl.host,
-                username = this.registryAuth["username"],
-                slashIndex = imageName.indexOf("/");
-            if (hostname.toLowerCase() === "index.docker.io") {
-                hostname = "";
-            } else {
-                hostname = hostname + "/";
-            }
-            if (slashIndex < 0) {
-                imageName = hostname + username + "/" + imageName;
-            } else if (!imageUtils.hasRegistryComponent(imageName)) {
-                imageName = hostname + imageName;
+                hostname = !regUrl.slashes ? regUrl.href : regUrl.host;
+            if (hostname.toLowerCase() !== "index.docker.io") {
+                imageName = hostname + "/" + imageName;
             }
         }
         return imageName;
