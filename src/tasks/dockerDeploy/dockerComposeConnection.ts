@@ -104,12 +104,16 @@ export default class DockerComposeConnection extends DockerConnection {
     public getImages(builtOnly?: boolean): any {
         return this.getCombinedConfig().then(input => {
             var doc = yaml.safeLoad(input);
+            var projectName = this.projectName;
+            if (!projectName) {
+                projectName = path.basename(path.dirname(this.dockerComposeFile));
+            }
             var images: any = {};
             for (var serviceName in doc.services || {}) {
                 var service = doc.services[serviceName];
                 var image = service.image;
                 if (!image) {
-                    image = this.projectName.toLowerCase().replace(/[^0-9a-z]/g, "") + "_" + serviceName;
+                    image = projectName.toLowerCase().replace(/[^0-9a-z]/g, "") + "_" + serviceName;
                 }
                 if (!builtOnly || service.build) {
                     images[serviceName] = image;
