@@ -13,7 +13,7 @@
     "version": {
         "Major": 0,
         "Minor": 2,
-        "Patch": 4
+        "Patch": 5
     },
     "demands": [],
     "groups": [
@@ -96,7 +96,6 @@
                 "rows": "2"
             },
             "label": "Additional Image Tags",
-            "defaultValue": "$(Build.BuildId)\n$(Build.SourceBranchName)\n$(Build.SourceVersion)",
             "visibleRule": "action = Build services || action = Push services",
             "helpMarkDown": "Additional tags for the Docker images being built or pushed."
         },
@@ -104,7 +103,7 @@
             "name": "includeSourceTags",
             "type": "boolean",
             "label": "Include Source Tags",
-            "defaultValue": "true",
+            "defaultValue": "false",
             "visibleRule": "action = Build services || action = Push services",
             "helpMarkDown": "Include Git tags when building or pushing Docker images."
         },
@@ -112,7 +111,7 @@
             "name": "includeLatestTag",
             "type": "boolean",
             "label": "Include Latest Tag",
-            "defaultValue": "true",
+            "defaultValue": "false",
             "visibleRule": "action = Build services || action = Push services",
             "helpMarkDown": "Include the 'latest' tag when building or pushing Docker images."
         },
@@ -153,7 +152,6 @@
             "name": "baseResolveDirectory",
             "type": "filePath",
             "label": "Base Resolve Directory",
-            "defaultValue": "$(Build.Repository.LocalPath)",
             "visibleRule": "action = Combine configuration",
             "helpMarkDown": "The base directory from which relative paths in the output Docker Compose file should be resolved."
         },

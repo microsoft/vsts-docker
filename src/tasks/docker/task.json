@@ -13,7 +13,7 @@
     "version": {
         "Major": 0,
         "Minor": 2,
-        "Patch": 4
+        "Patch": 5
     },
     "demands": [],
     "groups": [
@@ -104,7 +104,6 @@
                 "rows": "2"
             },
             "label": "Additional Image Tags",
-            "defaultValue": "$(Build.SourceBranchName)\n$(Build.SourceVersion)",
             "visibleRule": "action = Build an image || action = Push an image",
             "helpMarkDown": "Additional tags for the Docker image being built or pushed."
         },
@@ -112,7 +111,7 @@
             "name": "includeSourceTags",
             "type": "boolean",
             "label": "Include Source Tags",
-            "defaultValue": "true",
+            "defaultValue": "false",
             "visibleRule": "action = Build an image || action = Push an image",
             "helpMarkDown": "Include Git tags when building or pushing the Docker image."
         },
@@ -120,7 +119,7 @@
             "name": "includeLatestTag",
             "type": "boolean",
             "label": "Include Latest Tag",
-            "defaultValue": "true",
+            "defaultValue": "false",
             "visibleRule": "action = Build an image || action = Push an image",
             "helpMarkDown": "Include the 'latest' tag when building or pushing the Docker image."
         },
@@ -128,7 +127,6 @@
             "name": "imageDigestFile",
             "type": "filePath",
             "label": "Image Digest File",
-            "defaultValue": "$(Build.StagingDirectory)/Dockerfile.image",
             "visibleRule": "action = Push an image",
             "helpMarkDown": "Path to a file that is created and populated with the full image repository digest of the Docker image that was pushed."
         },

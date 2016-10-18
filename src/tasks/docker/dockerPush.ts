@@ -61,7 +61,10 @@ export function run(connection: DockerConnection): any {
         images.push(baseImageName + ":latest");
     }
 
-    var imageDigestFile = tl.getPathInput("imageDigestFile");
+    var imageDigestFile: string;
+    if (tl.filePathSupplied("imageDigestFile")) {
+        imageDigestFile = tl.getPathInput("imageDigestFile");
+    }
 
     var promise = dockerPush(connection, images.shift(), imageDigestFile);
     images.forEach(imageName => {
