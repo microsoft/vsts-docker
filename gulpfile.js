@@ -14,7 +14,7 @@ var codeCoverageDirectory = buildDirectory + "/codeCoverage";
 var packageDirectory = buildDirectory + "/package";
 var sourcePaths = {
     typescriptFiles: "src/**/*.ts",
-    copyFiles: ["src/**/*.png", "src/**/*.json", "src/**/*.md", "src/tasks/**/invoke*.js"],
+    copyFiles: ["src/**/*", "!src/**/*.ts"],
     lcaFiles: ["ThirdPartyNotices.txt", "DockerIntegration_ExtensionForVisualStudioTeamServices_Pre-ReleaseEULA.docx"],
     tasksPath: "src/tasks"
 };

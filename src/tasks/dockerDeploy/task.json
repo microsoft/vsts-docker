@@ -84,7 +84,7 @@
             "label": "Qualify Image Names",
             "defaultValue": "false",
             "visibleRule": "targetType = ACS DCOS",
-            "helpMarkDown": "Automatically qualify image names for built services with the selected Docker registry connection's hostname and username if not otherwise specified."
+            "helpMarkDown": "Automatically qualify image names for built services with the Docker registry connection's hostname if not otherwise specified."
         },
         {
             "name": "acsDcosEndpointType",
@@ -131,7 +131,7 @@
             "required": true,
             "defaultValue": "$(System.TeamFoundationCollectionUri)/$(System.TeamProject)",
             "visibleRule": "targetType = ACS DCOS",
-            "helpMarkDown": "Qualifier for the Marathon application group name that is hashed and appended to create a unique identifier for all deployments."
+            "helpMarkDown": "Qualifier for the Marathon application group name that is hashed and appended to create a unique identifier for deployment definitions."
         },
         {
             "name": "acsDcosAppGroupVersion",
@@ -140,7 +140,7 @@
             "required": true,
             "defaultValue": "$(Release.ReleaseId).$(Release.AttemptNumber)",
             "visibleRule": "targetType = ACS DCOS",
-            "helpMarkDown": "Version for the Marathon application group name that is appended to create a unique identifier for a specific deployment."
+            "helpMarkDown": "Version for the Marathon application group name that is appended to create a unique identifier for specific deployments."
         },
         {
             "name": "acsDcosMinimumHealthCapacity",
@@ -149,7 +149,14 @@
             "required": true,
             "defaultValue": "100",
             "visibleRule": "targetType = ACS DCOS",
-            "helpMarkDown": "Percentage of the target capacity that existing and new deployments must have at all times during update.<br/><br/>A value of 0 means any existing deployment is removed before the new deployment begins.<br/><br/>A value of 50 means that any existing deployment is scaled to half of its original capacity before the new deployment begins at half of its defined capacity, after which it is scaled to its target capacity.<br/><br/>A value of 100 means that any existing deployment remains at its target capacity until the new deployment has completed at its target capacity, following which the existing deployment is removed.<br/><br/>See [this](https://mesosphere.github.io/marathon/docs/deployments.html) link for more information on this option."
+            "helpMarkDown": "Percentage of the target capacity that existing and new deployments must have at all times during update.<br/><br/>A value of 0 means any existing deployment is removed before the new deployment begins.<br/><br/>A value of 50 means that any existing deployment is scaled to half of its original capacity before the new deployment begins at half of its defined capacity, after which it is scaled to its target capacity and the existing deployment is removed.<br/><br/>A value of 100 means that any existing deployment remains at its target capacity until the new deployment has completed at its target capacity, following which the existing deployment is removed.<br/><br/>See [this](https://mesosphere.github.io/marathon/docs/deployments.html) link for more information on this option."
+        },
+        {
+            "name": "dockerHostEndpoint",
+            "type": "connectedService:dockerhost",
+            "label": "Docker Host Connection",
+            "helpMarkDown": "Select a Docker host connection. Defaults to the agent's host.",
+            "groupName": "advanced"
         },
         {
             "name": "cwd",
