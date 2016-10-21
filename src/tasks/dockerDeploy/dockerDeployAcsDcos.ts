@@ -7,7 +7,6 @@ import * as tl from "vsts-task-lib/task";
 import DockerComposeConnection from "./dockerComposeConnection";
 
 var srcPath = path.join(path.dirname(module.filename), "acs-dcos");
-console.log("SRC PATH: " + srcPath);
 var imageName = "vsts-task-dd7c9344117944a9891b177fbb98b9a7-acs-dcos";
 
 export function run(): any {
@@ -69,7 +68,7 @@ export function run(): any {
                 .arg("--rm")
                 .arg("-t")
                 .arg(imageName)
-                .arg("myscript.py")
+                .arg("createmarathon.py")
                 .arg(["--compose-file", path.basename(composeFile)])
                 .arg(masterUrl ? ["--dcos-master-url", masterUrl] : [
                     "--ssh-host", sshHost,
