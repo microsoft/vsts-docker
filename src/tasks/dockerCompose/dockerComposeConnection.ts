@@ -12,6 +12,7 @@ export default class DockerComposeConnection extends DockerConnection {
     private dockerComposePath: string;
     private dockerComposeFile: string;
     private additionalDockerComposeFiles: string[];
+    private requireAdditionalDockerComposeFiles: boolean;
     private projectName: string;
     private finalComposeFile: string;
 
@@ -20,6 +21,7 @@ export default class DockerComposeConnection extends DockerConnection {
         this.dockerComposePath = tl.which("docker-compose", true);
         this.dockerComposeFile = tl.globFirst(tl.getInput("dockerComposeFile", true));
         this.additionalDockerComposeFiles = tl.getDelimitedInput("additionalDockerComposeFiles", "\n");
+        this.requireAdditionalDockerComposeFiles = tl.getBoolInput("requireAdditionalDockerComposeFiles");
         this.projectName = tl.getInput("projectName");
     }
 
@@ -72,8 +74,7 @@ export default class DockerComposeConnection extends DockerConnection {
             if (file.indexOf("/") !== 0) {
                 file = path.join(basePath, file);
             }
-            // Only include the file if it exists
-            if (tl.exist(file)) {
+            if (this.requireAdditionalDockerComposeFiles || tl.exist(file)) {
                 command.arg(["-f", file]);
             }
         });

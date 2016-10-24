@@ -132,6 +132,14 @@
             "helpMarkDown": "Run the service containers in the background."
         },
         {
+            "name": "abortOnContainerExit",
+            "type": "boolean",
+            "label": "Abort on Container Exit",
+            "defaultValue": "true",
+            "visibleRule": "action = Run services && detached == false",
+            "helpMarkDown": "Stop all containers when any container exits."
+        },
+        {
             "name": "imageDigestComposeFile",
             "type": "filePath",
             "label": "Image Digest Compose File",
@@ -177,6 +185,22 @@
             "type": "connectedService:dockerhost",
             "label": "Docker Host Connection",
             "helpMarkDown": "Select a Docker host connection. Defaults to the agent's host.",
+            "groupName": "advanced"
+        },
+        {
+            "name": "nopIfNoDockerComposeFile",
+            "type": "boolean",
+            "label": "No-op if no Docker Compose File",
+            "defaultValue": "false",
+            "helpMarkDown": "If the Docker Compose file does not exist, skip this step. This is useful when the step offers optional behavior based on the existence of a Docker Compose file in the repository.",
+            "groupName": "advanced"
+        },
+        {
+            "name": "requireAdditionalDockerComposeFiles",
+            "type": "boolean",
+            "label": "Require Additional Docker Compose Files",
+            "defaultValue": "false",
+            "helpMarkDown": "Produces an error if the additional Docker Compose files do not exist. This overrides the default behavior which is to ignore a file if it does not exist.",
             "groupName": "advanced"
         },
         {
