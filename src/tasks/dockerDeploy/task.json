@@ -159,6 +159,14 @@
             "groupName": "advanced"
         },
         {
+            "name": "requireAdditionalDockerComposeFiles",
+            "type": "boolean",
+            "label": "Require Additional Docker Compose Files",
+            "defaultValue": "false",
+            "helpMarkDown": "Produces an error if the additional Docker Compose files do not exist. This overrides the default behavior which is to ignore a file if it does not exist.",
+            "groupName": "advanced"
+        },
+        {
             "name": "cwd",
             "type": "filePath",
             "label": "Working Directory",
