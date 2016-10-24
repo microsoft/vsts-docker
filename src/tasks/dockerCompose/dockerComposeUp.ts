@@ -17,7 +17,8 @@ export function run(connection: DockerComposeConnection): any {
         command.arg("--build");
     }
 
-    if (!detached) {
+    var abortOnContainerExit = tl.getBoolInput("abortOnContainerExit");
+    if (!detached && abortOnContainerExit) {
         command.arg("--abort-on-container-exit");
     }
 
