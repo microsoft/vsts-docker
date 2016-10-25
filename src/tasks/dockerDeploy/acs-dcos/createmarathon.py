@@ -28,9 +28,9 @@ def get_arg_parser():
                         help='[required] Minimum health capacity')
 
     parser.add_argument('--registry-host',
-                        help='[required] Registry host (e.g. myreg.azurecr.io)')
+                        help='[required] Registry host (e.g. myregistry.azurecr-test.io:1234)')
     parser.add_argument('--registry-username',
-                        help='[required] Registry user name')
+                        help='[required] Registry username')
     parser.add_argument('--registry-password',
                         help='[required] Registry password')
 
@@ -63,12 +63,6 @@ def process_arguments():
         arg_parser.error('argument --group-version is required')
     if args.minimum_health_capacity is None:
         arg_parser.error('argument --minimum-health-capacity is required')
-    if args.registry_host is None:
-        arg_parser.error('argument --registry-host/-r is required')
-    if args.registry_username is None:
-        arg_parser.error('argument --registry-username/-u is required')
-    if args.registry_password is None:
-        arg_parser.error('argument --registry-password/-p is required')
     return args
 
 if __name__ == '__main__':

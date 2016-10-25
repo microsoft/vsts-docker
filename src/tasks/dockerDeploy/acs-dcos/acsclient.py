@@ -11,8 +11,8 @@ class ACSClient(object):
         self.tunnel_server = None
         self.is_direct = False
 
-        # If host is not provided, we have a direct connection
-        if not self.acs_info.host:
+        # If master_url is provided, we have a direct connection
+        if self.acs_info.master_url:
             self.is_direct = True
 
     def __get_tunnel_server(self):
@@ -23,7 +23,8 @@ class ACSClient(object):
             return None, 80
 
         local_port = self.get_available_local_port()
-        # TODO (peterj, 10/20/2016): Need to provide private key/passphrase here
+        # TODO (peterj, 10/20/2016): 282018 Need to provide private key/passphrase here,
+        # once we support the SSH connection
         return SSHTunnelForwarder(
             (self.acs_info.host, self.acs_info.port),
             ssh_username=self.acs_info.username,
@@ -32,13 +33,13 @@ class ACSClient(object):
 
     def __get_request_url(self, path, local_port=80):
         if self.is_direct:
-            return 'http://leader.mesos/{}'.format(path)
+            return '{}/{}'.format(self.acs_info.master_url, path)
 
         return 'http://localhost:{}/{}'.format(str(local_port), path)
 
     def get_request(self, path):
         """
-        Makes a GET request to Marathon endpoint (localhost:8080 on the cluster)
+        Makes a GET request to Marathon endpoint (localhost:80 on the cluster)
         :param path: Path part of the URL to make the request to
         :type path: String
         """
@@ -56,7 +57,7 @@ class ACSClient(object):
 
     def delete_request(self, path):
         """
-        Makes a DELETE request to Marathon endpoint (localhost:8080 on the cluster)
+        Makes a DELETE request to Marathon endpoint (localhost:80 on the cluster)
         :param path: Path part of the URL to make the request to
         :type path: String
         """
@@ -73,7 +74,7 @@ class ACSClient(object):
 
     def post_request(self, path, post_data):
         """
-        Makes a POST request to Marathon endpoint (localhost:8080 on the cluster)
+        Makes a POST request to Marathon endpoint (localhost:80 on the cluster)
         :param path: Path part of the URL to make the request to
         :type path: String
         """
@@ -90,7 +91,7 @@ class ACSClient(object):
 
     def put_request(self, path, put_data=None, **kwargs):
         """
-        Makes a POST request to Marathon endpoint (localhost:8080 on the cluster)
+        Makes a POST request to Marathon endpoint (localhost:80 on the cluster)
         :param path: Path part of the URL to make the request to
         :type path: String
         """

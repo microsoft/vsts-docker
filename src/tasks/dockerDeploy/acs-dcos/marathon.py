@@ -8,7 +8,7 @@ class Marathon(object):
     """
     Class used for working with Marathon API
     """
-    # Max time to wait for deployments to complete
+    # Max time to wait (in seconds) for deployments to complete
     deployment_max_wait_time = 5 * 60
 
     def __init__(self, acs_info):
@@ -67,7 +67,7 @@ class Marathon(object):
             raise ValueError('Missing app_id')
         return self.get_request('apps/{}'.format(app_id))
 
-    def deploy_app(self, app_json, wait_for_healthy=True):
+    def deploy_app(self, app_json):
         """
         Deploys an app to marathon
         """
@@ -87,24 +87,19 @@ class Marathon(object):
         deployment_id = response_json['deployments'][0]['id']
         self._wait_for_deployment_complete(deployment_id, start_timestamp)
 
-        if wait_for_healthy:
-            # TODO (peterj, 10/20/2016): 280607 Need to wait for the deployment to be healthy,
-            # not just deployed
-            pass
-
-    def update_group(self, marathon_json, wait_for_healthy=True):
+    def update_group(self, marathon_json):
         """
         Updates an existing marathon group
         """
-        return self.__deploy_group(marathon_json, 'PUT', wait_for_healthy)
+        return self.__deploy_group(marathon_json, 'PUT')
 
-    def deploy_group(self, marathon_json, wait_for_healthy=True):
+    def deploy_group(self, marathon_json):
         """
         Deploys a new marathon group
         """
-        return self.__deploy_group(marathon_json, 'POST', wait_for_healthy)
+        return self.__deploy_group(marathon_json, 'POST')
 
-    def __deploy_group(self, marathon_json, method, wait_for_healthy=True):
+    def __deploy_group(self, marathon_json, method):
         """
         Creates and starts a new application group defined in marathon_json
         """
@@ -112,7 +107,6 @@ class Marathon(object):
             raise ValueError('Missing marathon json')
 
         start_timestamp = time.time()
-        print json.dumps(marathon_json, indent=2)
         if method == 'POST':
             response = self.post_request('groups', json.dumps(marathon_json))
         elif method == 'PUT':
@@ -129,12 +123,6 @@ class Marathon(object):
             raise Exception('Something went wrong. Missing deploymentId: {}'.format(response_json))
         deployment_id = response_json['deploymentId']
         self._wait_for_deployment_complete(deployment_id, start_timestamp)
-
-        if wait_for_healthy:
-            # TODO (peterj, 10/20/2016): 280607 Need to wait for the deployment to be healthy,
-            # not just deployed
-            pass
-
         return response
 
     def _get_all_group_ids(self, data):
@@ -204,7 +192,7 @@ class Marathon(object):
             if response:
                 for a_deployment in response:
                     if deployment_id in a_deployment['id']:
-                        print 'Sleeping ...'
+                        print 'Waiting for deployment "{}" to complete ...'.format(deployment_id)
                         time.sleep(5)
                     else:
                         print 'Another service is being deployed. Ignoring ...'

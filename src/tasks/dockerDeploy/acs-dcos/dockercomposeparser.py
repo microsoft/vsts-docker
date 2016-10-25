@@ -1,22 +1,24 @@
 import hashlib
 import math
 import os
+import pipes
+import re
+
+import yaml
 
 import acsinfo
 import dockerregistry
 import marathon
 import portmappings
-import yaml
+
 
 class DockerComposeParser(object):
     def __init__(self, compose_file, master_url, acs_host, acs_port, acs_username,
                  acs_password, acs_private_key, group_name, group_qualifier, group_version,
-                 registry_name, registry_username, registry_password,
+                 registry_host, registry_username, registry_password,
                  minimum_health_capacity):
 
-        if not os.path.isfile(compose_file):
-            raise OSError('Error: File {} was not found'.format(compose_file))
-
+        self._ensure_docker_compose(compose_file)
         with open(compose_file, 'r') as compose_stream:
             self.compose_data = yaml.load(compose_stream)
 
@@ -27,7 +29,7 @@ class DockerComposeParser(object):
         self.group_qualifier = group_qualifier
         self.group_version = group_version
 
-        self.registry_name = registry_name
+        self.registry_host = registry_host
         self.registry_username = registry_username
         self.registry_password = registry_password
 
@@ -36,6 +38,28 @@ class DockerComposeParser(object):
         self.marathon_helper = marathon.Marathon(self.acs_info)
 
         self.portmappings_helper = portmappings.PortMappings()
+
+    def _ensure_docker_compose(self, docker_compose_file):
+        """
+        1. Raises an error if there is no docker_compose_file present.
+        2. Raises an error if the version specified in the docker_compose_file is not
+        docker_compose_version.
+        """
+        docker_compose_expected_version = '2'
+        if not os.path.isfile(docker_compose_file):
+            raise Exception('Docker compose file "{}" was not found.'.format(docker_compose_file))
+        with open(docker_compose_file, 'r') as f:
+            compose_data = yaml.load(f)
+            if 'version' not in compose_data.keys():
+                raise Exception(
+                    'Docker compose file "{}" is missing version information.'.format(
+                        docker_compose_file))
+            if not docker_compose_expected_version in compose_data['version']:
+                raise Exception(
+                    'Docker compose file "{}" has incorrect version. \
+                    Only version "{}" is supported.'.format(
+                        docker_compose_file,
+                        docker_compose_expected_version))
 
     def _get_empty_marathon_json(self):
         marathon_json = {
@@ -57,7 +81,6 @@ class DockerComposeParser(object):
                 }
             },
             'labels': {
-                'HAPROXY_GROUP': 'internal'
             },
             'dependencies': [],
             'env': {},
@@ -68,7 +91,7 @@ class DockerComposeParser(object):
     def _get_group_id(self, include_version=True):
         """
         Gets the group id.
-        <group_name>.<first 8 chars of SHA-1 has of group qualifier>.<group_version>
+        <group_name>.<first 8 chars of SHA-1 hash of group qualifier>.<group_version>
         """
         hash_qualifier = hashlib.sha1(self.group_qualifier)
         qualifier_digest = hash_qualifier.hexdigest()
@@ -78,6 +101,18 @@ class DockerComposeParser(object):
 
         return '/{}.{}.'.format(self.group_name, qualifier_digest[:8])
 
+    def _to_quoted_string(self, args):
+        """
+        Converts arguments to a properly quoted string
+        """
+        cmd_string = ''
+        if isinstance(args, list):
+            for arg in args:
+                cmd_string += pipes.quote(arg) + ' '
+        else:
+            cmd_string = pipes.quote(args)
+        return cmd_string
+
     def _parse_compose(self):
         """
         Parses the docker-compose file and returns the initial marathon.json file
@@ -85,7 +120,7 @@ class DockerComposeParser(object):
         group_name = self._get_group_id()
         all_apps = {'id': group_name, 'apps': []}
         docker_registry = dockerregistry.DockerRegistry(
-            self.registry_name, self.registry_username, self.registry_password, self.acs_info)
+            self.registry_host, self.registry_username, self.registry_password, self.acs_info)
 
         for service_name, service_info in self.compose_data['services'].items():
             marathon_json = self._get_empty_marathon_json()
@@ -93,7 +128,19 @@ class DockerComposeParser(object):
 
             marathon_json['container']['docker']['image'] = service_info['image']
             registry_auth_url = docker_registry.get_registry_auth_url()
-            marathon_json['uris'] = [registry_auth_url]
+            if registry_auth_url:
+                marathon_json['uris'] = [registry_auth_url]
+
+            if 'command' in service_info:
+                marathon_json['cmd'] = self._to_quoted_string(service_info['command'])
+
+            if 'cpu_shares' in service_info:
+                marathon_json['cpus'] = float(service_info['cpu_shares']) / 1024
+
+            if 'entrypoint' in service_info:
+                entrypoint = self._to_quoted_string(service_info['entrypoint'])
+                marathon_json['container']['docker']['parameters'].append(
+                    {'key': 'entrypoint', 'value': entrypoint})
 
             if 'environment' in service_info:
                 for env_pair in service_info['environment']:
@@ -115,6 +162,26 @@ class DockerComposeParser(object):
                         for label_name in label:
                             marathon_json['labels'][label_name] = label[label_name]
 
+            if 'mem_limit' in service_info:
+                mem_str = service_info['mem_limit'].strip()
+
+                # String could be provided without a unit (default is bytes)
+                if not re.search('[a-zA-Z]', mem_str):
+                    unit = 'B'
+                else:
+                    unit = mem_str[-1].upper()
+
+                value = float(mem_str[:len(mem_str)-1])
+                if unit == 'B':
+                    total_bytes = value
+                elif unit == 'K':
+                    total_bytes = value * 1024
+                elif unit == 'M':
+                    total_bytes = value * 1024 * 1024
+                elif unit == 'G':
+                    total_bytes = value * 1024 * 1024 * 1024
+                marathon_json['mem'] = float(total_bytes) / (1024*1024)
+
             if 'ports' in service_info:
                 port_tuple_list = self.portmappings_helper._parse_published_ports(service_info)
 
@@ -124,15 +191,34 @@ class DockerComposeParser(object):
                     for i, p in enumerate(port_tuple_list):
                         container_port = p[1]
                         marathon_json['env'].update({'PORT' + str(i): str(container_port)})
+                # TODO (peterj, 10/21/2016): 281486 Figure out healthcheck
+                marathon_json['healthChecks'] = self._get_health_check_config()
 
-            marathon_json['healthChecks'] = self._get_health_check_config()
+            if 'privileged' in service_info:
+                marathon_json['container']['docker']['privileged'] = service_info['privileged']
+
+            if 'stop_signal' in service_info:
+                stop_signal = service_info['stop_signal']
+                marathon_json['container']['docker']['parameters'].append(
+                    {'key': 'stop-signal', 'value': stop_signal})
+
+            if 'user' in service_info:
+                user = service_info['user']
+                marathon_json['container']['docker']['parameters'].append(
+                    {'key': 'user', 'value': user})
+
+            if 'working_dir' in service_info:
+                work_dir = service_info['working_dir']
+                marathon_json['container']['docker']['parameters'].append(
+                    {'key': 'work-dir', 'value': work_dir})
+
             all_apps['apps'].append(marathon_json)
 
         return all_apps
 
     def _predeployment_check(self):
         """
-        Checks if services can be deployment and
+        Checks if services can be deployed and
         returns True if services are being updated or
         False if this is the first deployment
         """
@@ -189,9 +275,8 @@ class DockerComposeParser(object):
                 existing_apps = [a for a in existing_deployment_json['apps'] \
                                     if a['id'].split('/')[-1] == app_id]
 
-                # If we can't find the app, it means
-                # this is a new service that was added
-                # to the compose file
+                # If we can't find the app, it means this is a new service
+                # that was added to the compose file
                 if len(existing_apps) == 0:
                     continue
                 elif len(existing_apps) > 1:
@@ -208,8 +293,7 @@ class DockerComposeParser(object):
 
         port_mappings = []
 
-        # Create the VIPs from servicePorts for
-        # apps we dont have the VIPs for yet
+        # Create the VIPs from servicePorts for apps we dont have the VIPs for yet
         for app in new_deployment_json['apps']:
             app_id = app['id']
 
@@ -247,6 +331,19 @@ class DockerComposeParser(object):
             marathon_app['labels']['VIP'] = str(vip[0]) + '.' + str(vip[1])
             marathon_app['labels']['color'] = current_color
 
+            # Get VIPs for all services, except the current one
+            all_service_ids_except_current = [t for t in vip_tuples if not t.endswith(service_name)]
+
+            for s_id in all_service_ids_except_current:
+                compose_service_name = s_id.split('/')[-1]
+                service_vip = vip_tuples[s_id]
+                created_vip = self.portmappings_helper.create_vip(current_color, service_vip)
+                host_value = compose_service_name + ':' + created_vip
+                # If host does not exist yet
+                if len([a for a in marathon_app['container']['docker']['parameters'] if a['value'] == host_value]) == 0:
+                    marathon_app['container']['docker']['parameters'].append(
+                        {'key': 'add-host', 'value': host_value})
+
             # Update the dependencies and add 'add-host' entries
             # for each link in the service
             if 'links' in service_info:
@@ -258,16 +355,26 @@ class DockerComposeParser(object):
                         link_service_name = link_name.split(':')[0]
                         link_alias = link_name.split(':')[1]
 
+                    # TODO (peterj, 10/21/2016): Refactor this as it's pretty much the same as above
                     # Get the VIP for the linked service
                     link_id = [t for t in vip_tuples if t.endswith(link_service_name)][0]
                     service_vip = vip_tuples[link_id]
                     created_vip = self.portmappings_helper.create_vip(current_color, service_vip)
-                    marathon_app['container']['docker']['parameters'].append(
-                        {'key': 'add-host', 'value': link_alias + ':' + created_vip})
+                    host_value = link_alias + ':' + created_vip
+                    if len([a for a in marathon_app['container']['docker']['parameters'] if a['value'] == host_value]) == 0:
+                        marathon_app['container']['docker']['parameters'].append(
+                            {'key': 'add-host', 'value': host_value})
                     marathon_app['dependencies'].append(link_id)
 
-            # Update the group with VIPs
-            self.marathon_helper.update_group(marathon_json)
+            if 'depends_on' in service_info:
+                for dependency in service_info['depends_on']:
+                    dependency_id = [t for t in vip_tuples if t.endswith(dependency)][0]
+                    service_vip = vip_tuples[dependency_id]
+                    created_vip = self.portmappings_helper.create_vip(current_color, service_vip)
+                    marathon_app['dependencies'].append(dependency_id)
+
+        # Update the group with VIPs
+        self.marathon_helper.update_group(marathon_json)
 
         # 3. Update the instances and do the final deployment
         if is_update:

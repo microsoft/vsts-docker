@@ -1,3 +1,4 @@
+
 import base64
 import binascii
 import json
@@ -13,9 +14,11 @@ class DockerRegistry(object):
     Class for working with Docker registry
     """
     EXHIBITOR_VIP = '10.1.0.0:80'
+    # TODO (peterj, 10/21/2016): 281451: Update exhibitor image once ACS uses DCOS 1.8
+    EXHIBITOR_DATA_IMAGE = 'mindaro/dcos-exhibitor-data:1.5.6'
 
-    def __init__(self, registry_name, registry_username, registry_password, acs_info):
-        self.registry_name = registry_name
+    def __init__(self, registry_host, registry_username, registry_password, acs_info):
+        self.registry_host = registry_host
         self.registry_username = registry_username
         self.registry_password = registry_password
         self.marathon_helper = marathon.Marathon(acs_info)
@@ -25,6 +28,11 @@ class DockerRegistry(object):
         Handles creating the exhibitor-data service, docker.tar.gz and returns
         the URL to the docker.tar.gz that can be set as a URI on marathon app
         """
+
+        # If registry_host is not set, we assume we don't need the auth URL
+        if not self.registry_host:
+            return ''
+
         self._ensure_exhibitor_service()
         config_contents = self._get_config_json()
 
@@ -47,7 +55,7 @@ class DockerRegistry(object):
 
         # PUT the hex_string to exhibitor
         response = self.marathon_helper.put_request(
-            'registries/{}/{}'.format(self.registry_name, tar_filename),
+            'registries/{}/{}'.format(self.registry_host, tar_filename),
             put_data=hex_string,
             endpoint='exhibitor/exhibitor/v1/explorer/znode')
 
@@ -56,14 +64,13 @@ class DockerRegistry(object):
             raise Exception('Something went wrong: {}'.format(response.text))
 
         return 'http://{}/registries/{}/{}'.format(
-            self.EXHIBITOR_VIP, self.registry_name, tar_filename)
+            self.EXHIBITOR_VIP, self.registry_host, tar_filename)
 
     def _ensure_exhibitor_service(self):
         """
         Checks exhibitor service is running and if is not
         it will deploy it.
         """
-        exhibitor_data_image = 'mindaro/dcos-exhibitor-data:1.5.6'
         exhibitor_service_id = '/exhibitor-data'
 
         exhibitor_data_json = {
@@ -77,7 +84,7 @@ class DockerRegistry(object):
             'container': {
                 'type': 'DOCKER',
                 'docker': {
-                    'image': exhibitor_data_image,
+                    'image': self.EXHIBITOR_DATA_IMAGE,
                     'network': 'BRIDGE',
                     'portMappings': [
                         {
@@ -114,8 +121,8 @@ class DockerRegistry(object):
         """
         Creates the config.json for docker auth
         """
-        if not self.registry_name:
-            raise ValueError('registry_name not set')
+        if not self.registry_host:
+            raise ValueError('registry_host not set')
 
         if not self.registry_username:
             raise ValueError('registry_username not set')
@@ -125,7 +132,7 @@ class DockerRegistry(object):
 
         return {
             "auths": {
-                self.registry_name: {
+                self.registry_host: {
                     "auth": base64.b64encode(self.registry_username + ':' + self.registry_password)
                 }
             }

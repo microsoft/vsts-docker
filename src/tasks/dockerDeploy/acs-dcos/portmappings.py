@@ -2,12 +2,12 @@
 import types
 
 class PortMappings(object):
-    def _is_number(self, str):
+    def _is_number(self, input_str):
         """
         Checks if the string is a number or not
         """
         try:
-            int(str)
+            int(input_str)
             return True
         except ValueError:
             return False
@@ -50,7 +50,8 @@ class PortMappings(object):
 
     def _parse_internal_ports(self, service_data):
         """
-        Parses the 'expose' key in the docker-compose file and returns a list of tuples with port numbers. These tuples are used 
+        Parses the 'expose' key in the docker-compose file and returns a
+        list of tuples with port numbers. These tuples are used
         to create portMappings (blue/green only) in the marathon.json file
         """
         port_tuple_list = []
@@ -70,8 +71,9 @@ class PortMappings(object):
 
     def _parse_published_ports(self, service_data):
         """
-        Parses the 'ports' key in the docker-compose file and returns a list of tuples with port numbers. These tuples are used 
-        to create portMappings (blue/green and cyan) in the marathon.json file
+        Parses the 'ports' key in the docker-compose file and returns a list of
+        tuples with port numbers. These tuples are used to create
+        portMappings (blue/green and cyan) in the marathon.json file
         """
         port_tuple_list = []
 
@@ -80,7 +82,7 @@ class PortMappings(object):
 
         if 'ports' not in service_data:
             return port_tuple_list
-        
+
         for port_entry in service_data['ports']:
             if ':' in str(port_entry):
                 split = port_entry.split(':')
@@ -91,7 +93,8 @@ class PortMappings(object):
                     if self._are_port_ranges_same_length(vip_port, container_port):
                         vip_start, vip_end = self._split_port_range(vip_port)
                         container_start, container_end = self._split_port_range(container_port)
-                        # vp = vip_port, cp = container_port; we do +1 on the end range to include the last port as well
+                        # vp = vip_port, cp = container_port; we do +1 on the end range to 
+                        # include the last port as well
                         for vp, cp in zip(range(vip_start, vip_end + 1), range(container_start, container_end + 1)):
                             port_tuple_list.append((int(vp), int(cp)))
                     else:
@@ -118,64 +121,74 @@ class PortMappings(object):
         return port_tuple_list
 
 
-    def _create_port_mapping(self, container_port, vip_port, color, service_mapping): 
-        """ Creates a single port mapping with provided information
+    def _create_port_mapping(self, container_port, vip_port, color, service_mapping):
+        """
+        Creates a single port mapping with provided information
         """
         if not self._is_number(container_port):
             raise ValueError('Container port is not a valid number')
-        
+
         if not self._is_number(vip_port):
             raise ValueError('VIP port is not a valid number')
-        
+
         if not color:
             raise ValueError('Color is not set')
-        
+
         if not isinstance(service_mapping, types.TupleType):
             raise TypeError('Service mapping has to be a tuple (e.g. (16,10)')
 
-        return { 
+        port_to_use = str(vip_port)
+        # Use container port in the VIP for non-cyan ports
+        if color != 'cyan':
+            port_to_use = str(container_port)
+
+        return {
             'containerPort': int(container_port),
             'hostPort': 0,
             'protocol': 'tcp',
-            'name': color + '-' + str(vip_port),
+            'name': color + '-' + port_to_use,
             'labels': {
-                'VIP_0': self.create_vip(color, service_mapping) + ':' + str(vip_port)
+                'VIP_0': self.create_vip(color, service_mapping) + ':' + port_to_use
                 }}
 
-    def create_vip(self, color, tuple):
-        """ 
+    def create_vip(self, color, vip_tuple):
+        """
         Takes a color and tuple that represents an IP address and creates a VIP
         """
-        if tuple[0] > 255 or tuple[0] < 0 or tuple[1] > 255 or tuple[1] < 0:
+        if vip_tuple[0] > 255 or vip_tuple[0] < 0 or vip_tuple[1] > 255 or vip_tuple[1] < 0:
             raise ValueError('Tuple value needs to be > 0 and < 255')
         if color == 'blue':
-            return '10.64.' + str(tuple[0]) + '.' + str(tuple[1])
+            return '10.64.' + str(vip_tuple[0]) + '.' + str(vip_tuple[1])
         elif color == 'green':
-            return '10.128.' + str(tuple[0]) + '.' + str(tuple[1])
+            return '10.128.' + str(vip_tuple[0]) + '.' + str(vip_tuple[1])
         elif color == 'cyan':
-            return '172.24.' + str(tuple[0]) + '.' + str(tuple[1])
+            return '172.24.' + str(vip_tuple[0]) + '.' + str(vip_tuple[1])
         else:
             raise ValueError('Color "{}" is not valid'.format(color))
 
     def get_port_mappings(self, service_tuple, color, service_data):
         """
-        Creates portMappings entry for the marathon.json file. 
+        Creates portMappings entry for the marathon.json file.
         """
         port_mappings = []
-        
+
         # Need to add cyan portMapping for published ports ('ports' key in docker-compose)
         published_ports = self._parse_published_ports(service_data)
 
         for pp in published_ports:
             vip_port = pp[0]
             container_port = pp[1]
-            port_mappings.append(self._create_port_mapping(container_port, vip_port, color, service_tuple))
-            port_mappings.append(self._create_port_mapping(container_port, vip_port, 'cyan', service_tuple))
+            port_mappings.append(self._create_port_mapping(
+                container_port, vip_port, color, service_tuple))
+            port_mappings.append(self._create_port_mapping(
+                container_port, vip_port, 'cyan', service_tuple))
 
         # No need for cyan portMapping for internal ports ('expose' key in docker-compose)
         internal_ports = self._parse_internal_ports(service_data)
         for ip in internal_ports:
             vip_port = ip[0]
             container_port = ip[0]
-            port_mappings.append(self._create_port_mapping(container_port, vip_port, color, service_tuple))
+            port_mappings.append(self._create_port_mapping(
+                container_port, vip_port, color, service_tuple))
         return port_mappings
+
