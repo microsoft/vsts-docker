@@ -9,6 +9,13 @@ import DockerComposeConnection from "./dockerComposeConnection";
 var srcPath = path.join(path.dirname(module.filename), "acs-dcos");
 var imageName = "vsts-task-dd7c9344117944a9891b177fbb98b9a7-acs-dcos";
 
+function normalizeAppId(id: string) {
+    // Marathon allows lowercase letters, digits, hyphens, "." and ".."
+    // but for simplicity, we won't allow "." or ".." because it's and
+    // odd case, and complex to deal with since "..." is not allowed.
+    return id.toLowerCase().replace(/[^0-9a-z-]/g, "");
+}
+
 export function run(): any {
     var connection = new DockerComposeConnection(),
         composeFile: string;
@@ -45,9 +52,9 @@ export function run(): any {
             sshPassword = tl.getEndpointAuthorizationParameter(sshEndpoint, "password", !!sshPrivateKey);
         }
 
-        var appGroupName = tl.getInput("acsDcosAppGroupName", true),
-            appGroupQualifier = tl.getInput("acsDcosAppGroupQualifier", true),
-            appGroupVersion = tl.getInput("acsDcosAppGroupVersion", true);
+        var appGroupName = normalizeAppId(tl.getInput("acsDcosAppGroupName", true)),
+            appGroupQualifier = normalizeAppId(tl.getInput("acsDcosAppGroupQualifier", true)),
+            appGroupVersion = normalizeAppId(tl.getInput("acsDcosAppGroupVersion", true));
 
         var minHealthCapacity = parseInt(tl.getInput("acsDcosMinimumHealthCapacity", true));
         if (isNaN(minHealthCapacity)) {
