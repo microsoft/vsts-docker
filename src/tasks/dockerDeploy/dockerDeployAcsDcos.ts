@@ -11,9 +11,8 @@ var imageName = "vsts-task-dd7c9344117944a9891b177fbb98b9a7-acs-dcos";
 
 function normalizeAppId(id: string) {
     // Marathon allows lowercase letters, digits, hyphens, "." and ".."
-    // but for simplicity, we won't allow "." or ".." because it's and
-    // odd case, and complex to deal with since "..." is not allowed.
-    return id.toLowerCase().replace(/[^0-9a-z-]/g, "");
+    // We don't handle the complexity of normalizing to the exact regex
+    return id.toLowerCase().replace(/[^/0-9a-z-\.]/g, "");
 }
 
 export function run(): any {
