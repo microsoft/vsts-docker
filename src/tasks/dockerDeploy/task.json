@@ -175,7 +175,7 @@
             "groupName": "advanced"
         }
     ],
-    "instanceNameFormat": "Docker Deploy: $(targetType)",
+    "instanceNameFormat": "Deploy to $(targetType)",
     "execution": {
         "Node": {
             "target": "dockerDeploy.js",
