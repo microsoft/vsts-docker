@@ -13,7 +13,7 @@
     "version": {
         "Major": 0,
         "Minor": 2,
-        "Patch": 7
+        "Patch": 8
     },
     "demands": [],
     "groups": [
@@ -212,7 +212,7 @@
             "groupName": "advanced"
         }
     ],
-    "instanceNameFormat": "Docker Compose: $(action)",
+    "instanceNameFormat": "$(action)",
     "execution": {
         "Node": {
             "target": "dockerCompose.js",
