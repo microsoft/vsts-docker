@@ -223,7 +223,7 @@
             "groupName": "advanced"
         }
     ],
-    "instanceNameFormat": "Docker: $(action)",
+    "instanceNameFormat": "$(action)",
     "execution": {
         "Node": {
             "target": "docker.js",

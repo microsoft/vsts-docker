@@ -212,7 +212,7 @@
             "groupName": "advanced"
         }
     ],
-    "instanceNameFormat": "Docker Compose: $(action)",
+    "instanceNameFormat": "$(action)",
     "execution": {
         "Node": {
             "target": "dockerCompose.js",
