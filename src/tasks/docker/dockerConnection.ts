@@ -16,7 +16,7 @@ export default class DockerConnection {
     protected certPath: string;
     protected keyPath: string;
     private registryAuth: { [key: string]: string };
-    private loggedIn: boolean;
+    private registryHost: string;
 
     constructor() {
         this.dockerPath = tl.which("docker", true);
@@ -67,7 +67,7 @@ export default class DockerConnection {
                 command.arg(["-p", this.registryAuth["password"]]);
                 command.arg(this.registryAuth["registry"]);
                 command.execSync();
-                this.loggedIn = true;
+                this.registryHost = this.registryAuth["registry"];
             }
         }
     }
@@ -84,9 +84,10 @@ export default class DockerConnection {
     }
 
     public close(): void {
-        if (this.loggedIn) {
+        if (this.registryHost) {
             var command = this.createCommand();
             command.arg("logout");
+            command.arg(this.registryHost);
             command.execSync();
         }
         if (this.certsDir && fs.existsSync(this.certsDir)) {
