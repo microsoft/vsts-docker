@@ -12,9 +12,9 @@ export default class DockerConnection {
     private dockerPath: string;
     protected hostUrl: string;
     protected certsDir: string;
-    protected caPath: string;
-    protected certPath: string;
-    protected keyPath: string;
+    private caPath: string;
+    private certPath: string;
+    private keyPath: string;
     private registryAuth: { [key: string]: string };
     private registryHost: string;
 

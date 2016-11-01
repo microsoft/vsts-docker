@@ -43,8 +43,12 @@ export default class DockerComposeConnection extends DockerConnection {
         });
 
         return this.getImages(true).then(images => {
-            this.finalComposeFile = path.join("", ".docker-compose." + Date.now() + ".yml");
             var qualifyImageNames = tl.getBoolInput("qualifyImageNames");
+            if (!qualifyImageNames) {
+                return;
+            }
+            var agentDirectory = tl.getVariable("Agent.HomeDirectory");
+            this.finalComposeFile = path.join(agentDirectory, ".docker-compose." + Date.now() + ".yml");
             var services = {};
             if (qualifyImageNames) {
                 for (var serviceName in images) {
@@ -126,7 +130,7 @@ export default class DockerComposeConnection extends DockerConnection {
 
     public close(): void {
         if (this.finalComposeFile && tl.exist(this.finalComposeFile)) {
-            del.sync(this.finalComposeFile);
+            del.sync(this.finalComposeFile, { force: true });
         }
         super.close();
     }
