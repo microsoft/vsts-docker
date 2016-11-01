@@ -39,7 +39,7 @@ export function run(connection: DockerConnection): any {
             onFailure: "on-failure",
             always: "always",
             unlessStopped: "unless-stopped"
-        }[tl.getInput("restartPolicy", true)];
+        }[tl.getInput("restartPolicy")];
         if (restartPolicy) {
             if (restartPolicy === "on-failure") {
                 var restartMaxRetries = tl.getInput("restartMaxRetries");
