@@ -200,6 +200,28 @@
             "helpMarkDown": "Run the Docker container in the background."
         },
         {
+            "name": "restartPolicy",
+            "type": "pickList",
+            "label": "Restart Policy",
+            "defaultValue": "no",
+            "required": true,
+            "options": {
+                "no": "No",
+                "onFailure": "On failure",
+                "always": "Always",
+                "unlessStopped": "Unless stopped"
+            },
+            "visibleRule": "action = Run an image && detached = true",
+            "helpMarkDown": "Select a restart policy."
+        },
+        {
+            "name": "restartMaxRetries",
+            "type": "string",
+            "label": "Maximum Restart Retries",
+            "visibleRule": "action = Run an image && detached = true && restartPolicy = onFailure",
+            "helpMarkDown": "The maximum number of restart retries the Docker daemon attempts."
+        },
+        {
             "name": "customCommand",
             "type": "string",
             "label": "Command",
