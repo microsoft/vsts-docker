@@ -33,6 +33,26 @@ export function run(connection: DockerConnection): any {
 
     if (!detached) {
         command.arg("--rm");
+    } else {
+        var restartPolicy = {
+            no: "no",
+            onFailure: "on-failure",
+            always: "always",
+            unlessStopped: "unless-stopped"
+        }[tl.getInput("restartPolicy", true)];
+        if (restartPolicy) {
+            if (restartPolicy === "on-failure") {
+                var restartMaxRetries = tl.getInput("restartMaxRetries");
+                if (restartMaxRetries) {
+                    var restartMaxRetriesNum = parseInt(restartMaxRetries, 10);
+                    if (isNaN(restartMaxRetriesNum)) {
+                        throw new Error("Maximum Restart Retries is not a number.");
+                    }
+                    restartPolicy += ":" + restartMaxRetriesNum;
+                }
+            }
+            command.arg(["--restart", restartPolicy]);
+        }
     }
 
     command.arg("-t");
