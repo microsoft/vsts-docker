@@ -60,6 +60,8 @@ export function run(): any {
             throw new Error("Minimum Health Capacity is not a number.");
         }
 
+        var verbose = tl.getVariable("System.Debug");
+
         composeFile = path.join(srcPath, ".docker-compose." + Date.now() + ".yml");
         fs.writeFileSync(composeFile, config);
 
@@ -92,6 +94,7 @@ export function run(): any {
                 .arg(["--group-qualifier", appGroupQualifier])
                 .arg(["--group-version", appGroupVersion])
                 .arg(["--minimum-health-capacity", minHealthCapacity.toString()])
+                .arg(verbose ? ["--verbose"] : [])
                 .exec();
         });
     })
