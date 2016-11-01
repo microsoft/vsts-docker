@@ -32,11 +32,10 @@ if (nopIfNoDockerComposeFile && !tl.globFirst(dockerComposeFile)) {
     .fin(function cleanup() {
         connection.close();
     })
-    .fail(function failure(err) {
-        tl.setResult(tl.TaskResult.Failed, err.message);
-    })
     .then(function success() {
         tl.setResult(tl.TaskResult.Succeeded, "");
+    }, function failure(err) {
+        tl.setResult(tl.TaskResult.Failed, err.message);
     })
     .done();
 }
