@@ -23,6 +23,7 @@ if (nopIfNoDockerComposeFile && !tl.globFirst(dockerComposeFile)) {
             "Build services": "./dockerComposeBuild",
             "Push services": "./dockerComposePush",
             "Run services": "./dockerComposeUp",
+            "Run a specific service": "./dockerComposeRun",
             "Write service image digests": "./dockerComposeLock",
             "Combine configuration": "./dockerComposeConfig",
             "Run a Docker Compose command": "./dockerComposeCommand"
