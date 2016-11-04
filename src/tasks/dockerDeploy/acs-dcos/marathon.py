@@ -1,7 +1,6 @@
 import json
 import time
-
-import acsclient
+import logging
 
 
 class Marathon(object):
@@ -11,8 +10,8 @@ class Marathon(object):
     # Max time to wait (in seconds) for deployments to complete
     deployment_max_wait_time = 5 * 60
 
-    def __init__(self, acs_info):
-        self.acs_client = acsclient.ACSClient(acs_info)
+    def __init__(self, acs_client):
+        self.acs_client = acs_client
 
     def get_request(self, path, endpoint='marathon/v2'):
         """
@@ -45,7 +44,7 @@ class Marathon(object):
         Deletes a group from marathon and returns true if the call was successfull
         """
         if not group_id:
-            raise ValueError('Missing group_id')
+            raise ValueError('group_id not provided')
 
         if force is None:
             force = True
@@ -59,31 +58,33 @@ class Marathon(object):
         """
         return self.get_request('deployments')
 
-    def get_app(self, app_id):
+    def app_exists(self, app_id):
         """
-        Gets the definition of the app (json), running in marathon.
+        Checks if app with the provided ID exists
         """
-        if not app_id:
-            raise ValueError('Missing app_id')
-        return self.get_request('apps/{}'.format(app_id))
+        all_apps = self.get_request('apps').json()
+
+        if not 'apps' in all_apps:
+            return False
+
+        for app in all_apps['apps']:
+            if app['id'] == app_id:
+                return True
+        return False
 
     def deploy_app(self, app_json):
         """
         Deploys an app to marathon
         """
         if not app_json:
-            raise ValueError('Missing app json')
+            raise ValueError('app_json not provided')
 
         start_timestamp = time.time()
         response = self.post_request('apps', post_data=app_json)
-
-        if response.status_code >= 400:
-            raise Exception('Something went wrong: {}'.format(response.text))
-
         response_json = response.json()
 
         if 'deployments' not in response_json:
-            raise Exception('Something went wrong. Missing deployments: {}'.format(response_json))
+            raise Exception('Key "deployments" is missing from response: {}'.format(response_json))
         deployment_id = response_json['deployments'][0]['id']
         self._wait_for_deployment_complete(deployment_id, start_timestamp)
 
@@ -91,20 +92,20 @@ class Marathon(object):
         """
         Updates an existing marathon group
         """
-        return self.__deploy_group(marathon_json, 'PUT')
+        return self._deploy_group(marathon_json, 'PUT')
 
     def deploy_group(self, marathon_json):
         """
         Deploys a new marathon group
         """
-        return self.__deploy_group(marathon_json, 'POST')
+        return self._deploy_group(marathon_json, 'POST')
 
-    def __deploy_group(self, marathon_json, method):
+    def _deploy_group(self, marathon_json, method):
         """
         Creates and starts a new application group defined in marathon_json
         """
         if not marathon_json:
-            raise ValueError('Missing marathon json')
+            raise ValueError('marathon_json not provided')
 
         start_timestamp = time.time()
         if method == 'POST':
@@ -114,13 +115,10 @@ class Marathon(object):
         else:
             raise ValueError('Invalid method "{}"'.format(method))
 
-        if response.status_code >= 400:
-            raise Exception('Something went wrong: {}'.format(response.text))
-
         response_json = response.json()
 
         if 'deploymentId' not in response_json:
-            raise Exception('Something went wrong. Missing deploymentId: {}'.format(response_json))
+            raise Exception('Key "deploymentId" is missing from response: {}'.format(response_json))
         deployment_id = response_json['deploymentId']
         self._wait_for_deployment_complete(deployment_id, start_timestamp)
         return response
@@ -162,9 +160,6 @@ class Marathon(object):
         """
         start_timestamp = time.time()
         response = self.put_request('groups/{}'.format(group_id), json={'scaleBy': scale_factor})
-        if response.status_code >= 400:
-            raise Exception('Something went wrong: {}'.format(response.text))
-
         deployment_id = response.json().get('deploymentId')
         self._wait_for_deployment_complete(deployment_id, start_timestamp)
         return response.json()
@@ -192,10 +187,10 @@ class Marathon(object):
             if response:
                 for a_deployment in response:
                     if deployment_id in a_deployment['id']:
-                        print 'Waiting for deployment "{}" to complete ...'.format(deployment_id)
+                        logging.info('Waiting for deployment "%s" to complete ...', deployment_id)
                         time.sleep(5)
                     else:
-                        print 'Another service is being deployed. Ignoring ...'
+                        logging.info('Another service is being deployed. Continuing ...')
                         other_deployment_in_progress = True
                         timeout_exceeded = False
                         break
@@ -204,7 +199,8 @@ class Marathon(object):
                 break
 
         if timeout_exceeded:
-            raise Exception('Timeout exceeded waiting for deployment to complete')
+            raise Exception('Timeout exceeded waiting for deployment "{}" to complete'.format(
+                deployment_id))
         return
 
     def _wait_time_exceeded(self, max_wait, timestamp):

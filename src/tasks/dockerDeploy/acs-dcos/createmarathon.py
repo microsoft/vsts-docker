@@ -1,9 +1,24 @@
 import argparse
+import logging
 import sys
 import traceback
 
 import dockercomposeparser
 
+class VstsLogFormatter(logging.Formatter):
+    error_format = logging.Formatter('##[error] (%(name)s): %(message)s')
+    warning_format = logging.Formatter('##[warning] (%(name)s): %(message)s')
+    debug_format = logging.Formatter('##[debug] (%(name)s): %(message)s')
+    default_format = logging.Formatter('%(levelname)s (%(name)s): %(message)s')
+
+    def format(self, record):
+        if record.levelno == logging.ERROR:
+            return self.error_format.format(record)
+        elif record.levelno == logging.WARNING:
+            return self.warning_format.format(record)
+        elif record.levelno == logging.DEBUG:
+            return self.debug_format.format(record)
+        return self.default_format.format(record)
 
 def get_arg_parser():
     """
@@ -44,6 +59,10 @@ def get_arg_parser():
                         help='ACS password')
     parser.add_argument('--acs-private-key',
                         help='ACS private key')
+
+    parser.add_argument('--verbose',
+                        help='Turn on verbose logging',
+                        action='store_true')
     return parser
 
 def process_arguments():
@@ -65,17 +84,32 @@ def process_arguments():
         arg_parser.error('argument --minimum-health-capacity is required')
     return args
 
+def init_logger(verbose):
+    """
+    Initializes the logger and sets the custom formatter for VSTS
+    """
+    logging_level = logging.DEBUG if verbose else logging.INFO
+    vsts_formatter = VstsLogFormatter()
+    stream_handler = logging.StreamHandler()
+    stream_handler.setFormatter(vsts_formatter)
+    logging.root.name = 'ACS-Deploy'
+    logging.root.setLevel(logging_level)
+    logging.root.addHandler(stream_handler)
+
+    # Don't show INFO log messages from requests library
+    logging.getLogger("requests").setLevel(logging.WARNING)
+
 if __name__ == '__main__':
     arguments = process_arguments()
+    init_logger(arguments.verbose)
     try:
-        compose_parser = dockercomposeparser.DockerComposeParser(
+        with dockercomposeparser.DockerComposeParser(
             arguments.compose_file, arguments.dcos_master_url, arguments.acs_host,
             arguments.acs_port, arguments.acs_username, arguments.acs_password,
             arguments.acs_private_key, arguments.group_name, arguments.group_qualifier,
             arguments.group_version, arguments.registry_host, arguments.registry_username,
-            arguments.registry_password, arguments.minimum_health_capacity)
-
-        compose_parser.deploy()
+            arguments.registry_password, arguments.minimum_health_capacity) as compose_parser:
+            compose_parser.deploy()
         sys.exit(0)
     except Exception as e:
         var = traceback.format_exc()

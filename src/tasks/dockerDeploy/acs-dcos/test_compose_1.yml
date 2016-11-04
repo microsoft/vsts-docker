@@ -1,0 +1,39 @@
+networks: {}
+services:
+  service-a:
+    build:
+      context: ./service-a
+    environment:
+      - RACK_ENV=development
+    image: registry.marathon.mesos:5000/peterjausovecsampleapp_service-a@sha256:8ae590a69fc4cbb77b43c1523cb0044b766f58cf5de50f4180b80d4f01381931
+    links:
+    - service-b
+    ports:
+    - 8080:80
+    expose:
+    - 9090
+    command: [bundle, exec, thin, -p, 3000]
+    labels:
+      - "NAME1=value2"
+      - "com.microsoft.azure.acs.dcos.marathon.healthcheck=true"
+    entrypoint:
+        - php
+        - -d
+        - zend_extension=/usr/local/lib/php/extensions/no-debug-non-zts-20100525/xdebug.so
+        - -d
+        - memory_limit=-1
+        - vendor/bin/phpunit
+  service-b:
+    build:
+      context: ./service-b
+    environment:
+      APPINSIGHTS_INSTRUMENTATIONKEY: null
+    expose:
+    - 80
+    labels:
+      first: 123
+      second: 456
+      third: 987
+    image: registry.marathon.mesos:5000/peterjausovecsampleapp_service-b@sha256:b0228dde5727dbcd375aec304cd481d6b6a8010ced609e21f093e848432df750
+version: '2.0'
+volumes: {}

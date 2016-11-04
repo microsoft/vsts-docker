@@ -1,0 +1,82 @@
+{
+    "apps": [
+        {
+            "ports": [],
+            "instances": 0,
+            "dependencies": [],
+            "container": {
+                "docker": {
+                    "portMappings": [
+                        {
+                            "labels": {},
+                            "protocol": "tcp",
+                            "containerPort": 0,
+                            "hostPort": 0
+                        }
+                    ],
+                    "image": "registry.marathon.mesos:5000/peterjausovecsampleapp_service-b@sha256:b0228dde5727dbcd375aec304cd481d6b6a8010ced609e21f093e848432df750",
+                    "network": "BRIDGE",
+                    "parameters": []
+                }
+            },
+            "env": {
+                "APPINSIGHTS_INSTRUMENTATIONKEY": "None"
+            },
+            "mem": 256,
+            "labels": {
+                "second": 456,
+                "third": 987,
+                "first": 123
+            },
+            "id": "mygroup/service-b",
+            "cpus": 0.1
+        },
+        {
+            "mem": 256,
+            "labels": {
+                "com.microsoft.azure.acs.dcos.marathon.healthcheck": "true",
+                "NAME1": "value2"
+            },
+            "cpus": 0.1,
+            "instances": 0,
+            "dependencies": [],
+            "healthChecks": [
+                {
+                    "portIndex": 0,
+                    "protocol": "TCP",
+                    "timeoutSeconds": 20,
+                    "intervalSeconds": 5,
+                    "gracePeriodSeconds": 300,
+                    "maxConsecutiveFailures": 3
+                }
+            ],
+            "id": "mygroup/service-a",
+            "container": {
+                "docker": {
+                    "portMappings": [
+                        {
+                            "labels": {},
+                            "protocol": "tcp",
+                            "containerPort": 0,
+                            "hostPort": 0
+                        }
+                    ],
+                    "image": "registry.marathon.mesos:5000/peterjausovecsampleapp_service-a@sha256:8ae590a69fc4cbb77b43c1523cb0044b766f58cf5de50f4180b80d4f01381931",
+                    "network": "BRIDGE",
+                    "parameters": [
+                        {
+                            "value": "php -d zend_extension=/usr/local/lib/php/extensions/no-debug-non-zts-20100525/xdebug.so -d memory_limit=-1 vendor/bin/phpunit",
+                            "key": "entrypoint"
+                        }
+                    ]
+                }
+            },
+            "cmd": "bundle exec thin -p 3000",
+            "env": {
+                "RACK_ENV": "development"
+            },
+            "ports": []
+        }
+    ],
+    "id": "mygroup"
+}

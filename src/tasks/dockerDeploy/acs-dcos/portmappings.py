@@ -1,5 +1,5 @@
-#!/usr/bin/env python
 import types
+
 
 class PortMappings(object):
     def _is_number(self, input_str):
@@ -31,7 +31,7 @@ class PortMappings(object):
         Splits a port range and returns a tuple with start and end port
         """
         if not self._is_port_range(port_range):
-            raise ValueError('Provided value is not a port range')
+            raise ValueError('Provided value "%s" is not a port range', port_range)
         split = port_range.split('-')
         return (int(split[0]), int(split[1]))
 
@@ -57,7 +57,7 @@ class PortMappings(object):
         port_tuple_list = []
 
         if not service_data:
-            raise ValueError('No service data')
+            raise ValueError('service_data not provided')
 
         if 'expose' not in service_data:
             return port_tuple_list
@@ -66,7 +66,7 @@ class PortMappings(object):
             if self._is_number(port_entry):
                 port_tuple_list.append((int(port_entry), int(port_entry)))
             else:
-                raise ValueError('Port is not a valid number')
+                raise ValueError('Port number "%s" is not a valid number', port_entry)
         return port_tuple_list
 
     def _parse_published_ports(self, service_data):
@@ -78,7 +78,7 @@ class PortMappings(object):
         port_tuple_list = []
 
         if not service_data:
-            raise ValueError('No service data')
+            raise ValueError('service_data not provided')
 
         if 'ports' not in service_data:
             return port_tuple_list
@@ -98,7 +98,8 @@ class PortMappings(object):
                         for vp, cp in zip(range(vip_start, vip_end + 1), range(container_start, container_end + 1)):
                             port_tuple_list.append((int(vp), int(cp)))
                     else:
-                        raise ValueError('Port ranges are not equal in length')
+                        raise ValueError('Port ranges "{}" and "{}" are not equal in length',
+                                         vip_port, container_port)
                 else:
                     # "8080:8080"
                     if self._is_number(vip_port) and self._is_number(container_port):
@@ -126,16 +127,16 @@ class PortMappings(object):
         Creates a single port mapping with provided information
         """
         if not self._is_number(container_port):
-            raise ValueError('Container port is not a valid number')
+            raise ValueError('Container port "%s" is not a valid number', vip_port)
 
         if not self._is_number(vip_port):
-            raise ValueError('VIP port is not a valid number')
+            raise ValueError('VIP port "%s" is not a valid number', vip_port)
 
         if not color:
             raise ValueError('Color is not set')
 
         if not isinstance(service_mapping, types.TupleType):
-            raise TypeError('Service mapping has to be a tuple (e.g. (16,10)')
+            raise TypeError('Service mapping "%s" has to be a tuple (e.g. (16,10)', service_mapping)
 
         port_to_use = str(vip_port)
         # Use container port in the VIP for non-cyan ports
@@ -188,7 +189,8 @@ class PortMappings(object):
         for ip in internal_ports:
             vip_port = ip[0]
             container_port = ip[0]
-            port_mappings.append(self._create_port_mapping(
-                container_port, vip_port, color, service_tuple))
+            mapping = self._create_port_mapping(
+                container_port, vip_port, color, service_tuple)
+            if mapping not in port_mappings:
+                port_mappings.append(mapping)
         return port_mappings
-
