@@ -67,8 +67,9 @@ export function run(): any {
 
         return connection.createCommand()
             .arg("build")
+            .arg(["-f", path.join(srcPath, "Dockerfile.task")])
             .arg(["-t", imageName])
-            .arg(path.join(srcPath))
+            .arg(srcPath)
             .exec()
         .then(() => {
             return connection.createCommand()

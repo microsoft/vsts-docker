@@ -2,11 +2,11 @@
 import json
 
 class HealthCheck(object):
-    PATH_LABEL = 'com.microsoft.azure.acs.dcos.marathon.healthcheck.path'
-    PORT_INDEX_LABEL = 'com.microsoft.azure.acs.dcos.marathon.healthcheck.portIndex'
-    COMMAND_LABEL = 'com.microsoft.azure.acs.dcos.marathon.healthcheck.command'
-    HEALTH_CHECK_LABEL = 'com.microsoft.azure.acs.dcos.marathon.healthcheck'
-    HEALTH_CHECKS_LABEL = 'com.microsoft.azure.acs.dcos.marathon.healthchecks'
+    PATH_LABEL = 'com.microsoft.acs.dcos.marathon.healthcheck.path'
+    PORT_INDEX_LABEL = 'com.microsoft.acs.dcos.marathon.healthcheck.portIndex'
+    COMMAND_LABEL = 'com.microsoft.acs.dcos.marathon.healthcheck.command'
+    HEALTH_CHECK_LABEL = 'com.microsoft.acs.dcos.marathon.healthcheck'
+    HEALTH_CHECKS_LABEL = 'com.microsoft.acs.dcos.marathon.healthchecks'
 
     def __init__(self, labels):
         if labels is None:

@@ -73,26 +73,25 @@ class DockerComposeParserTests(unittest.TestCase):
         actual = p._find_app_by_name('app_name', {'apps':[{'id': 'app_name'}, {'id': 'second_app_name'}]})
         self.assertEquals('app_name', actual['id'])
 
-
-    def test_create_vip_tuples_empty_json(self):
+    def test_create_private_ips_empty_json(self):
         p = dockercomposeparser.DockerComposeParser(
             self.test_compose_file, 'masterurl', None, None, None, None, None,
             'groupname', 'groupqualifier', '1',
             'registryhost', 'registryuser', 'registrypassword', 100)
         vip_tuples = {}
-        actual = p._create_or_update_vip_tuples({'apps':{}}, 'new/group/id', vip_tuples)
+        actual = p._create_or_update_private_ips({'apps':{}}, 'new/group/id', vip_tuples)
         self.assertEquals({}, actual)
 
-    def test_create_vip_tuples_none_json(self):
+    def test_create_private_ips_none_json(self):
         p = dockercomposeparser.DockerComposeParser(
             self.test_compose_file, 'masterurl', None, None, None, None, None,
             'groupname', 'groupqualifier', '1',
             'registryhost', 'registryuser', 'registrypassword', 100)
         vip_tuples = {}
-        actual = p._create_or_update_vip_tuples(None, 'new/group/id', vip_tuples)
+        actual = p._create_or_update_private_ips(None, 'new/group/id', vip_tuples)
         self.assertEquals({}, actual)
 
-    def test_create_vip_tuple(self):
+    def test_create_ip(self):
         p = dockercomposeparser.DockerComposeParser(
             self.test_compose_file, 'masterurl', None, None, None, None, None,
             'groupname', 'groupqualifier', '1',
@@ -100,225 +99,161 @@ class DockerComposeParserTests(unittest.TestCase):
 
         apps_json = {'apps':[{
             'id': 'group_1/app_1',
-            'labels': {
-                'VIP': '10.15'
-            }
-        }]}
-        vip_tuples = {}
-        expected = {'new/group/id/app_1': (10, 15)}
-        actual = p._create_or_update_vip_tuples(apps_json, 'new/group/id', vip_tuples)
-        self.assertEquals(expected, actual)
-
-    def test_create_vip_tuple_extra_slash(self):
-        p = dockercomposeparser.DockerComposeParser(
-            self.test_compose_file, 'masterurl', None, None, None, None, None,
-            'groupname', 'groupqualifier', '1',
-            'registryhost', 'registryuser', 'registrypassword', 100)
-
-        apps_json = {'apps':[{
-            'id': 'group_1/app_1',
-            'labels': {
-                'VIP': '10.15'
-            }
-        }]}
-        vip_tuples = {}
-        expected = {'new/group/id/app_1': (10, 15)}
-        actual = p._create_or_update_vip_tuples(apps_json, 'new/group/id/', vip_tuples)
-        self.assertEquals(expected, actual)
-
-    def test_create_vip_tuple_multiple_apps(self):
-        p = dockercomposeparser.DockerComposeParser(
-            self.test_compose_file, 'masterurl', None, None, None, None, None,
-            'groupname', 'groupqualifier', '1',
-            'registryhost', 'registryuser', 'registrypassword', 100)
-
-        apps_json = {'apps':[{
-            'id': 'group_1/app_1',
-            'labels': {
-                'VIP': '10.15'
-            }
-        }, {
-            'id': 'group_2/app_2',
-            'labels': {
-                'VIP': '22.34'
-            }
-        }]}
-
-        vip_tuples = {}
-        expected = {'new/group/id/app_1': (10, 15), 'new/group/id/app_2': (22, 34)}
-        actual = p._create_or_update_vip_tuples(apps_json, 'new/group/id/', vip_tuples)
-        self.assertEquals(expected, actual)
-
-    def test_create_vip_tuple_missing_vip(self):
-        p = dockercomposeparser.DockerComposeParser(
-            self.test_compose_file, 'masterurl', None, None, None, None, None,
-            'groupname', 'groupqualifier', '1',
-            'registryhost', 'registryuser', 'registrypassword', 100)
-
-        apps_json = {'apps':[{
-            'id': 'group_1/app_1',
-            'labels': {
-                'VIP': '10.15'
-            }
-        }, {
-            'id': 'group_2/app_2'
-        }]}
-
-        vip_tuples = {}
-        expected = {'new/group/id/app_1': (10, 15)}
-        actual = p._create_or_update_vip_tuples(apps_json, 'new/group/id/', vip_tuples)
-        self.assertEquals(expected, actual)
-
-    def test_create_vip_tuple_invalid_vip(self):
-        p = dockercomposeparser.DockerComposeParser(
-            self.test_compose_file, 'masterurl', None, None, None, None, None,
-            'groupname', 'groupqualifier', '1',
-            'registryhost', 'registryuser', 'registrypassword', 100)
-
-        apps_json = {'apps':[{
-            'id': 'group_1/app_1',
-            'labels': {
-                'VIP': '10.15'
-            }
-        }, {
-            'id': 'group_2/app_2',
-            'labels': {
-                'VIP': '123blah'
-            }
-        }]}
-
-        vip_tuples = {}
-        expected = {'new/group/id/app_1': (10, 15)}
-        actual = p._create_or_update_vip_tuples(apps_json, 'new/group/id/', vip_tuples)
-        self.assertEquals(expected, actual)
-
-    def test_create_vip_tuple_create_new_vips(self):
-        p = dockercomposeparser.DockerComposeParser(
-            self.test_compose_file, 'masterurl', None, None, None, None, None,
-            'groupname', 'groupqualifier', '1',
-            'registryhost', 'registryuser', 'registrypassword', 100)
-
-        apps_json = {'apps':[{
-            'id': 'group_1/app_1',
-            'labels': {
-            },
-            'container': {
-                'docker':{
-                    'portMappings':[
-                        {
-                            'servicePort': 10001
-                        }
-                    ]
-                }
-            }
-        }, {
-            'id': 'group_2/app_2',
-            'labels': {
-            },
-             'container': {
-                'docker':{
-                    'portMappings':[
-                        {
-                            'servicePort': 10002
-                        }
-                    ]
-                }
-            }
-        }, {
-            'id': 'group_3/app_3',
-            'labels': {
-                'VIP': '10.15'
-            }
-        }]}
-
-        vip_tuples = {}
-        actual = p._create_or_update_vip_tuples(apps_json, 'new/group/id/', vip_tuples)
-        expected = {'new/group/id/app_1': (0, 1), 'new/group/id/app_3': (10, 15), 'new/group/id/app_2': (0, 2)}
-        self.assertEquals(expected, actual)
-
-    def test_get_next_color_missing(self):
-        p = dockercomposeparser.DockerComposeParser(
-            self.test_compose_file, 'masterurl', None, None, None, None, None,
-            'groupname', 'groupqualifier', '1',
-            'registryhost', 'registryuser', 'registrypassword', 100)
-        self.assertRaises(ValueError, p._get_next_color, {'apps': {}})
-
-    def test_get_next_color_none(self):
-        p = dockercomposeparser.DockerComposeParser(
-            self.test_compose_file, 'masterurl', None, None, None, None, None,
-            'groupname', 'groupqualifier', '1',
-            'registryhost', 'registryuser', 'registrypassword', 100)
-        self.assertRaises(ValueError, p._get_next_color, None)
-
-    def test_get_next_color(self):
-        p = dockercomposeparser.DockerComposeParser(
-            self.test_compose_file, 'masterurl', None, None, None, None, None,
-            'groupname', 'groupqualifier', '1',
-            'registryhost', 'registryuser', 'registrypassword', 100)
-        actual = p._get_next_color({'apps':[{ 'labels': {'color': 'green'}}]})
-        self.assertEquals('blue', actual)
-
-    def test_get_next_color_1(self):
-        p = dockercomposeparser.DockerComposeParser(
-            self.test_compose_file, 'masterurl', None, None, None, None, None,
-            'groupname', 'groupqualifier', '1',
-            'registryhost', 'registryuser', 'registrypassword', 100)
-        actual = p._get_next_color({'apps':[{ 'labels': {'color': 'blue'}}]})
-        self.assertEquals('green', actual)
-
-    def test_get_next_color_missing_color_label(self):
-        p = dockercomposeparser.DockerComposeParser(
-            self.test_compose_file, 'masterurl', None, None, None, None, None,
-            'groupname', 'groupqualifier', '1',
-            'registryhost', 'registryuser', 'registrypassword', 100)
-        actual = p._get_next_color({'apps':[{ 'labels': {}}]})
-        self.assertEquals('blue', actual)
-
-    def test_get_next_color_missing_labels(self):
-        p = dockercomposeparser.DockerComposeParser(
-            self.test_compose_file, 'masterurl', None, None, None, None, None,
-            'groupname', 'groupqualifier', '1',
-            'registryhost', 'registryuser', 'registrypassword', 100)
-        self.assertRaises(ValueError, p._get_next_color, {'apps':[]})
-
-    def test_update_port_mappings(self):
-        p = dockercomposeparser.DockerComposeParser(
-            self.test_compose_file, 'masterurl', None, None, None, None, None,
-            'groupname', 'groupqualifier', '1',
-            'registryhost', 'registryuser', 'registrypassword', 100)
-
-        marathon_app = {
-            'id': '/mygroup/service-b',
-            'container': {
-                'docker': {}
-            },
-            'labels': {}
-        }
-        vip_tuples = {'/mygroup/service-b': (0, 2), '/mygroup/service-a': (0, 3)}
-        service_info = {'expose': [80]}
-        current_color = 'blue'
-
-
-        expected = { 
-            'id': '/mygroup/service-b',
             'container': {
                 'docker': {
-                    'portMappings': [{
-                        'labels': {'VIP_0': '10.64.0.2:80'},
+                    'portMappings':[{
+                        'labels': {},
                         'protocol': 'tcp',
-                        'containerPort': 80,
-                        'name': 'blue-80',
-                        'hostPort': 0
-                        }]
-                    }
-                },
-            'labels': {
-            'color': 'blue',
-            'VIP': '0.2'
-            }}
+                        'containerPort': 0,
+                        'hostPort': 0,
+                        'servicePort': 10000
+                    }]
+                }
+            }
+        }]}
 
-        p._update_port_mappings(marathon_app, vip_tuples, service_info, current_color)
-        self.assertEquals(expected, marathon_app)
+        ips = {}
+        expected = {'new/group/id/app_1': '10.64.0.0'}
+        actual = p._create_or_update_private_ips(apps_json, 'new/group/id', ips)
+        self.assertEquals(expected, actual)
+
+    def test_create_private_ips_extra_slash(self):
+        p = dockercomposeparser.DockerComposeParser(
+            self.test_compose_file, 'masterurl', None, None, None, None, None,
+            'groupname', 'groupqualifier', '1',
+            'registryhost', 'registryuser', 'registrypassword', 100)
+
+        apps_json = {'apps':[{
+            'id': 'group_1/app_1',
+            'container': {
+                'docker': {
+                    'portMappings':[{
+                        'labels': {},
+                        'protocol': 'tcp',
+                        'containerPort': 0,
+                        'hostPort': 0,
+                        'servicePort': 10000
+                    }]
+                }
+            }
+        }]}
+        ips = {}
+        expected = {'new/group/id/app_1': '10.64.0.0'}
+        actual = p._create_or_update_private_ips(apps_json, 'new/group/id/', ips)
+        self.assertEquals(expected, actual)
+
+    def test_create_private_ips_multiple_apps(self):
+        p = dockercomposeparser.DockerComposeParser(
+            self.test_compose_file, 'masterurl', None, None, None, None, None,
+            'groupname', 'groupqualifier', '1',
+            'registryhost', 'registryuser', 'registrypassword', 100)
+
+        apps_json = {'apps':[{
+            'id': 'group_1/app_1',
+            'container': {
+                'docker': {
+                    'portMappings':[{
+                        'labels': {},
+                        'servicePort': 10000}]
+                    }
+                }
+            },
+            {
+                'id': 'group_2/app_2',
+                'container': {
+                'docker': {
+                    'portMappings':[{
+                        'labels': {},
+                        'servicePort': 10001
+                    }]
+                    }
+                }
+            }]
+        }
+
+        ips = {}
+        expected = {'new/group/id/app_1': '10.64.0.0', 'new/group/id/app_2': '10.64.0.1'}
+        actual = p._create_or_update_private_ips(apps_json, 'new/group/id/', ips)
+        self.assertEquals(expected, actual)
+
+    def test_create_private_ips_missing_vip(self):
+        p = dockercomposeparser.DockerComposeParser(
+            self.test_compose_file, 'masterurl', None, None, None, None, None,
+            'groupname', 'groupqualifier', '1',
+            'registryhost', 'registryuser', 'registrypassword', 100)
+
+        apps_json = {'apps':[{
+            'id': 'group_1/app_1',
+            'container': {
+                'docker': {
+                    'portMappings':[{
+                        'labels': {},
+                        'protocol': 'tcp',
+                        'containerPort': 0,
+                        'hostPort': 0,
+                        'servicePort': 10000}]
+                    }
+                }
+            },
+            {
+                'id': 'group_2/app_2'
+            }]
+        }
+
+        vip_tuples = {}
+        self.assertRaises(Exception, p._create_or_update_private_ips, apps_json, 'new/group/id/', vip_tuples)
+
+    def test_create_private_ips_switch_ip(self):
+        p = dockercomposeparser.DockerComposeParser(
+            self.test_compose_file, 'masterurl', None, None, None, None, None,
+            'groupname', 'groupqualifier', '1',
+            'registryhost', 'registryuser', 'registrypassword', 100)
+
+        apps_json = {'apps':[{
+            'id': 'group_1/app_1',
+            'container': {
+                'docker':{
+                    'portMappings':[
+                        {
+                            'labels': {
+                                'VIP_0': '10.64.0.0'
+                            }
+                        }
+                    ]
+                }
+            }
+        }]}
+
+        ips = {}
+        actual = p._create_or_update_private_ips(apps_json, 'new/group/id/', ips)
+        expected = {'new/group/id/app_1': '10.128.0.0'}
+        self.assertEquals(expected, actual)
+
+    def test_create_private_ips_existing_ip(self):
+        p = dockercomposeparser.DockerComposeParser(
+            self.test_compose_file, 'masterurl', None, None, None, None, None,
+            'groupname', 'groupqualifier', '1',
+            'registryhost', 'registryuser', 'registrypassword', 100)
+
+        apps_json = {'apps':[{
+            'id': 'group_1/app_1',
+            'container': {
+                'docker':{
+                    'portMappings':[
+                        {
+                            'labels': {
+                                'VIP_0': '10.64.0.0'
+                            }
+                        }
+                    ]
+                }
+            }
+        }]}
+
+        ips = { 'group_1/app_1': '10.64.0.0'}
+        actual = p._create_or_update_private_ips(apps_json, 'new/group/id/', ips)
+        expected = {'group_1/app_1': '10.64.0.0'}
+        self.assertEquals(expected, actual)
 
     def test_add_dependencies(self):
         p = dockercomposeparser.DockerComposeParser(
@@ -367,14 +302,14 @@ class DockerComposeParserTests(unittest.TestCase):
                 'parameters': []
             }
         }}
-        vip_tuples = {'/mygroup/service-b': (0, 2), '/mygroup/service-a': (0, 3)}
+        vip_tuples = {'/mygroup/service-b': '1.1.1.1', '/mygroup/service-a': '1.1.1.2'}
         expected = {'container': {
             'docker': {
-                'parameters': [{'value': 'service-a:10.64.0.3', 'key': 'add-host'}]
+                'parameters': [{'value': 'service-a:1.1.1.2', 'key': 'add-host'}]
                 }
             }
         }
-        p._add_host(marathon_app, '/mygroup/service-a', vip_tuples, 'blue')
+        p._add_host(marathon_app, '/mygroup/service-a', vip_tuples)
         self.assertEquals(expected, marathon_app)
 
     def test_add_host_alias(self):
@@ -387,14 +322,14 @@ class DockerComposeParserTests(unittest.TestCase):
                 'parameters': []
             }
         }}
-        vip_tuples = {'/mygroup/service-b': (0, 2), '/mygroup/service-a': (0, 3)}
+        vip_tuples = {'/mygroup/service-b': '1.1.1.1', '/mygroup/service-a': '1.1.1.2'}
         expected = {'container': {
             'docker': {
-                'parameters': [{'value': 'myalias:10.64.0.3', 'key': 'add-host'}]
+                'parameters': [{'value': 'myalias:1.1.1.2', 'key': 'add-host'}]
                 }
             }
         }
-        p._add_host(marathon_app, '/mygroup/service-a', vip_tuples, 'blue','myalias')
+        p._add_host(marathon_app, '/mygroup/service-a', vip_tuples,'myalias')
         self.assertEquals(expected, marathon_app)
 
     def test_add_hosts(self):
@@ -409,7 +344,7 @@ class DockerComposeParserTests(unittest.TestCase):
                     'parameters': []
                 }
         }}
-        expected = {'container': {'docker': {'parameters': [{'value': 'service-c:10.64.0.4', 'key': 'add-host'}, {'value': 'service-b:10.64.0.2', 'key': 'add-host'}]}}, 'id': '/mygroup/service-a'}
-        vip_tuples = {'/mygroup/service-c': (0, 4), '/mygroup/service-b': (0, 2), '/mygroup/service-a': (0, 3)}
-        p._add_hosts(marathon_app, vip_tuples, 'blue')
+        expected = {'container': {'docker': {'parameters': [{'value': 'service-c:1.1.1.1', 'key': 'add-host'}, {'value': 'service-b:1.1.1.2', 'key': 'add-host'}]}}, 'id': '/mygroup/service-a'}
+        vip_tuples = {'/mygroup/service-c': '1.1.1.1', '/mygroup/service-b': '1.1.1.2', '/mygroup/service-a': '1.1.1.3'}
+        p._add_hosts(marathon_app, vip_tuples)
         self.assertEquals(expected, marathon_app)

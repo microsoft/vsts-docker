@@ -100,17 +100,18 @@ class Parser(object):
                 self.app_json['healthChecks'] = healthcheck_json
 
             for label in self.service_info[key]:
-                if isinstance(self.service_info[key], dict):
-                    self.app_json['labels'][label] = str(self.service_info[key][label])
-                else:
-                    if '=' in label:
-                        label_split = label.split('=')
-                        label_name = label_split[0]
-                        label_value = label_split[1]
-                        self.app_json['labels'][label_name] = str(label_value)
+                if not label.startswith('com.microsoft.acs.dcos'):
+                    if isinstance(self.service_info[key], dict):
+                        self.app_json['labels'][label] = str(self.service_info[key][label])
                     else:
-                        # label without a value
-                        self.app_json['labels'][label] = ''
+                        if '=' in label:
+                            label_split = label.split('=')
+                            label_name = label_split[0]
+                            label_value = label_split[1]
+                            self.app_json['labels'][label_name] = str(label_value)
+                        else:
+                            # label without a value
+                            self.app_json['labels'][label] = ''
 
     def _parse_mem_limit(self, key):
         """

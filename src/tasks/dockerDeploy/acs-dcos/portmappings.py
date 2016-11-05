@@ -1,3 +1,4 @@
+import json
 import types
 
 
@@ -48,7 +49,7 @@ class PortMappings(object):
 
         return len(range(first_split_start, first_split_end)) == len(range(second_split_start, second_split_end))
 
-    def _parse_internal_ports(self, service_data):
+    def _parse_private_ports(self, service_data):
         """
         Parses the 'expose' key in the docker-compose file and returns a
         list of tuples with port numbers. These tuples are used
@@ -69,7 +70,7 @@ class PortMappings(object):
                 raise ValueError('Port number "%s" is not a valid number', port_entry)
         return port_tuple_list
 
-    def _parse_published_ports(self, service_data):
+    def _parse_internal_ports(self, service_data):
         """
         Parses the 'ports' key in the docker-compose file and returns a list of
         tuples with port numbers. These tuples are used to create
@@ -121,76 +122,145 @@ class PortMappings(object):
                         raise ValueError('One of the ports is not a valid number')
         return port_tuple_list
 
-
-    def _create_port_mapping(self, container_port, vip_port, color, service_mapping):
-        """
-        Creates a single port mapping with provided information
-        """
-        if not self._is_number(container_port):
-            raise ValueError('Container port "%s" is not a valid number', vip_port)
-
-        if not self._is_number(vip_port):
-            raise ValueError('VIP port "%s" is not a valid number', vip_port)
-
-        if not color:
-            raise ValueError('Color is not set')
-
-        if not isinstance(service_mapping, types.TupleType):
-            raise TypeError('Service mapping "%s" has to be a tuple (e.g. (16,10)', service_mapping)
-
-        port_to_use = str(vip_port)
-        # Use container port in the VIP for non-cyan ports
-        if color != 'cyan':
-            port_to_use = str(container_port)
-
+    def _get_port_mapping_json(self):
         return {
-            'containerPort': int(container_port),
+            'containerPort': 0,
             'hostPort': 0,
             'protocol': 'tcp',
-            'name': color + '-' + port_to_use,
             'labels': {
-                'VIP_0': self.create_vip(color, service_mapping) + ':' + port_to_use
-                }}
+            }
+        }
 
-    def create_vip(self, color, vip_tuple):
+    def _parse_vhost_label(self, vhost_label):
         """
-        Takes a color and tuple that represents an IP address and creates a VIP
+        Parses the vhost label string (host:[port]) and
+        returns a tuple (host, port)
         """
-        if vip_tuple[0] > 255 or vip_tuple[0] < 0 or vip_tuple[1] > 255 or vip_tuple[1] < 0:
-            raise ValueError('Tuple value needs to be > 0 and < 255')
-        if color == 'blue':
-            return '10.64.' + str(vip_tuple[0]) + '.' + str(vip_tuple[1])
-        elif color == 'green':
-            return '10.128.' + str(vip_tuple[0]) + '.' + str(vip_tuple[1])
-        elif color == 'cyan':
-            return '172.24.' + str(vip_tuple[0]) + '.' + str(vip_tuple[1])
-        else:
-            raise ValueError('Color "{}" is not valid'.format(color))
+        if not vhost_label:
+            return None
 
-    def get_port_mappings(self, service_tuple, color, service_data):
+        vhost = vhost_label
+        vhost_port = 80
+        if ':' in vhost_label:
+            vhost_split = vhost_label.split(':')
+            vhost = vhost_split[0]
+            vhost_port = vhost_split[1]
+
+        return vhost, int(vhost_port)
+
+    def _parse_vhost_json(self, vhost_json):
+        """
+        Parse the vhosts JSON value
+        """
+        if not vhost_json:
+            return None
+
+        vhost_items = json.loads(vhost_json)
+        parsed = {}
+        for item in vhost_items:
+            vhost, port = self._parse_vhost_label(item)
+            parsed[vhost] = port
+        return parsed
+
+    def _merge_dicts(self, dict_a, dict_b):
+        """
+        Merges two dictionaries
+        """
+        result = dict_a.copy()
+        result.update(dict_b)
+        return result
+
+    def _get_all_vhosts(self, service_data):
+        """
+        Gets a dictionary with all vhosts and their ports
+        """
+        vhost_label = 'com.microsoft.acs.dcos.marathon.vhost'
+        vhosts_label = 'com.microsoft.acs.dcos.marathon.vhosts'
+        all_vhosts = {}
+
+        if not 'labels' in service_data:
+            return {}
+
+        for label in service_data['labels']:
+            if label == vhosts_label:
+                parsed = self._parse_vhost_json(service_data['labels'][vhosts_label])
+                all_vhosts = self._merge_dicts(all_vhosts, parsed)
+            elif label == vhost_label:
+                vhost_item = service_data['labels'][vhost_label]
+                vhost, port = self._parse_vhost_label(vhost_item)
+                all_vhosts[vhost] = port
+            else:
+                if '=' in label:
+                    split = label.split('=')
+                    if split[0] == vhost_label:
+                        # "vhost='www.contoto.com:80'"
+                        vhost, port = self._parse_vhost_label(split[1])
+                        all_vhosts[vhost] = port
+                    elif split[0] == vhosts_label:
+                        # "vhosts=['www.blah.com:80','api.blah.com:81']"
+                        parsed = self._parse_vhost_json(split[1].replace("'", '"'))
+                        all_vhosts = self._merge_dicts(all_vhosts, parsed)
+        return all_vhosts
+
+    def _set_external_port_mappings(self, service_data, ip_address, existing_port_mappings):
+        all_vhosts = self._get_all_vhosts(service_data)
+        for vhost in all_vhosts:
+            vhost_added = False
+            port = all_vhosts[vhost]
+            port = str(port).strip()
+            external_vip = vhost + '.external' + ':' + port
+            for port_mapping in existing_port_mappings:
+                if str(port_mapping['containerPort']).strip() == port:
+                    port_mapping['labels']['VIP_2'] = external_vip
+                    vhost_added = True
+            if not vhost_added:
+                # Create a new port mapping
+                port_mapping = self._get_port_mapping_json()
+                port_mapping['containerPort'] = int(port)
+                port_mapping['labels']['VIP_0'] = ip_address + ':' + port
+                port_mapping['labels']['VIP_2'] = external_vip
+                existing_port_mappings.append(port_mapping)
+
+    def _get_internal_port_mappings(self, service_data, ip_address, vip_name):
+        port_mappings = []
+        internal_ports = self._parse_internal_ports(service_data)
+
+        for internal_port in internal_ports:
+            port_mapping = self._get_port_mapping_json()
+            vip_port = internal_port[0]
+            container_port = internal_port[1]
+            port_mapping['containerPort'] = int(container_port)
+            port_mapping['labels']['VIP_0'] = ip_address + ':' + str(container_port)
+            port_mapping['labels']['VIP_1'] = vip_name + '.internal' + ':' + str(vip_port)
+            port_mappings.append(port_mapping)
+
+        return port_mappings
+
+    def _get_private_port_mappings(self, service_data, ip_address):
+        port_mappings = []
+        private_ports = self._parse_private_ports(service_data)
+
+        for private_port in private_ports:
+            port_mapping = self._get_port_mapping_json()
+            container_port = private_port[0]
+            port_mapping['containerPort'] = int(container_port)
+            port_mapping['labels']['VIP_0'] = ip_address + ':' + str(container_port)
+            port_mappings.append(port_mapping)
+
+        return port_mappings
+
+    def get_port_mappings(self, ip_address, service_data, vip_name):
         """
         Creates portMappings entry for the marathon.json file.
         """
-        port_mappings = []
+        if ':' in ip_address:
+            split = ip_address.split(':')
+            ip_address = split[0]
 
-        # Need to add cyan portMapping for published ports ('ports' key in docker-compose)
-        published_ports = self._parse_published_ports(service_data)
+        private_port_mappings = self._get_private_port_mappings(service_data, ip_address)
+        internal_port_mappings = self._get_internal_port_mappings(
+            service_data, ip_address, vip_name)
+        all_mappings = internal_port_mappings + private_port_mappings
 
-        for pp in published_ports:
-            vip_port = pp[0]
-            container_port = pp[1]
-            port_mappings.append(self._create_port_mapping(
-                container_port, vip_port, color, service_tuple))
-            port_mappings.append(self._create_port_mapping(
-                container_port, vip_port, 'cyan', service_tuple))
-
-        # No need for cyan portMapping for internal ports ('expose' key in docker-compose)
-        internal_ports = self._parse_internal_ports(service_data)
-        for ip in internal_ports:
-            vip_port = ip[0]
-            container_port = ip[0]
-            mapping = self._create_port_mapping(
-                container_port, vip_port, color, service_tuple)
-            if mapping not in port_mappings:
-                port_mappings.append(mapping)
-        return port_mappings
+        self._set_external_port_mappings(service_data, ip_address, all_mappings)
+        return all_mappings
