@@ -2,11 +2,7 @@
     "manifestVersion": 1,
     "id": "docker",
     "name": "Docker Integration",
-<<<<<<< HEAD
     "version": "0.3.0",
-=======
-    "version": "0.2.11",
->>>>>>> master
     "publisher": "ms-vscs-rm",
     "description": "Build, push, run or deploy Docker images and multi-container Docker applications.",
     "galleryFlags": [
