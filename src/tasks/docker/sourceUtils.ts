@@ -8,7 +8,8 @@ export function getSourceTags(): string[] {
 
     var sourceProvider = tl.getVariable("Build.Repository.Provider");
     if (!sourceProvider) {
-        throw new Error("Cannot retrieve source tags because Build.Repository.Provider is not set.");
+        tl.warning("Cannot retrieve source tags because Build.Repository.Provider is not set.");
+        return [];
     }
     if (sourceProvider === "TfsVersionControl") {
         // TFVC has no concept of source tags
@@ -17,7 +18,8 @@ export function getSourceTags(): string[] {
 
     var sourceVersion = tl.getVariable("Build.SourceVersion");
     if (!sourceVersion) {
-        throw new Error("Cannot retrieve source tags because Build.SourceVersion is not set.");
+        tl.warning("Cannot retrieve source tags because Build.SourceVersion is not set.");
+        return [];
     }
 
     switch (sourceProvider) {
