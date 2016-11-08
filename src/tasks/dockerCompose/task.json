@@ -78,10 +78,10 @@
             "label": "Action",
             "required": true,
             "options": {
-                "Build services": "Build services",
-                "Push services": "Push services",
-                "Run services": "Run services",
-                "Run a specific service": "Run a specific service",
+                "Build services": "Build service images",
+                "Push services": "Push service images",
+                "Run services": "Run service images",
+                "Run a specific service": "Run a specific service image",
                 "Write service image digests": "Write service image digests",
                 "Combine configuration": "Combine configuration",
                 "Run a Docker Compose command": "Run a Docker Compose command"
