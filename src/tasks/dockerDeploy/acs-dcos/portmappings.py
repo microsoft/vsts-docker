@@ -182,21 +182,21 @@ class PortMappings(object):
             return {}
 
         for label in service_data['labels']:
-            if label == vhosts_label:
-                parsed = self._parse_vhost_json(service_data['labels'][vhosts_label])
+            if label.lower() == vhosts_label:
+                parsed = self._parse_vhost_json(service_data['labels'][label])
                 all_vhosts = self._merge_dicts(all_vhosts, parsed)
-            elif label == vhost_label:
-                vhost_item = service_data['labels'][vhost_label]
+            elif label.lower() == vhost_label:
+                vhost_item = service_data['labels'][label]
                 vhost, port = self._parse_vhost_label(vhost_item)
                 all_vhosts[vhost] = port
             else:
                 if '=' in label:
                     split = label.split('=')
-                    if split[0] == vhost_label:
+                    if split[0].lower() == vhost_label:
                         # "vhost='www.contoto.com:80'"
                         vhost, port = self._parse_vhost_label(split[1])
                         all_vhosts[vhost] = port
-                    elif split[0] == vhosts_label:
+                    elif split[0].lower() == vhosts_label:
                         # "vhosts=['www.blah.com:80','api.blah.com:81']"
                         parsed = self._parse_vhost_json(split[1].replace("'", '"'))
                         all_vhosts = self._merge_dicts(all_vhosts, parsed)

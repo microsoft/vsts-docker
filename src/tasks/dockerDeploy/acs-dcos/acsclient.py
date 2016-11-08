@@ -155,7 +155,6 @@ class ACSClient(object):
             response = method_to_call(url, data, headers=headers, **kwargs)
 
         if response.status_code > 400:
-            logging.error('Call to "%s" failed with: %s', url, response.text)
             raise Exception('Call to "%s" failed with: %s', url, response.text)
         return response
 

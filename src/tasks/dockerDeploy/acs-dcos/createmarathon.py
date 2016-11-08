@@ -4,6 +4,8 @@ import sys
 import traceback
 
 import dockercomposeparser
+from deploymentexception import DeploymentException
+
 
 class VstsLogFormatter(logging.Formatter):
     error_format = logging.Formatter('##[error] (%(name)s): %(message)s')
@@ -103,16 +105,20 @@ if __name__ == '__main__':
     arguments = process_arguments()
     init_logger(arguments.verbose)
     try:
-        with dockercomposeparser.DockerComposeParser(
+        compose_parser = dockercomposeparser.DockerComposeParser(
             arguments.compose_file, arguments.dcos_master_url, arguments.acs_host,
             arguments.acs_port, arguments.acs_username, arguments.acs_password,
             arguments.acs_private_key, arguments.group_name, arguments.group_qualifier,
             arguments.group_version, arguments.registry_host, arguments.registry_username,
             arguments.registry_password, arguments.minimum_health_capacity,
-            check_dcos_version=True) as compose_parser:
-            compose_parser.deploy()
+            check_dcos_version=True)
+        compose_parser.deploy()
         sys.exit(0)
-    except Exception as e:
-        var = traceback.format_exc()
-        print var
-        sys.exit(1)
+    except DeploymentException as deployment_exc:
+        logging.error('Error occurred during deployment: %s', deployment_exc)
+        try:
+            compose_parser.cleanup()
+        except Exception as exc:
+            logging.error('Error occurred removing the group: %s', exc)
+        finally:
+            sys.exit(1)

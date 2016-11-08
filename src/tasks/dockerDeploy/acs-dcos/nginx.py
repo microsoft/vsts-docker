@@ -20,11 +20,19 @@ class LoadBalancerApp(object):
         to be install and ensures it is installed
         """
         for _, service_info in compose_data['services'].items():
-            if 'labels' in service_info:
-                for label in service_info['labels']:
-                    if label.startswith('com.microsoft.acs.dcos.marathon.vhost'):
-                        self.marathon_helper.ensure_exists(Exhibitor.APP_ID, Exhibitor.JSON_FILE)
-                        self._install()
+            if self._has_external_label(service_info):
+                self._install()
+                break
+
+    def _has_external_label(self, service_info):
+        """
+        Checks if the service has a vhost label set
+        """
+        if 'labels' in service_info:
+            for label in service_info['labels']:
+                if label.startswith('com.microsoft.acs.dcos.marathon.vhost'):
+                    return True
+        return False
 
     def _install(self):
         """

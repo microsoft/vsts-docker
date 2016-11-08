@@ -139,37 +139,37 @@ class ServiceParserTests(unittest.TestCase):
         self.assertEquals({}, p.app_json)
 
     def test_parse_labels_healthcheck_dict(self):
-        expected = {'healthChecks': [{'portIndex': 5, 'protocol': 'HTTP', 'timeoutSeconds': 20, 'intervalSeconds': 5, 'gracePeriodSeconds': 300, 'maxConsecutiveFailures': 3}], 'labels': {'com.microsoft.azure.acs.dcos.marathon.healthcheck.portIndex': 5}}
+        expected = {'healthChecks': [{'portIndex': 5, 'protocol': 'HTTP', 'timeoutSeconds': 20, 'intervalSeconds': 5, 'gracePeriodSeconds': 300, 'maxConsecutiveFailures': 3}]}
         p = serviceparser.Parser('groupname', 'myservice', {'labels': {'com.microsoft.acs.dcos.marathon.healthcheck.portIndex':'5'}})
         p._parse_labels('labels')
         self.assertEquals(sorted(expected), sorted(p.app_json))
 
     def test_parse_labels_healthcheck_dict_true(self):
-        expected = {'healthChecks': [{'portIndex': 5, 'protocol': 'HTTP', 'timeoutSeconds': 20, 'intervalSeconds': 5, 'gracePeriodSeconds': 300, 'maxConsecutiveFailures': 3}], 'labels': {'com.microsoft.azure.acs.dcos.marathon.healthcheck.portIndex': 5}}
+        expected = {'healthChecks': [{'portIndex': 5, 'protocol': 'HTTP', 'timeoutSeconds': 20, 'intervalSeconds': 5, 'gracePeriodSeconds': 300, 'maxConsecutiveFailures': 3}]}
         p = serviceparser.Parser('groupname', 'myservice', {'labels': {'com.microsoft.acs.dcos.marathon.healthcheck':'true'}})
         p._parse_labels('labels')
         self.assertEquals(sorted(expected), sorted(p.app_json))
 
     def test_parse_labels_healthcheck_dict_cmd(self):
-        expected = {'healthChecks': [{'portIndex': 0, 'command': {'value': '/bin/bash blah'}, 'protocol': 'COMMAND', 'timeoutSeconds': 20, 'intervalSeconds': 5, 'gracePeriodSeconds': 300, 'maxConsecutiveFailures': 3}], 'labels': {'com.microsoft.azure.acs.dcos.marathon.healthcheck.command': '/bin/bash blah'}}
+        expected = {'healthChecks': [{'portIndex': 0, 'command': {'value': '/bin/bash blah'}, 'protocol': 'COMMAND', 'timeoutSeconds': 20, 'intervalSeconds': 5, 'gracePeriodSeconds': 300, 'maxConsecutiveFailures': 3}]}
         p = serviceparser.Parser('groupname', 'myservice', {'labels': {'com.microsoft.acs.dcos.marathon.healthcheck.command': '/bin/bash blah'}})
         p._parse_labels('labels')
         self.assertEquals(sorted(expected), sorted(p.app_json))
 
     def test_parse_labels_healthcheck_http_port_index(self):
-        expected = {'healthChecks': [{'portIndex': 5, 'protocol': 'HTTP', 'timeoutSeconds': 20, 'intervalSeconds': 5, 'gracePeriodSeconds': 300, 'maxConsecutiveFailures': 3}], 'labels': {'com.microsoft.azure.acs.dcos.marathon.healthcheck.portIndex': 5}}
+        expected = {'healthChecks': [{'portIndex': 5, 'protocol': 'HTTP', 'timeoutSeconds': 20, 'intervalSeconds': 5, 'gracePeriodSeconds': 300, 'maxConsecutiveFailures': 3}]}
         p = serviceparser.Parser('groupname', 'myservice', {'labels': ['com.microsoft.acs.dcos.marathon.healthcheck.portIndex=5']})
         p._parse_labels('labels')
         self.assertEquals(sorted(expected), sorted(p.app_json))
 
     def test_parse_labels_healthcheck_tcp(self):
-        expected = {'healthChecks': [{'portIndex': 0, 'protocol': 'TCP', 'timeoutSeconds': 20, 'intervalSeconds': 5, 'gracePeriodSeconds': 300, 'maxConsecutiveFailures': 3}], 'labels': {'com.microsoft.azure.acs.dcos.marathon.healthcheck': 'true'}}
+        expected = {'healthChecks': [{'portIndex': 0, 'protocol': 'TCP', 'timeoutSeconds': 20, 'intervalSeconds': 5, 'gracePeriodSeconds': 300, 'maxConsecutiveFailures': 3}]}
         p = serviceparser.Parser('groupname', 'myservice', {'labels': ['com.microsoft.acs.dcos.marathon.healthcheck=true']})
         p._parse_labels('labels')
         self.assertEquals(sorted(expected), sorted(p.app_json))
 
     def test_parse_labels_healthcheck_cmd(self):
-        expected = {'healthChecks': [{'portIndex': 0, 'command': {'value': '/bin/bash blah'}, 'protocol': 'COMMAND', 'timeoutSeconds': 20, 'intervalSeconds': 5, 'gracePeriodSeconds': 300, 'maxConsecutiveFailures': 3}], 'labels': {'com.microsoft.azure.acs.dcos.marathon.healthcheck.command': '/bin/bash blah'}}
+        expected = {'healthChecks': [{'portIndex': 0, 'command': {'value': '/bin/bash blah'}, 'protocol': 'COMMAND', 'timeoutSeconds': 20, 'intervalSeconds': 5, 'gracePeriodSeconds': 300, 'maxConsecutiveFailures': 3}]}
         p = serviceparser.Parser('groupname', 'myservice', {'labels': ['com.microsoft.acs.dcos.marathon.healthcheck.command=/bin/bash blah']})
         p._parse_labels('labels')
         self.assertEquals(sorted(expected), sorted(p.app_json))
@@ -182,7 +182,7 @@ class ServiceParserTests(unittest.TestCase):
             'intervalSeconds': 5,
             'gracePeriodSeconds': 300,
             'maxConsecutiveFailures': 3}]
-        expected = {'healthChecks': [{'portIndex': 0, 'protocol': 'MYCHECKHEALTHCHECK', 'timeoutSeconds': 20, 'intervalSeconds': 5, 'gracePeriodSeconds': 300, 'maxConsecutiveFailures': 3}], 'labels': {'com.microsoft.azure.acs.dcos.marathon.healthchecks': json.dumps(my_hc)}}
+        expected = {'healthChecks': [{'portIndex': 0, 'protocol': 'MYCHECKHEALTHCHECK', 'timeoutSeconds': 20, 'intervalSeconds': 5, 'gracePeriodSeconds': 300, 'maxConsecutiveFailures': 3}]}
         p = serviceparser.Parser('groupname', 'myservice', {'labels': ['com.microsoft.acs.dcos.marathon.healthchecks={}'.format(json.dumps(my_hc))]})
         p._parse_labels('labels')
         self.assertEquals(sorted(expected), sorted(p.app_json))
@@ -195,7 +195,7 @@ class ServiceParserTests(unittest.TestCase):
             'intervalSeconds': 5,
             'gracePeriodSeconds': 300,
             'maxConsecutiveFailures': 3}]
-        expected = {'healthChecks': [{'portIndex': 0, 'protocol': 'MYCHECKHEALTHCHECK', 'timeoutSeconds': 20, 'intervalSeconds': 5, 'gracePeriodSeconds': 300, 'maxConsecutiveFailures': 3}], 'labels': {'com.microsoft.azure.acs.dcos.marathon.healthchecks': json.dumps(my_hc)}}
+        expected = {'healthChecks': [{'portIndex': 0, 'protocol': 'MYCHECKHEALTHCHECK', 'timeoutSeconds': 20, 'intervalSeconds': 5, 'gracePeriodSeconds': 300, 'maxConsecutiveFailures': 3}]}
         p = serviceparser.Parser('groupname', 'myservice', {'labels': {'com.microsoft.acs.dcos.marathon.healthchecks': '[{"portIndex": 0, "protocol": "myhc", "timeout": 30}]'}})
         p._parse_labels('labels')
         self.assertEquals(sorted(expected), sorted(p.app_json))
@@ -293,7 +293,7 @@ class ServiceParserTests(unittest.TestCase):
         self.assertEquals({}, p.app_json)
 
     def test_parse_user(self):
-        expected = {'container': {'docker': {'parameters': [{'key': 'user', 'value': 'admin'}]}}}
+        expected = { 'user': 'admin' }
         p = serviceparser.Parser('groupname', 'myservice', {'user': 'admin'})
         p._parse_user('user')
         self.assertEquals(expected, p.app_json)

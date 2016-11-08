@@ -11,6 +11,7 @@ import dockerregistry
 import marathon
 import portmappings
 import serviceparser
+from deploymentexception import DeploymentException
 from exhibitor import Exhibitor
 from nginx import LoadBalancerApp
 
@@ -71,12 +72,16 @@ class DockerComposeParser(object):
             raise Exception('Docker compose file "{}" was not found.'.format(docker_compose_file))
         with open(docker_compose_file, 'r') as f:
             compose_data = yaml.load(f)
+            if 'services' not in compose_data.keys():
+                raise ValueError(
+                    'Docker compose file "{}" is missing services information.'.format(
+                        docker_compose_file))
             if 'version' not in compose_data.keys():
-                raise Exception(
+                raise ValueError(
                     'Docker compose file "{}" is missing version information.'.format(
                         docker_compose_file))
             if not docker_compose_expected_version in compose_data['version']:
-                raise Exception(
+                raise ValueError(
                     'Docker compose file "{}" has incorrect version. \
                     Only version "{}" is supported.'.format(
                         docker_compose_file,
@@ -207,7 +212,7 @@ class DockerComposeParser(object):
             try:
                 port_mappings = app['container']['docker']['portMappings']
             except KeyError:
-                raise Exception('Could not find container/docker/portMappings key')
+                pass
 
             if port_mappings is None:
                 continue
@@ -255,7 +260,11 @@ class DockerComposeParser(object):
             for dependency in service_info['depends_on']:
                 all_dependency_ids = [t for t in private_ips if t.endswith(dependency)]
                 if len(all_dependency_ids) > 0:
-                    marathon_app['dependencies'].append(all_dependency_ids[0])
+                    # Check if the dependency is already added, before
+                    # adding it, so we don't get dupes
+                    exists = [d for d in marathon_app['dependencies'] if d.lower() == all_dependency_ids[0]]
+                    if len(exists) == 0:
+                        marathon_app['dependencies'].append(all_dependency_ids[0])
 
     def _add_host(self, marathon_app, app_id, private_ips, alias=None):
         """
@@ -287,17 +296,25 @@ class DockerComposeParser(object):
             if not app_id.endswith(marathon_app_id.split('/')[-1]):
                 self._add_host(marathon_app, app_id, private_ips)
 
+    def cleanup(self):
+        """
+        Removes the group we were trying to deploy in case exception occurs
+        """
+        try:
+            group_id = self._get_group_id()
+            logging.info('Removing "%s".', group_id)
+            self.marathon_helper.delete_group(group_id)
+        except Exception as remove_exception:
+            raise remove_exception
+
     def deploy(self):
         """
         Deploys the services defined in docker-compose.yml file
         """
         try:
             self._deploy()
-        except Exception as exc:
-            group_id = self._get_group_id()
-            logging.exception('Exception occurred deploying "%s"', group_id)
-            logging.info('Removing "%s".', group_id)
-            self.marathon_helper.delete_group(group_id)
+        except Exception as e:
+            raise DeploymentException(e)
 
     def _deploy(self):
         """
@@ -332,7 +349,7 @@ class DockerComposeParser(object):
         for service_name, service_info in self.compose_data['services'].items():
             # Get the corresponding marathon JSON for the service in docker-compose file
             marathon_app = [app for app in marathon_json['apps'] \
-                                 if app['id'].endswith(service_name)][0]
+                                 if app['id'].endswith('/' + service_name)][0]
 
             logging.info('Updating port mappings for "%s"', marathon_app['id'])
             self._update_port_mappings(

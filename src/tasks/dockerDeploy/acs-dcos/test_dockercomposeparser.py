@@ -176,33 +176,6 @@ class DockerComposeParserTests(unittest.TestCase):
         actual = p._create_or_update_private_ips(apps_json, 'new/group/id/', ips)
         self.assertEquals(expected, actual)
 
-    def test_create_private_ips_missing_vip(self):
-        p = dockercomposeparser.DockerComposeParser(
-            self.test_compose_file, 'masterurl', None, None, None, None, None,
-            'groupname', 'groupqualifier', '1',
-            'registryhost', 'registryuser', 'registrypassword', 100)
-
-        apps_json = {'apps':[{
-            'id': 'group_1/app_1',
-            'container': {
-                'docker': {
-                    'portMappings':[{
-                        'labels': {},
-                        'protocol': 'tcp',
-                        'containerPort': 0,
-                        'hostPort': 0,
-                        'servicePort': 10000}]
-                    }
-                }
-            },
-            {
-                'id': 'group_2/app_2'
-            }]
-        }
-
-        vip_tuples = {}
-        self.assertRaises(Exception, p._create_or_update_private_ips, apps_json, 'new/group/id/', vip_tuples)
-
     def test_create_private_ips_switch_ip(self):
         p = dockercomposeparser.DockerComposeParser(
             self.test_compose_file, 'masterurl', None, None, None, None, None,
@@ -261,12 +234,26 @@ class DockerComposeParserTests(unittest.TestCase):
             'groupname', 'groupqualifier', '1',
             'registryhost', 'registryuser', 'registrypassword', 100)
         marathon_app = {'dependencies': []}
-        vip_tuples = {'/mygroup/service-b': (0, 2), '/mygroup/service-a': (0, 3)}
-        service_info = {'depends_on': 'service-b'}
-        expected = {'dependencies': ['/mygroup/service-b']}
+        vip_tuples = {'/mygroup/service-c': (0,1), '/mygroup/service-b': (0, 2), '/mygroup/service-a': (0, 3)}
+        service_info = {'depends_on': ['service-b', 'service-c']}
+        expected = {'dependencies': ['/mygroup/service-b', '/mygroup/service-c']}
 
         p._add_dependencies(marathon_app, vip_tuples, service_info)
         self.assertEquals(expected, marathon_app)
+
+    def test_add_dependencies_no_dupes(self):
+        p = dockercomposeparser.DockerComposeParser(
+            self.test_compose_file, 'masterurl', None, None, None, None, None,
+            'groupname', 'groupqualifier', '1',
+            'registryhost', 'registryuser', 'registrypassword', 100)
+        marathon_app = {'dependencies': ['/mygroup/service-b']}
+        vip_tuples = {'/mygroup/service-c': (0,1), '/mygroup/service-b': (0, 2), '/mygroup/service-a': (0, 3)}
+        service_info = {'depends_on': ['service-b', 'service-c']}
+        expected = {'dependencies': ['/mygroup/service-b', '/mygroup/service-c']}
+
+        p._add_dependencies(marathon_app, vip_tuples, service_info)
+        self.assertEquals(expected, marathon_app)
+
 
     def test_add_dependencies_no_depends_on(self):
         p = dockercomposeparser.DockerComposeParser(

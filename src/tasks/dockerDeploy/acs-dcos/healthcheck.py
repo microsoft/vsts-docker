@@ -3,7 +3,7 @@ import json
 
 class HealthCheck(object):
     PATH_LABEL = 'com.microsoft.acs.dcos.marathon.healthcheck.path'
-    PORT_INDEX_LABEL = 'com.microsoft.acs.dcos.marathon.healthcheck.portIndex'
+    PORT_INDEX_LABEL = 'com.microsoft.acs.dcos.marathon.healthcheck.portindex'
     COMMAND_LABEL = 'com.microsoft.acs.dcos.marathon.healthcheck.command'
     HEALTH_CHECK_LABEL = 'com.microsoft.acs.dcos.marathon.healthcheck'
     HEALTH_CHECKS_LABEL = 'com.microsoft.acs.dcos.marathon.healthchecks'
@@ -34,11 +34,12 @@ class HealthCheck(object):
         label_exists = False
         for label in self.labels:
             if '=' in label:
-                if label.split('=')[0] == name:
+                label_split = label.split('=')
+                if label_split[0].lower() == name:
                     label_exists = True
                     break
             else:
-                if label == name:
+                if label.lower() == name:
                     label_exists = True
                     break
 
@@ -52,11 +53,11 @@ class HealthCheck(object):
         for label in self.labels:
             if '=' in label:
                 label_split = label.split('=')
-                if label_split[0] == name:
+                if label_split[0].lower() == name:
                     label_value = label_split[1]
                     break
             else:
-                if label == name:
+                if label.lower() == name:
                     label_value = self.labels[label]
                     break
         return label_value

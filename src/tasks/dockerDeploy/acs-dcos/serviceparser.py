@@ -94,8 +94,6 @@ class Parser(object):
         Parses the 'labels' key
         """
         if key in self.service_info:
-            if not 'labels' in self.app_json:
-                self.app_json['labels'] = {}
 
             # Add healthchecks (if any healthcheck labels are set)
             healthcheck_helper = healthcheck.HealthCheck(self.service_info[key])
@@ -104,7 +102,9 @@ class Parser(object):
                 self.app_json['healthChecks'] = healthcheck_json
 
             for label in self.service_info[key]:
-                if not label.startswith('com.microsoft.acs.dcos'):
+                if not label.lower().startswith('com.microsoft.acs.dcos'):
+                    if not 'labels' in self.app_json:
+                        self.app_json['labels'] = {}
                     if isinstance(self.service_info[key], dict):
                         self.app_json['labels'][label] = str(self.service_info[key][label])
                     else:
@@ -124,7 +124,7 @@ class Parser(object):
         if key in self.service_info:
             mem_str = str(self.service_info[key]).strip()
             # String could be provided without a unit (default is bytes)
-            if not re.search('[a-zA-Z]', mem_str):
+            if not re.search('[a-zA-Z]$', mem_str):
                 unit = 'B'
                 value = float(mem_str)
             else:
@@ -164,7 +164,7 @@ class Parser(object):
         """
         if key in self.service_info:
             user = self.service_info[key]
-            self._append_parameters_key_value('user', user)
+            self.app_json['user'] = user
 
     def _parse_working_dir(self, key):
         """
