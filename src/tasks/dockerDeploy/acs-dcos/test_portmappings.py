@@ -158,7 +158,7 @@ class PortMappingsTest(unittest.TestCase):
         p = portmappings.PortMappings()
         expected = [{'labels': {'VIP_1': 'myvipname.internal:5000', 'VIP_0': '1.1.1.1:5000'}, 'protocol': 'tcp', 'containerPort': 5000, 'hostPort': 0}, {'labels': {'VIP_0': '1.1.1.1:3000'}, 'protocol': 'tcp', 'containerPort': 3000, 'hostPort': 0}]
         service_data = {'ports': ["5000"], 'expose': ["3000"]}
-        self.assertEquals(p.get_port_mappings('1.1.1.1', service_data, 'myvipname'), expected)
+        self.assertEquals(sorted(p.get_port_mappings('1.1.1.1', service_data, 'myvipname')), sorted(expected))
 
     def test_get_port_mappings_single_port_range(self):
         p = portmappings.PortMappings()
@@ -182,7 +182,7 @@ class PortMappingsTest(unittest.TestCase):
         p = portmappings.PortMappings()
         expected = [{'labels': {'VIP_1': 'myvipname.internal:5000', 'VIP_0': '1.1.1.1:6000'}, 'protocol': 'tcp', 'containerPort': 6000, 'hostPort': 0}, {'labels': {'VIP_1': 'myvipname.internal:5001', 'VIP_0': '1.1.1.1:6001'}, 'protocol': 'tcp', 'containerPort': 6001, 'hostPort': 0}, {'labels': {'VIP_1': 'myvipname.internal:5002', 'VIP_0': '1.1.1.1:6002'}, 'protocol': 'tcp', 'containerPort': 6002, 'hostPort': 0}, {'labels': {'VIP_0': '1.1.1.1:4000'}, 'protocol': 'tcp', 'containerPort': 4000, 'hostPort': 0}]
         service_data = {'ports': ["5000-5002:6000-6002"], 'expose': ["4000"]}
-        self.assertEquals(p.get_port_mappings('1.1.1.1', service_data, 'myvipname'), expected)
+        self.assertEquals(sorted(p.get_port_mappings('1.1.1.1', service_data, 'myvipname')), sorted(expected))
 
     def test_get_port_mappings_external_port(self):
         p = portmappings.PortMappings()

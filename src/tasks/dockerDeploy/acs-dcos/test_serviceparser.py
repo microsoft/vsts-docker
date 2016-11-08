@@ -100,6 +100,16 @@ class ServiceParserTests(unittest.TestCase):
         p._parse_environment('environment')
         self.assertEquals({}, p.app_json)
 
+    def test_parse_environment_null(self):
+        p = serviceparser.Parser('groupname', 'myservice', {'environment': ['SomeValue']})
+        p._parse_environment('environment')
+        self.assertEquals({'env': { 'SomeValue': ''}}, p.app_json)
+
+    def test_parse_environment_none_string(self):
+        p = serviceparser.Parser('groupname', 'myservice', {'environment': ['SomeValue=None']})
+        p._parse_environment('environment')
+        self.assertEquals({'env': { 'SomeValue': 'None'}}, p.app_json)
+
     def test_parse_extra_hosts(self):
         expected = {'container': {'docker': {'parameters': [{'key': 'add-host', 'value': 'somehost:162.242.195.82'}, {'key': 'add-host', 'value': 'otherhost:50.31.209.229'}]}}}
         p = serviceparser.Parser('groupname', 'myservice', {'extra_hosts': ['somehost:162.242.195.82', 'otherhost:50.31.209.229']})

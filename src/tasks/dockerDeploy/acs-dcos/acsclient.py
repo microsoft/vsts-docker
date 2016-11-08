@@ -68,6 +68,27 @@ class ACSClient(object):
         private_key_file.seek(0)
         return paramiko.RSAKey.from_private_key(private_key_file, self.acs_info.password)
 
+    def ensure_dcos_version(self):
+        """
+        Ensures min DC/OS version is installed on the cluster
+        """
+        min_dcos_version_str = '1.8.4'
+        min_dcos_version_tuple = map(int, (min_dcos_version_str.split('.')))
+        path = '/dcos-metadata/dcos-version.json'
+        version_json = self.get_request(path).json()
+
+        if not 'version' in version_json:
+            raise Exception('Could not determine DC/OS version from %s', path)
+
+        version_str = version_json['version']
+        logging.info('Found DC/OS version %s', version_str)
+        version_tuple = map(int, (version_str.split('.')))
+        if version_tuple < min_dcos_version_tuple:
+            err_msg = 'DC/OS version %s is not supported. Only DC/OS version %s or higher is supported' % (version_str, min_dcos_version_str)
+            logging.error(err_msg)
+            raise ValueError(err_msg)
+        return True
+
     def _setup_tunnel_server(self):
         """
         Gets the SSHTunnelForwarder instance and local_port

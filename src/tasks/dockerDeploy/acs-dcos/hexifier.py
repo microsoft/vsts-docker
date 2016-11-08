@@ -33,15 +33,23 @@ class DockerAuthConfigHexifier(object):
         """
         return '{}/{}'.format(self.registry_host, self._get_auth_filename())
 
+    @classmethod
+    def hexify_file(cls, file_name):
+        """
+        Creates a hex representation of a file and returns it as
+        a string
+        """
+        with open(file_name, 'rb') as binary_file:
+            file_bytes = binary_file.read()
+            hex_string = binascii.hexlify(bytearray(file_bytes))
+        return hex_string
+
     def hexify(self):
         """
         Create a hex representation of the docker.tar.gz file
         """
         file_path = self._create_temp_auth_file()
-        with open(file_path, 'rb') as binary_file:
-            file_bytes = binary_file.read()
-            hex_string = binascii.hexlify(bytearray(file_bytes))
-        return hex_string
+        return DockerAuthConfigHexifier.hexify_file(file_path)
 
     def _get_auth_filename(self):
         """

@@ -75,7 +75,11 @@ class Parser(object):
                         # If environment var does not have a value set
                         self.app_json['env'][env_pair] = ''
                 else:
-                    self.app_json['env'][env_pair] = str(self.service_info[key][env_pair])
+                    value = self.service_info[key][env_pair]
+                    if value is None:
+                        self.app_json['env'][env_pair] = ''
+                    else:
+                        self.app_json['env'][env_pair] = str(value)
 
     def _parse_extra_hosts(self, key):
         """

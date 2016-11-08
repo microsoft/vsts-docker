@@ -210,7 +210,7 @@ class PortMappings(object):
             port = str(port).strip()
             external_vip = vhost + '.external' + ':' + port
             for port_mapping in existing_port_mappings:
-                if str(port_mapping['containerPort']).strip() == port:
+                if str(port_mapping['containerPort']).strip() == str(port):
                     port_mapping['labels']['VIP_2'] = external_vip
                     vhost_added = True
             if not vhost_added:
@@ -221,22 +221,38 @@ class PortMappings(object):
                 port_mapping['labels']['VIP_2'] = external_vip
                 existing_port_mappings.append(port_mapping)
 
-    def _get_internal_port_mappings(self, service_data, ip_address, vip_name):
-        port_mappings = []
+    def _get_internal_port_mappings(self, service_data, ip_address,
+                                    vip_name, existing_port_mappings):
+        """
+        Gets the internal ports from the service data and updates the
+        existing_port_mappings array
+        """
         internal_ports = self._parse_internal_ports(service_data)
 
         for internal_port in internal_ports:
             port_mapping = self._get_port_mapping_json()
             vip_port = internal_port[0]
             container_port = internal_port[1]
-            port_mapping['containerPort'] = int(container_port)
-            port_mapping['labels']['VIP_0'] = ip_address + ':' + str(container_port)
-            port_mapping['labels']['VIP_1'] = vip_name + '.internal' + ':' + str(vip_port)
-            port_mappings.append(port_mapping)
 
-        return port_mappings
+            existing_mapping = False
+            for existing_port_mapping in existing_port_mappings:
+                if str(existing_port_mapping['containerPort']).strip() == str(container_port):
+                    # No need to add VIP_0 as it already exists
+                    existing_port_mapping['labels']['VIP_1'] = \
+                        vip_name + '.internal' + ':' + str(vip_port)
+                    existing_mapping = True
+                    break
+            # If we have a completely new mapping
+            if not existing_mapping:
+                port_mapping['containerPort'] = int(container_port)
+                port_mapping['labels']['VIP_0'] = ip_address + ':' + str(container_port)
+                port_mapping['labels']['VIP_1'] = vip_name + '.internal' + ':' + str(vip_port)
+                existing_port_mappings.append(port_mapping)
 
     def _get_private_port_mappings(self, service_data, ip_address):
+        """
+        Creates a list of port mappings with private ports
+        """
         port_mappings = []
         private_ports = self._parse_private_ports(service_data)
 
@@ -257,10 +273,8 @@ class PortMappings(object):
             split = ip_address.split(':')
             ip_address = split[0]
 
-        private_port_mappings = self._get_private_port_mappings(service_data, ip_address)
-        internal_port_mappings = self._get_internal_port_mappings(
-            service_data, ip_address, vip_name)
-        all_mappings = internal_port_mappings + private_port_mappings
-
-        self._set_external_port_mappings(service_data, ip_address, all_mappings)
-        return all_mappings
+        all_port_mappings = self._get_private_port_mappings(service_data, ip_address)
+        self._get_internal_port_mappings(
+            service_data, ip_address, vip_name, all_port_mappings)
+        self._set_external_port_mappings(service_data, ip_address, all_port_mappings)
+        return all_port_mappings

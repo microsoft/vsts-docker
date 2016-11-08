@@ -11,13 +11,15 @@ import dockerregistry
 import marathon
 import portmappings
 import serviceparser
+from exhibitor import Exhibitor
+from nginx import LoadBalancerApp
 
 
 class DockerComposeParser(object):
     def __init__(self, compose_file, master_url, acs_host, acs_port, acs_username,
                  acs_password, acs_private_key, group_name, group_qualifier, group_version,
                  registry_host, registry_username, registry_password,
-                 minimum_health_capacity):
+                 minimum_health_capacity, check_dcos_version=False):
 
         self._ensure_docker_compose(compose_file)
         with open(compose_file, 'r') as compose_stream:
@@ -37,7 +39,11 @@ class DockerComposeParser(object):
         self.minimum_health_capacity = minimum_health_capacity
 
         self.acs_client = acsclient.ACSClient(self.acs_info)
+        if check_dcos_version:
+            self.acs_client.ensure_dcos_version()
         self.marathon_helper = marathon.Marathon(self.acs_client)
+        self.exhibitor_helper = Exhibitor(self.marathon_helper)
+        self.nginx_helper = LoadBalancerApp(self.marathon_helper)
 
         self.portmappings_helper = portmappings.PortMappings()
 
@@ -111,6 +117,9 @@ class DockerComposeParser(object):
         """
         group_name = self._get_group_id()
         all_apps = {'id': group_name, 'apps': []}
+
+        self.nginx_helper.ensure_exists(self.compose_data)
+
         docker_registry = dockerregistry.DockerRegistry(
             self.registry_host, self.registry_username, self.registry_password,
             self.marathon_helper)
@@ -200,6 +209,9 @@ class DockerComposeParser(object):
             except KeyError:
                 raise Exception('Could not find container/docker/portMappings key')
 
+            if port_mappings is None:
+                continue
+
             # Go through port mappings and create VIPs
             for port_mapping in port_mappings:
                 # Check if private IP is already created for this port mapping
@@ -276,6 +288,18 @@ class DockerComposeParser(object):
                 self._add_host(marathon_app, app_id, private_ips)
 
     def deploy(self):
+        """
+        Deploys the services defined in docker-compose.yml file
+        """
+        try:
+            self._deploy()
+        except Exception as exc:
+            group_id = self._get_group_id()
+            logging.exception('Exception occurred deploying "%s"', group_id)
+            logging.info('Removing "%s".', group_id)
+            self.marathon_helper.delete_group(group_id)
+
+    def _deploy(self):
         """
         Deploys the services defined in docker-compose.yml file
         """

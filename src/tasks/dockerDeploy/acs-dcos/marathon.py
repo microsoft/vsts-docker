@@ -1,6 +1,7 @@
 import json
-import time
 import logging
+import os
+import time
 
 
 class Marathon(object):
@@ -71,6 +72,28 @@ class Marathon(object):
             if app['id'] == app_id:
                 return True
         return False
+
+    def ensure_exists(self, app_id, json_file):
+        """
+        Checks if app with provided ID is deployed on Marathon and
+        deploys it if it is not
+        """
+        logging.info('Check if app "%s" is deployed', app_id)
+        app_exists = self.app_exists(app_id)
+        if not app_exists:
+            logging.info('Deploying app "%s"', app_id)
+            json_contents = self._load_json(json_file)
+            self.deploy_app(json.dumps(json_contents))
+
+    def _load_json(self, file_path):
+        """
+        Loads contents of a JSON file and returns it
+        """
+        file_path = os.path.join(os.getcwd(), file_path)
+        with open(file_path) as json_file:
+            data = json.load(json_file)
+        return data
+
 
     def deploy_app(self, app_json):
         """

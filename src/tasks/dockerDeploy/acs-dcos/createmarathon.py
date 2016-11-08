@@ -108,7 +108,8 @@ if __name__ == '__main__':
             arguments.acs_port, arguments.acs_username, arguments.acs_password,
             arguments.acs_private_key, arguments.group_name, arguments.group_qualifier,
             arguments.group_version, arguments.registry_host, arguments.registry_username,
-            arguments.registry_password, arguments.minimum_health_capacity) as compose_parser:
+            arguments.registry_password, arguments.minimum_health_capacity,
+            check_dcos_version=True) as compose_parser:
             compose_parser.deploy()
         sys.exit(0)
     except Exception as e:
