@@ -78,8 +78,7 @@ class DockerComposeParserTests(unittest.TestCase):
             self.test_compose_file, 'masterurl', None, None, None, None, None,
             'groupname', 'groupqualifier', '1',
             'registryhost', 'registryuser', 'registrypassword', 100)
-        vip_tuples = {}
-        actual = p._create_or_update_private_ips({'apps':{}}, 'new/group/id', vip_tuples)
+        actual = p._create_or_update_private_ips({'apps':{}}, 'new/group/id')
         self.assertEquals({}, actual)
 
     def test_create_private_ips_none_json(self):
@@ -87,8 +86,7 @@ class DockerComposeParserTests(unittest.TestCase):
             self.test_compose_file, 'masterurl', None, None, None, None, None,
             'groupname', 'groupqualifier', '1',
             'registryhost', 'registryuser', 'registrypassword', 100)
-        vip_tuples = {}
-        actual = p._create_or_update_private_ips(None, 'new/group/id', vip_tuples)
+        actual = p._create_or_update_private_ips(None, 'new/group/id')
         self.assertEquals({}, actual)
 
     def test_create_ip(self):
@@ -112,9 +110,8 @@ class DockerComposeParserTests(unittest.TestCase):
             }
         }]}
 
-        ips = {}
         expected = {'new/group/id/app_1': '10.64.0.0'}
-        actual = p._create_or_update_private_ips(apps_json, 'new/group/id', ips)
+        actual = p._create_or_update_private_ips(apps_json, 'new/group/id')
         self.assertEquals(expected, actual)
 
     def test_create_private_ips_extra_slash(self):
@@ -137,9 +134,8 @@ class DockerComposeParserTests(unittest.TestCase):
                 }
             }
         }]}
-        ips = {}
         expected = {'new/group/id/app_1': '10.64.0.0'}
-        actual = p._create_or_update_private_ips(apps_json, 'new/group/id/', ips)
+        actual = p._create_or_update_private_ips(apps_json, 'new/group/id/')
         self.assertEquals(expected, actual)
 
     def test_create_private_ips_multiple_apps(self):
@@ -171,61 +167,8 @@ class DockerComposeParserTests(unittest.TestCase):
             }]
         }
 
-        ips = {}
         expected = {'new/group/id/app_1': '10.64.0.0', 'new/group/id/app_2': '10.64.0.1'}
-        actual = p._create_or_update_private_ips(apps_json, 'new/group/id/', ips)
-        self.assertEquals(expected, actual)
-
-    def test_create_private_ips_switch_ip(self):
-        p = dockercomposeparser.DockerComposeParser(
-            self.test_compose_file, 'masterurl', None, None, None, None, None,
-            'groupname', 'groupqualifier', '1',
-            'registryhost', 'registryuser', 'registrypassword', 100)
-
-        apps_json = {'apps':[{
-            'id': 'group_1/app_1',
-            'container': {
-                'docker':{
-                    'portMappings':[
-                        {
-                            'labels': {
-                                'VIP_0': '10.64.0.0'
-                            }
-                        }
-                    ]
-                }
-            }
-        }]}
-
-        ips = {}
-        actual = p._create_or_update_private_ips(apps_json, 'new/group/id/', ips)
-        expected = {'new/group/id/app_1': '10.128.0.0'}
-        self.assertEquals(expected, actual)
-
-    def test_create_private_ips_existing_ip(self):
-        p = dockercomposeparser.DockerComposeParser(
-            self.test_compose_file, 'masterurl', None, None, None, None, None,
-            'groupname', 'groupqualifier', '1',
-            'registryhost', 'registryuser', 'registrypassword', 100)
-
-        apps_json = {'apps':[{
-            'id': 'group_1/app_1',
-            'container': {
-                'docker':{
-                    'portMappings':[
-                        {
-                            'labels': {
-                                'VIP_0': '10.64.0.0'
-                            }
-                        }
-                    ]
-                }
-            }
-        }]}
-
-        ips = { 'group_1/app_1': '10.64.0.0'}
-        actual = p._create_or_update_private_ips(apps_json, 'new/group/id/', ips)
-        expected = {'group_1/app_1': '10.64.0.0'}
+        actual = p._create_or_update_private_ips(apps_json, 'new/group/id/')
         self.assertEquals(expected, actual)
 
     def test_add_dependencies(self):
@@ -324,14 +267,152 @@ class DockerComposeParserTests(unittest.TestCase):
             self.test_compose_file, 'masterurl', None, None, None, None, None,
             'groupname', 'groupqualifier', '1',
             'registryhost', 'registryuser', 'registrypassword', 100)
-        marathon_app = {
+        marathon_apps = [{
             'id': '/mygroup/service-a',
             'container': {
                 'docker': {
                     'parameters': []
                 }
-        }}
+        }}, 
+        {
+            'id': '/mygroup/service-b',
+            'container': {
+                'docker': {
+                    'portMappings':[{
+                        'labels': {
+                            'VIP_0': '1.1.1.2'
+                        }
+                    }]
+                }
+            }
+        },
+  {
+            'id': '/mygroup/service-c',
+            'container': {
+                'docker': {
+                    'portMappings':[{
+                        'labels': {
+                            'VIP_0': '1.1.1.1'
+                        }
+                    }]
+                }
+            }
+        },]
+
+        marathon_app = marathon_apps[0]
         expected = {'container': {'docker': {'parameters': [{'value': 'service-c:1.1.1.1', 'key': 'add-host'}, {'value': 'service-b:1.1.1.2', 'key': 'add-host'}]}}, 'id': '/mygroup/service-a'}
         vip_tuples = {'/mygroup/service-c': '1.1.1.1', '/mygroup/service-b': '1.1.1.2', '/mygroup/service-a': '1.1.1.3'}
-        p._add_hosts(marathon_app, vip_tuples)
+        p._add_hosts(marathon_apps, marathon_app, vip_tuples)
         self.assertEquals(expected, marathon_app)
+
+    def test_add_hosts_no_private_ip(self):
+        p = dockercomposeparser.DockerComposeParser(
+            self.test_compose_file, 'masterurl', None, None, None, None, None,
+            'groupname', 'groupqualifier', '1',
+            'registryhost', 'registryuser', 'registrypassword', 100)
+        marathon_apps = [{
+            'id': '/mygroup/service-a',
+            'container': {
+                'docker': {
+                    'parameters': []
+                }
+        }}, 
+        {
+            'id': '/mygroup/service-b',
+            'container': {
+            }
+        },
+  {
+            'id': '/mygroup/service-c',
+            'container': {
+                'docker': {
+                    'portMappings':[{
+                        'labels': {
+                            'VIP_0': '1.1.1.1'
+                        }
+                    }]
+                }
+            }
+        },]
+
+        marathon_app = marathon_apps[0]
+        expected = {'container': {'docker': {'parameters': [{'value': 'service-c:1.1.1.1', 'key': 'add-host'}]}}, 'id': '/mygroup/service-a'}
+        vip_tuples = {'/mygroup/service-c': '1.1.1.1', '/mygroup/service-a': '1.1.1.3'}
+        p._add_hosts(marathon_apps, marathon_app, vip_tuples)
+        self.assertEquals(expected, marathon_app)
+
+    def test_has_private_ip_true(self):
+        p = dockercomposeparser.DockerComposeParser(
+            self.test_compose_file, 'masterurl', None, None, None, None, None,
+            'groupname', 'groupqualifier', '1',
+            'registryhost', 'registryuser', 'registrypassword', 100)
+        marathon_apps = [{
+            'id': '/mygroup/service-a',
+            'container': {
+                'docker': {
+                    'portMappings': [{
+                        'labels': {
+                            'VIP_0': '1.1.1.1'
+                        }
+                    }]
+                }
+        }}]
+        self.assertTrue(p._has_private_ip(marathon_apps, '/mygroup/service-a'))
+
+    def test_has_private_ip_false(self):
+        p = dockercomposeparser.DockerComposeParser(
+            self.test_compose_file, 'masterurl', None, None, None, None, None,
+            'groupname', 'groupqualifier', '1',
+            'registryhost', 'registryuser', 'registrypassword', 100)
+        marathon_apps = [{
+            'id': '/mygroup/service-a',
+            'container': {
+                'docker': {
+                    'portMappings': [{
+                        'labels': {
+                            'VIP_1': '1.1.1.1'
+                        }
+                    }]
+                }
+        }}]
+        self.assertFalse(p._has_private_ip(marathon_apps, '/mygroup/service-a'))
+
+    def test_has_private_ip_missing_keys(self):
+        p = dockercomposeparser.DockerComposeParser(
+            self.test_compose_file, 'masterurl', None, None, None, None, None,
+            'groupname', 'groupqualifier', '1',
+            'registryhost', 'registryuser', 'registrypassword', 100)
+        marathon_apps = [{
+            'id': '/mygroup/service-a',
+            'container': {
+        }}]
+        self.assertFalse(p._has_private_ip(marathon_apps, '/mygroup/service-a'))
+
+    def test_has_private_ip_missing_service(self):
+        p = dockercomposeparser.DockerComposeParser(
+            self.test_compose_file, 'masterurl', None, None, None, None, None,
+            'groupname', 'groupqualifier', '1',
+            'registryhost', 'registryuser', 'registrypassword', 100)
+        marathon_apps = [{
+            'id': '/mygroup/service-a',
+            'container': {
+        }}]
+        self.assertFalse(p._has_private_ip(marathon_apps, '/mygroup/service-b'))
+
+    def test_has_private_ip_case_insensitive(self):
+        p = dockercomposeparser.DockerComposeParser(
+            self.test_compose_file, 'masterurl', None, None, None, None, None,
+            'groupname', 'groupqualifier', '1',
+            'registryhost', 'registryuser', 'registrypassword', 100)
+        marathon_apps = [{
+            'id': '/mygroup/service-a',
+            'container': {
+                'docker': {
+                    'portMappings': [{
+                        'labels': {
+                            'VIP_1': '1.1.1.1'
+                        }
+                    }]
+                }
+            }}]
+        self.assertFalse(p._has_private_ip(marathon_apps, '/mygroup/SERVICE-a'))

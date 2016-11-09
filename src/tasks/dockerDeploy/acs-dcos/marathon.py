@@ -204,6 +204,7 @@ class Marathon(object):
         Waits for the deployment to complete.
         """
         other_deployment_in_progress = False
+        timeout_exceeded = True
         while not self._wait_time_exceeded(self.deployment_max_wait_time, start_timestamp) \
          and not other_deployment_in_progress:
             response = self.get_deployments().json()

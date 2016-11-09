@@ -188,22 +188,18 @@ class DockerComposeParser(object):
                 break
         return existing_app
 
-    def _create_or_update_private_ips(self, deployment_json, new_group_id, private_ips):
+    def _create_or_update_private_ips(self, deployment_json, new_group_id):
         """
-        Extracts the VIPs from deployment json. If VIP label is already set, it will add it to a
-        dictionary with the key set to new_group_id + app_name, so it's ready to be used with
-        the new deployment. If VIP label is not set, it checks the portMappings key and
-        creates a new VIP based on the servicePort.
+        Goes through the deployment json and uses 'servicePort' to
+        create a new private IP.
         """
+        private_ips = {}
         if not deployment_json or not 'apps' in deployment_json:
             return private_ips
+
         new_group_id = new_group_id.rstrip('/')
         for app in deployment_json['apps']:
             app_id = app['id']
-
-            # We already processed this app
-            if app_id in private_ips:
-                continue
 
             # Get the app name only, ignoring the group and everything else
             app_name = app_id.rstrip('/').split('/')[-1]
@@ -217,26 +213,17 @@ class DockerComposeParser(object):
             if port_mappings is None:
                 continue
 
-            # Go through port mappings and create VIPs
-            for port_mapping in port_mappings:
-                # Check if private IP is already created for this port mapping
-                if not 'labels' in port_mapping:
-                    port_mapping['labels'] = {}
+            if not len(port_mappings):
+                continue
 
-                if not 'VIP_0' in port_mapping['labels']:
-                    port = int(port_mapping['servicePort'])
-                    x, y = divmod(port - 10000, 1<<8)
-                    # We can use app_id here because the service is from the new
-                    # deployment JSON
-                    ip = '10.64.' + str(x) + '.' + str(y)
-                    private_ips[str(new_id)] = ip
-                    logging.info('Creating new VIP "%s" for "%s"', ip, new_id)
-                else:
-                    current_ip = port_mapping['labels']['VIP_0']
-                    if current_ip.startswith('10.64.'):
-                        private_ips[str(new_id)] = current_ip.replace('10.64.', '10.128.')
-                    else:
-                        private_ips[str(new_id)] = current_ip.replace('10.128.', '10.64.')
+            # Always get the first portMapping and use it to create the private IP
+            port_mapping = port_mappings[0]
+            port = int(port_mapping['servicePort'])
+            x, y = divmod(port - 10000, 1<<8)
+            ip = '10.64.' + str(x) + '.' + str(y)
+            private_ips[str(new_id)] = ip
+            logging.info('Creating new private IP "%s" for service "%s"', ip, new_id)
+
         return private_ips
 
     def _update_port_mappings(self, marathon_app, private_ips, service_info, vip_name):
@@ -244,6 +231,10 @@ class DockerComposeParser(object):
         Updates portMappings in marathon_app for the service defined with service_info
         """
         marathon_app_id = marathon_app['id']
+
+        if not marathon_app_id in private_ips:
+            return
+
         ip_address = private_ips[marathon_app_id]
         port_mapping = self.portmappings_helper.get_port_mappings(
             ip_address,
@@ -286,15 +277,42 @@ class DockerComposeParser(object):
             marathon_app['container']['docker']['parameters'].append(
                 {'key': 'add-host', 'value': host_value})
 
-    def _add_hosts(self, marathon_app, private_ips):
+    def _add_hosts(self, all_apps, marathon_app, private_ips):
         """
         Creates 'add-host' entries for the marathon_app by adding
         VIPs of all other services to 'add-host'
         """
+        marathon_app_id = marathon_app['id']
         for app_id in private_ips:
-            marathon_app_id = marathon_app['id']
             if not app_id.endswith(marathon_app_id.split('/')[-1]):
-                self._add_host(marathon_app, app_id, private_ips)
+                if self._has_private_ip(all_apps, app_id):
+                    self._add_host(marathon_app, app_id, private_ips)
+
+    def _has_private_ip(self, all_apps, app_id):
+        """
+        Checks if app_id in all_apps contains at least
+        one port mapping with VIP_0 set
+        """
+        apps = [app for app in all_apps \
+                if app['id'].lower() == app_id.lower()]
+        if len(apps) <= 0:
+            return False
+        app = apps[0]
+
+        try:
+            port_mappings = app['container']['docker']['portMappings']
+        except KeyError:
+            return False
+
+        if port_mappings is None:
+            return False
+
+        for port_mapping in port_mappings:
+            if not 'labels' in port_mapping:
+                continue
+            if 'VIP_0' in port_mapping['labels']:
+                return True
+        return False
 
     def cleanup(self):
         """
@@ -333,16 +351,9 @@ class DockerComposeParser(object):
             raise Exception('App with ID "{}" is not unique anymore'.format(group_id))
 
         new_deployment_json = self.marathon_helper.get_group(group_id)
-        private_ips = {}
-
-        # 2. Figure out the VIPs and do a second deployment
-        if is_update:
-            existing_deployment_json = self.marathon_helper.get_group(existing_group_id)
-            private_ips = self._create_or_update_private_ips(
-                existing_deployment_json, group_id, private_ips)
 
         # Create the VIPs from servicePorts for apps we dont have the VIPs for yet
-        private_ips = self._create_or_update_private_ips(new_deployment_json, group_id, private_ips)
+        private_ips = self._create_or_update_private_ips(new_deployment_json, group_id)
 
         # Go through the docker-compose file and update the corresponding marathon_app with
         # portMappings, VIP, color and links
@@ -358,8 +369,17 @@ class DockerComposeParser(object):
                 service_info,
                 self._get_vip_name(service_name))
 
+            # Handles the 'depends_on' key in docker-compose and adds any
+            # dependencies to the dependencies list
+            self._add_dependencies(marathon_app, private_ips, service_info)
+
+        for service_name, service_info in self.compose_data['services'].items():
+            # Get the corresponding marathon JSON for the service in docker-compose file
+            marathon_app = [app for app in marathon_json['apps'] \
+                                 if app['id'].endswith('/' + service_name)][0]
+
             # Add hosts (VIPs) for all services, except the current one
-            self._add_hosts(marathon_app, private_ips)
+            self._add_hosts(marathon_json['apps'], marathon_app, private_ips)
 
             # Update the dependencies and add 'add-host' entries for each link in the service
             if 'links' in service_info:
@@ -373,14 +393,15 @@ class DockerComposeParser(object):
 
                     # Get the VIP for the linked service
                     link_id = [t for t in private_ips if t.endswith(link_service_name)][0]
-                    self._add_host(
-                        marathon_app, link_id, private_ips, alias=link_alias)
+                    # Make sure app with name link_id has a VIP_0
+
+                    if not self._has_private_ip(marathon_json['apps'], link_id):
+                        raise Exception("Can't link '{}' to '{}'. '{}' doesn't expose any ports"
+                                        .format(service_name, link_service_name, link_service_name))
+
+                    self._add_host(marathon_app, link_id, private_ips, alias=link_alias)
                     logging.info('Adding dependency "%s" to "%s"', link_id, service_name)
                     marathon_app['dependencies'].append(link_id)
-
-            # Handles the 'depends_on' key in docker-compose and adds any
-            # dependencies to the dependncies list
-            self._add_dependencies(marathon_app, private_ips, service_info)
 
         # Update the group with VIPs
         self.marathon_helper.update_group(marathon_json)
