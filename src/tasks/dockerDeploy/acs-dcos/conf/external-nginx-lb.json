@@ -1,0 +1,34 @@
+{
+  "id": "/external-nginx-lb",
+  "cpus": 0.1,
+  "mem": 128,
+  "instances": 1,
+  "acceptedResourceRoles": [
+    "slave_public"
+  ],
+  "container": {
+    "type": "DOCKER",
+    "docker": {
+      "image": "nginx:alpine",
+      "network": "HOST"
+    }
+  },
+  "ports": [
+    80,
+    443
+  ],
+  "requirePorts": true,
+  "cmd": "cat << EOF > /etc/nginx/nginx.conf && exec nginx -g 'daemon off;'\nworker_processes 1;\nevents {\n    worker_connections 1024;\n}\nhttp {\n    server {\n        listen 80;\n        resolver $(echo $(cat /etc/resolv.conf | grep ^nameserver\\  | cut -d ' ' -f 2));\n        location / {\n            proxy_pass http://\\$host.${GROUP:-external}.marathon.l4lb.thisdcos.directory\\$request_uri;\n        }\n    }\n}",
+  "healthChecks": [
+    {
+      "protocol": "TCP",
+      "gracePeriodSeconds": 60,
+      "intervalSeconds": 5,
+      "timeoutSeconds": 2,
+      "maxConsecutiveFailures": 2
+    }
+  ],
+  "upgradeStrategy": {
+    "minimumHealthCapacity": 0
+  }
+}

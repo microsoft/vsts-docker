@@ -1,0 +1,185 @@
+{
+    "id": "DD7C9344-1179-44A9-891B-177FBB98B9A7",
+    "name": "DockerDeploy",
+    "friendlyName": "Docker Deploy",
+    "description": "Deploy single or multi-container Docker applications to a variety of Azure resources",
+    "helpMarkDown": "[More Information](http://aka.ms/dockertoolsforvsts)",
+    "category": "Deploy",
+    "visibility": [
+        "Build",
+        "Release"
+    ],
+    "author": "Microsoft Corporation",
+    "version": {
+        "Major": 0,
+        "Minor": 1,
+        "Patch": 0
+    },
+    "demands": [],
+    "groups": [
+        {
+            "name": "advanced",
+            "displayName": "Advanced Options",
+            "isExpanded": false
+        }
+    ],
+    "inputs": [
+        {
+            "name": "dockerRegistryEndpoint",
+            "type": "connectedService:dockerregistry",
+            "label": "Docker Registry Connection",
+            "helpMarkDown": "Select a Docker registry connection. Required for deployments that need to authenticate with a registry."
+        },
+        {
+            "name": "targetType",
+            "type": "pickList",
+            "label": "Target Type",
+            "required": true,
+            "options": {
+                "ACS DCOS": "Azure Container Service (DC/OS)"
+            },
+            "helpMarkDown": "Select a deployment target type."
+        },
+        {
+            "name": "dockerComposeFile",
+            "type": "filePath",
+            "label": "Docker Compose File",
+            "required": true,
+            "visibleRule": "targetType = ACS DCOS",
+            "helpMarkDown": "Path to the primary Docker Compose file to use."
+        },
+        {
+            "name": "additionalDockerComposeFiles",
+            "type": "multiLine",
+            "properties": {
+                "resizable": "true",
+                "rows": "2"
+            },
+            "label": "Additional Docker Compose Files",
+            "visibleRule": "targetType = ACS DCOS",
+            "helpMarkDown": "Additional Docker Compose files to be combined with the primary Docker Compose file. Relative paths are resolved relative to the directory containing the primary Docker Compose file. If a specified file is not found, it is ignored. Specify each file path on a new line."
+        },
+        {
+            "name": "dockerComposeFileArgs",
+            "type": "multiLine",
+            "properties": {
+                "resizable": "true",
+                "rows": "2"
+            },
+            "label": "Environment Variables",
+            "visibleRule": "targetType = ACS DCOS",
+            "helpMarkDown": "Environment variables to be set during the command. Specify each name=value pair on a new line."
+        },
+        {
+            "name": "projectName",
+            "type": "string",
+            "label": "Project Name",
+            "defaultValue": "$(Release.DefinitionName)",
+            "visibleRule": "targetType = ACS DCOS",
+            "helpMarkDown": "Project name used for default naming of images and containers."
+        },
+        {
+            "name": "qualifyImageNames",
+            "type": "boolean",
+            "label": "Qualify Image Names",
+            "defaultValue": "false",
+            "visibleRule": "targetType = ACS DCOS",
+            "helpMarkDown": "Automatically qualify image names for built services with the Docker registry connection's hostname if not otherwise specified."
+        },
+        {
+            "name": "acsDcosEndpointType",
+            "type": "pickList",
+            "label": "ACS DC/OS Connection Type",
+            "required": true,
+            "options": {
+                "Direct": "Direct",
+                "SSH": "Secure Shell (SSH)"
+            },
+            "visibleRule": "targetType = ACS DCOS",
+            "helpMarkDown": "Select an Azure Container Service DC/OS connection type."
+        },
+        {
+            "name": "acsDcosMasterUrl",
+            "type": "string",
+            "label": "ACS DC/OS Master URL",
+            "required": true,
+            "defaultValue": "http://leader.mesos",
+            "visibleRule": "targetType = ACS DCOS && acsDcosEndpointType = Direct",
+            "helpMarkDown": "URL of the Azure Container Service DC/OS master node."
+        },
+        {
+            "name": "acsDcosSshEndpoint",
+            "type": "connectedService:ssh",
+            "label": "ACS DC/OS SSH Connection",
+            "required": true,
+            "visibleRule": "targetType = ACS DCOS && acsDcosEndpointType = SSH",
+            "helpMarkDown": "Select an Azure Container Service DC/OS SSH connection."
+        },
+        {
+            "name": "acsDcosAppGroupName",
+            "type": "string",
+            "label": "Application Group Name",
+            "required": true,
+            "defaultValue": "$(Release.EnvironmentName)/$(Release.DefinitionName)",
+            "visibleRule": "targetType = ACS DCOS",
+            "helpMarkDown": "Name of the Marathon application group to deploy."
+        },
+        {
+            "name": "acsDcosAppGroupQualifier",
+            "type": "string",
+            "label": "Application Group Qualifier",
+            "required": true,
+            "defaultValue": "$(System.TeamFoundationCollectionUri)/$(System.TeamProject)",
+            "visibleRule": "targetType = ACS DCOS",
+            "helpMarkDown": "Qualifier for the Marathon application group name that is hashed and appended to create a unique identifier for deployment definitions."
+        },
+        {
+            "name": "acsDcosAppGroupVersion",
+            "type": "string",
+            "label": "Application Group Version",
+            "required": true,
+            "defaultValue": "$(Release.ReleaseId).$(Release.AttemptNumber)",
+            "visibleRule": "targetType = ACS DCOS",
+            "helpMarkDown": "Version for the Marathon application group name that is appended to create a unique identifier for specific deployments."
+        },
+        {
+            "name": "acsDcosMinimumHealthCapacity",
+            "type": "string",
+            "label": "Minimum Health Capacity",
+            "required": true,
+            "defaultValue": "100",
+            "visibleRule": "targetType = ACS DCOS",
+            "helpMarkDown": "Percentage of the target capacity that existing and new deployments must have at all times during update.<br/><br/>A value of 0 means any existing deployment is removed before the new deployment begins.<br/><br/>A value of 50 means that any existing deployment is scaled to half of its original capacity before the new deployment begins at half of its defined capacity, after which it is scaled to its target capacity and the existing deployment is removed.<br/><br/>A value of 100 means that any existing deployment remains at its target capacity until the new deployment has completed at its target capacity, following which the existing deployment is removed.<br/><br/>See [this](https://mesosphere.github.io/marathon/docs/deployments.html) link for more information on this option."
+        },
+        {
+            "name": "dockerHostEndpoint",
+            "type": "connectedService:dockerhost",
+            "label": "Docker Host Connection",
+            "helpMarkDown": "Select a Docker host connection. Defaults to the agent's host.",
+            "groupName": "advanced"
+        },
+        {
+            "name": "requireAdditionalDockerComposeFiles",
+            "type": "boolean",
+            "label": "Require Additional Docker Compose Files",
+            "defaultValue": "false",
+            "helpMarkDown": "Produces an error if the additional Docker Compose files do not exist. This overrides the default behavior which is to ignore a file if it does not exist.",
+            "groupName": "advanced"
+        },
+        {
+            "name": "cwd",
+            "type": "filePath",
+            "label": "Working Directory",
+            "defaultValue": "$(System.DefaultWorkingDirectory)",
+            "helpMarkDown": "Working directory for any executed commands.",
+            "groupName": "advanced"
+        }
+    ],
+    "instanceNameFormat": "Deploy to $(targetType)",
+    "execution": {
+        "Node": {
+            "target": "dockerDeploy.js",
+            "argumentFormat": ""
+        }
+    }
+}
