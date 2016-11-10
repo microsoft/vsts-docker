@@ -45,11 +45,11 @@ def get_arg_parser():
                         help='[required] Minimum health capacity')
 
     parser.add_argument('--registry-host',
-                        help='[required] Registry host (e.g. myregistry.azurecr-test.io:1234)')
+                        help='Registry host (e.g. myregistry.azurecr-test.io:1234)')
     parser.add_argument('--registry-username',
-                        help='[required] Registry username')
+                        help='Registry username')
     parser.add_argument('--registry-password',
-                        help='[required] Registry password')
+                        help='Registry password')
 
     parser.add_argument('--acs-host',
                         help='ACS host')

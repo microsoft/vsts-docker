@@ -80,11 +80,11 @@ export function run(): any {
                 .arg("createmarathon.py")
                 .arg(["--compose-file", path.basename(composeFile)])
                 .arg(masterUrl ? ["--dcos-master-url", masterUrl] : [
-                    "--ssh-host", sshHost,
-                    "--ssh-port", sshPort,
-                    "--ssh-username", sshUsername,
-                    "--ssh-private-key", sshPrivateKey,
-                    "--ssh-password", sshPassword
+                    "--acs-host", sshHost,
+                    "--acs-port", sshPort,
+                    "--acs-username", sshUsername,
+                    "--acs-private-key", sshPrivateKey,
+                    "--acs-password", sshPassword
                 ])
                 .arg(registryHost ? [
                     "--registry-host", registryHost,
