@@ -20,6 +20,7 @@ class ACSClient(object):
         self.acs_info = acs_info
         self.tunnel_server = None
         self.is_direct = False
+        self.is_running = False
 
         # If master_url is provided, we have a direct connection
         if self.acs_info.master_url:
@@ -32,9 +33,10 @@ class ACSClient(object):
         """
         Stops the tunnel if its started
         """
-        if self.current_tunnel:
+        if self.current_tunnel and self.is_running:
             logging.debug('Stopping SSH tunnel')
             self.current_tunnel[0].stop()
+            self.is_running = False
 
     def _wait_for_tunnel(self, start_time, url):
         """
@@ -47,6 +49,7 @@ class ACSClient(object):
                 response = requests.get(url)
                 if response.status_code == 200:
                     succeeded = True
+                    self.is_running = True
                     break
             except:
                 time.sleep(5)
@@ -84,7 +87,8 @@ class ACSClient(object):
         logging.info('Found DC/OS version %s', version_str)
         version_tuple = map(int, (version_str.split('.')))
         if version_tuple < min_dcos_version_tuple:
-            err_msg = 'DC/OS version %s is not supported. Only DC/OS version %s or higher is supported' % (version_str, min_dcos_version_str)
+            err_msg = 'DC/OS version %s is not supported. Only DC/OS version "%s" \
+                       or higher is supported' % (version_str, min_dcos_version_str)
             logging.error(err_msg)
             raise ValueError(err_msg)
         return True
@@ -99,11 +103,9 @@ class ACSClient(object):
         if not self.current_tunnel:
             logging.debug('Create a new SSH tunnel')
             local_port = self.get_available_local_port()
-
-            # Disabling the logger, because SSHTunnelForwarder keeps logging
-            # the error regardless of the level we set
             log = logging.getLogger()
-            log.disabled = True
+            previous_log_level = log.level
+            log.setLevel(logging.INFO)
 
             forwarder = SSHTunnelForwarder(
                 ssh_address_or_host=(self.acs_info.host, int(self.acs_info.port)),
@@ -118,9 +120,8 @@ class ACSClient(object):
             url = 'http://127.0.0.1:{}/'.format(str(local_port))
             self._wait_for_tunnel(start_time, url)
 
-            # Enable logging again
-            log.disabled = False
             self.current_tunnel = (forwarder, int(local_port))
+            log.setLevel(previous_log_level)
 
         return self.current_tunnel[1]
 
