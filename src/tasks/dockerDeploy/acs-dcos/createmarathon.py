@@ -4,7 +4,6 @@ import sys
 import traceback
 
 import dockercomposeparser
-import deploymentexceptions
 
 
 class VstsLogFormatter(logging.Formatter):
