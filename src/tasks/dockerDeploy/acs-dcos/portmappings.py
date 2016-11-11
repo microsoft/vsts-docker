@@ -208,7 +208,7 @@ class PortMappings(object):
             vhost_added = False
             port = all_vhosts[vhost]
             port = str(port).strip()
-            external_vip = vhost + '.external' + ':' + port
+            external_vip = vhost + '.external' + ':80'
             for port_mapping in existing_port_mappings:
                 if str(port_mapping['containerPort']).strip() == str(port):
                     port_mapping['labels']['VIP_2'] = external_vip

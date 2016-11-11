@@ -186,64 +186,64 @@ class PortMappingsTest(unittest.TestCase):
 
     def test_get_port_mappings_external_port(self):
         p = portmappings.PortMappings()
-        expected = [{'labels': {'VIP_1': 'myvipname.internal:5000', 'VIP_0': '1.1.1.1:5000', 'VIP_2': 'www.example.com.external:5000'}, 'protocol': 'tcp', 'containerPort': 5000, 'hostPort': 0}]
+        expected = [{'labels': {'VIP_1': 'myvipname.internal:5000', 'VIP_0': '1.1.1.1:5000', 'VIP_2': 'www.example.com.external:80'}, 'protocol': 'tcp', 'containerPort': 5000, 'hostPort': 0}]
         service_data = {'ports': ["5000"], 'labels': {'com.microsoft.acs.dcos.marathon.vhost': 'www.example.com:5000'} }
         self.assertEquals(p.get_port_mappings('1.1.1.1', service_data, 'myvipname'), expected)
 
     def test_get_port_mappings_external_port_case(self):
         p = portmappings.PortMappings()
-        expected = [{'labels': {'VIP_1': 'myvipname.internal:5000', 'VIP_0': '1.1.1.1:5000', 'VIP_2': 'www.example.com.external:5000'}, 'protocol': 'tcp', 'containerPort': 5000, 'hostPort': 0}]
+        expected = [{'labels': {'VIP_1': 'myvipname.internal:5000', 'VIP_0': '1.1.1.1:5000', 'VIP_2': 'www.example.com.external:80'}, 'protocol': 'tcp', 'containerPort': 5000, 'hostPort': 0}]
         service_data = {'ports': ["5000"], 'labels': {'com.MICROSOFT.acs.dcos.marathon.vhost': 'www.example.com:5000'} }
         self.assertEquals(p.get_port_mappings('1.1.1.1', service_data, 'myvipname'), expected)
 
     def test_get_port_mappings_external_no_internal_port(self):
         p = portmappings.PortMappings()
-        expected = [{'labels': {'VIP_0': '1.1.1.1:5000', 'VIP_2': 'www.example.com.external:5000'}, 'protocol': 'tcp', 'containerPort': 5000, 'hostPort': 0}]
+        expected = [{'labels': {'VIP_0': '1.1.1.1:5000', 'VIP_2': 'www.example.com.external:80'}, 'protocol': 'tcp', 'containerPort': 5000, 'hostPort': 0}]
         service_data = {'labels': {'com.microsoft.acs.dcos.marathon.vhost': 'www.example.com:5000'} }
         self.assertEquals(p.get_port_mappings('1.1.1.1', service_data, 'myvipname'), expected)
 
     def test_get_port_mappings_external_no_internal_port_case(self):
         p = portmappings.PortMappings()
-        expected = [{'labels': {'VIP_0': '1.1.1.1:5000', 'VIP_2': 'www.example.com.external:5000'}, 'protocol': 'tcp', 'containerPort': 5000, 'hostPort': 0}]
+        expected = [{'labels': {'VIP_0': '1.1.1.1:5000', 'VIP_2': 'www.example.com.external:80'}, 'protocol': 'tcp', 'containerPort': 5000, 'hostPort': 0}]
         service_data = {'labels': {'com.microsoft.acs.dcos.MARATHON.vhost': 'www.example.com:5000'} }
         self.assertEquals(p.get_port_mappings('1.1.1.1', service_data, 'myvipname'), expected)
 
     def test_get_port_mappings_multiple_externals(self):
         p = portmappings.PortMappings()
-        expected = [{'labels': {'VIP_0': '1.1.1.1:8080', 'VIP_2': u'www.contoso.com.external:8080'}, 'protocol': 'tcp', 'containerPort': 8080, 'hostPort': 0}, {'labels': {'VIP_0': '1.1.1.1:8081', 'VIP_2': u'api.contoso.com.external:8081'}, 'protocol': 'tcp', 'containerPort': 8081, 'hostPort': 0}]
+        expected = [{'labels': {'VIP_0': '1.1.1.1:8080', 'VIP_2': u'www.contoso.com.external:80'}, 'protocol': 'tcp', 'containerPort': 8080, 'hostPort': 0}, {'labels': {'VIP_0': '1.1.1.1:8081', 'VIP_2': u'api.contoso.com.external:80'}, 'protocol': 'tcp', 'containerPort': 8081, 'hostPort': 0}]
         service_data = {'labels': {'com.microsoft.acs.dcos.marathon.vhosts': '["www.contoso.com:8080", "api.contoso.com:8081"]' } }
         actual = p.get_port_mappings('1.1.1.1', service_data, 'myvipname')
         self.assertEquals(actual, expected)
 
     def test_get_port_mappings_multiple_externals_case(self):
         p = portmappings.PortMappings()
-        expected = [{'labels': {'VIP_0': '1.1.1.1:8080', 'VIP_2': u'www.contoso.com.external:8080'}, 'protocol': 'tcp', 'containerPort': 8080, 'hostPort': 0}, {'labels': {'VIP_0': '1.1.1.1:8081', 'VIP_2': u'api.contoso.com.external:8081'}, 'protocol': 'tcp', 'containerPort': 8081, 'hostPort': 0}]
+        expected = [{'labels': {'VIP_0': '1.1.1.1:8080', 'VIP_2': u'www.contoso.com.external:80'}, 'protocol': 'tcp', 'containerPort': 8080, 'hostPort': 0}, {'labels': {'VIP_0': '1.1.1.1:8081', 'VIP_2': u'api.contoso.com.external:80'}, 'protocol': 'tcp', 'containerPort': 8081, 'hostPort': 0}]
         service_data = {'labels': {'com.microsoft.acs.dcos.marathon.VHOSTS': '["www.contoso.com:8080", "api.contoso.com:8081"]' } }
         actual = p.get_port_mappings('1.1.1.1', service_data, 'myvipname')
         self.assertEquals(actual, expected)
 
     def test_get_port_mappings_string(self):
         p = portmappings.PortMappings()
-        expected = [{'labels': {'VIP_0': '1.1.1.1:5000', 'VIP_2': 'www.example.com.external:5000'}, 'protocol': 'tcp', 'containerPort': 5000, 'hostPort': 0}]
+        expected = [{'labels': {'VIP_0': '1.1.1.1:5000', 'VIP_2': 'www.example.com.external:80'}, 'protocol': 'tcp', 'containerPort': 5000, 'hostPort': 0}]
         service_data = {'labels': {'com.microsoft.acs.dcos.marathon.vhost=www.example.com:5000'} }
         self.assertEquals(p.get_port_mappings('1.1.1.1', service_data, 'myvipname'), expected)
 
     def test_get_port_mappings_string_case(self):
         p = portmappings.PortMappings()
-        expected = [{'labels': {'VIP_0': '1.1.1.1:5000', 'VIP_2': 'www.example.com.external:5000'}, 'protocol': 'tcp', 'containerPort': 5000, 'hostPort': 0}]
+        expected = [{'labels': {'VIP_0': '1.1.1.1:5000', 'VIP_2': 'www.example.com.external:80'}, 'protocol': 'tcp', 'containerPort': 5000, 'hostPort': 0}]
         service_data = {'labels': {'com.microsoft.ACS.dcos.MARATHON.vhost=www.example.com:5000'} }
         self.assertEquals(p.get_port_mappings('1.1.1.1', service_data, 'myvipname'), expected)
 
     def test_get_port_mappings_string_list(self):
         p = portmappings.PortMappings()
-        expected = [{'labels': {'VIP_0': '1.1.1.1:8080', 'VIP_2': u'www.contoso.com.external:8080'}, 'protocol': 'tcp', 'containerPort': 8080, 'hostPort': 0}, {'labels': {'VIP_0': '1.1.1.1:8081', 'VIP_2': u'api.contoso.com.external:8081'}, 'protocol': 'tcp', 'containerPort': 8081, 'hostPort': 0}]
+        expected = [{'labels': {'VIP_0': '1.1.1.1:8080', 'VIP_2': u'www.contoso.com.external:80'}, 'protocol': 'tcp', 'containerPort': 8080, 'hostPort': 0}, {'labels': {'VIP_0': '1.1.1.1:8081', 'VIP_2': u'api.contoso.com.external:80'}, 'protocol': 'tcp', 'containerPort': 8081, 'hostPort': 0}]
         service_data = {'labels': { "com.microsoft.acs.dcos.marathon.vhosts=[\"www.contoso.com:8080\", \"api.contoso.com:8081\"]" }}
         actual = p.get_port_mappings('1.1.1.1', service_data, 'myvipname')
         self.assertEquals(actual, expected)
 
     def test_get_port_mappings_string_list_case(self):
         p = portmappings.PortMappings()
-        expected = [{'labels': {'VIP_0': '1.1.1.1:8080', 'VIP_2': u'www.contoso.com.external:8080'}, 'protocol': 'tcp', 'containerPort': 8080, 'hostPort': 0}, {'labels': {'VIP_0': '1.1.1.1:8081', 'VIP_2': u'api.contoso.com.external:8081'}, 'protocol': 'tcp', 'containerPort': 8081, 'hostPort': 0}]
+        expected = [{'labels': {'VIP_0': '1.1.1.1:8080', 'VIP_2': u'www.contoso.com.external:80'}, 'protocol': 'tcp', 'containerPort': 8080, 'hostPort': 0}, {'labels': {'VIP_0': '1.1.1.1:8081', 'VIP_2': u'api.contoso.com.external:80'}, 'protocol': 'tcp', 'containerPort': 8081, 'hostPort': 0}]
         service_data = {'labels': { "com.microsoft.acs.DCOS.marathon.vhosts=[\"www.contoso.com:8080\", \"api.contoso.com:8081\"]" }}
         actual = p.get_port_mappings('1.1.1.1', service_data, 'myvipname')
         self.assertEquals(actual, expected)

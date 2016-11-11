@@ -11,7 +11,6 @@ import dockerregistry
 import marathon
 import portmappings
 import serviceparser
-from deploymentexception import DeploymentException
 from exhibitor import Exhibitor
 from nginx import LoadBalancerApp
 
@@ -22,6 +21,7 @@ class DockerComposeParser(object):
                  registry_host, registry_username, registry_password,
                  minimum_health_capacity, check_dcos_version=False):
 
+        self.cleanup_needed = False
         self._ensure_docker_compose(compose_file)
         with open(compose_file, 'r') as compose_stream:
             self.compose_data = yaml.load(compose_stream)
@@ -58,6 +58,15 @@ class DockerComposeParser(object):
         """
         Called when exiting the 'with' block
         """
+        if not exc_type is SystemExit:
+            self._cleanup()
+        else:
+            self._shutdown()
+
+    def _shutdown(self):
+        """
+        Shuts down the acs client if needed
+        """
         if self.acs_client:
             self.acs_client.shutdown()
 
@@ -69,7 +78,8 @@ class DockerComposeParser(object):
         """
         docker_compose_expected_version = '2'
         if not os.path.isfile(docker_compose_file):
-            raise Exception('Docker compose file "{}" was not found.'.format(docker_compose_file))
+            raise Exception(
+                'Docker compose file "{}" was not found.'.format(docker_compose_file))
         with open(docker_compose_file, 'r') as f:
             compose_data = yaml.load(f)
             if 'services' not in compose_data.keys():
@@ -124,7 +134,6 @@ class DockerComposeParser(object):
         all_apps = {'id': group_name, 'apps': []}
 
         self.nginx_helper.ensure_exists(self.compose_data)
-
         docker_registry = dockerregistry.DockerRegistry(
             self.registry_host, self.registry_username, self.registry_password,
             self.marathon_helper)
@@ -156,7 +165,8 @@ class DockerComposeParser(object):
         existing_group_id = None
 
         if group_count > 1:
-            raise Exception('Another deployment is already in progress')
+            raise Exception(
+                'Another deployment is already in progress')
 
         if group_count == 1:
             # Do an additional check that includes the group version
@@ -165,7 +175,8 @@ class DockerComposeParser(object):
             # Check if there's an existing group with the same version_id
             if len(groups_with_version) > 0:
                 if group_version_id == groups_with_version[0]:
-                    raise Exception('App with the same version already deployed')
+                    raise Exception(
+                        'App with the same version already deployed')
             else:
                 existing_group_id = group_ids[0]
                 is_update = True
@@ -314,27 +325,24 @@ class DockerComposeParser(object):
                 return True
         return False
 
-    def cleanup(self):
+    def _cleanup(self):
         """
         Removes the group we were trying to deploy in case exception occurs
         """
+        if not self.cleanup_needed:
+            self._shutdown()
+            return
+
         try:
             group_id = self._get_group_id()
             logging.info('Removing "%s".', group_id)
             self.marathon_helper.delete_group(group_id)
         except Exception as remove_exception:
             raise remove_exception
+        finally:
+            self._shutdown()
 
     def deploy(self):
-        """
-        Deploys the services defined in docker-compose.yml file
-        """
-        try:
-            self._deploy()
-        except Exception as e:
-            raise DeploymentException(e)
-
-    def _deploy(self):
         """
         Deploys the services defined in docker-compose.yml file
         """
@@ -346,9 +354,14 @@ class DockerComposeParser(object):
         # 1. Deploy the initial marathon_json file (instances = 0, no VIPs)
         self.marathon_helper.deploy_group(marathon_json)
 
+        # At this point we need to clean up if anything
+        # goes wrong
+        self.cleanup_needed = True
+
         group_id = self._get_group_id()
         if not self.marathon_helper.is_group_id_unique(group_id):
-            raise Exception('App with ID "{}" is not unique anymore'.format(group_id))
+            raise Exception(
+                'App with ID "{}" is not unique anymore'.format(group_id))
 
         new_deployment_json = self.marathon_helper.get_group(group_id)
 
@@ -396,8 +409,9 @@ class DockerComposeParser(object):
                     # Make sure app with name link_id has a VIP_0
 
                     if not self._has_private_ip(marathon_json['apps'], link_id):
-                        raise Exception("Can't link '{}' to '{}'. '{}' doesn't expose any ports"
-                                        .format(service_name, link_service_name, link_service_name))
+                        raise Exception(
+                            "Can't link '{}' to '{}'. '{}' doesn't expose any ports"
+                            .format(service_name, link_service_name, link_service_name))
 
                     self._add_host(marathon_app, link_id, private_ips, alias=link_alias)
                     logging.info('Adding dependency "%s" to "%s"', link_id, service_name)
