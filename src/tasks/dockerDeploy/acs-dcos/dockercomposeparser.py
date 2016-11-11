@@ -58,7 +58,10 @@ class DockerComposeParser(object):
         """
         Called when exiting the 'with' block
         """
-        self._cleanup()
+        if not exc_type is SystemExit:
+            self._cleanup()
+        else:
+            self._shutdown()
 
     def _shutdown(self):
         """
