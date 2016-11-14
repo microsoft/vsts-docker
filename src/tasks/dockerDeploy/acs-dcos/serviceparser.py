@@ -164,7 +164,7 @@ class Parser(object):
         """
         if key in self.service_info:
             user = self.service_info[key]
-            self.app_json['user'] = user
+            self._append_parameters_key_value('user', user)
 
     def _parse_working_dir(self, key):
         """
