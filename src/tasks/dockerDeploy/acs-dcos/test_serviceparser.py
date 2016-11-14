@@ -293,7 +293,7 @@ class ServiceParserTests(unittest.TestCase):
         self.assertEquals({}, p.app_json)
 
     def test_parse_user(self):
-        expected = { 'user': 'admin' }
+        expected = {'container': {'docker': {'parameters': [{'key': 'user', 'value': 'admin'}]}}}
         p = serviceparser.Parser('groupname', 'myservice', {'user': 'admin'})
         p._parse_user('user')
         self.assertEquals(expected, p.app_json)
