@@ -18,7 +18,7 @@
     443
   ],
   "requirePorts": true,
-  "cmd": "cat << EOF > /etc/nginx/nginx.conf && exec nginx -g 'daemon off;'\nworker_processes 1;\nevents {\n    worker_connections 1024;\n}\nhttp {\n    server {\n        listen 80;\n        resolver $(echo $(cat /etc/resolv.conf | grep ^nameserver\\  | cut -d ' ' -f 2));\n        location / {\n            proxy_pass http://\\$host.${GROUP:-external}.marathon.l4lb.thisdcos.directory\\$request_uri;\n        }\n    }\n}",
+  "cmd": "cat << EOF > /etc/nginx/nginx.conf && exec nginx -g 'daemon off;'\nworker_processes 1;\nevents {\n    worker_connections 1024;\n}\nhttp {\n    server {\n        listen 80;\n        resolver $(echo $(cat /etc/resolv.conf | grep ^nameserver\\  | cut -d ' ' -f 2));\n        location / {\n            proxy_set_header Host \\$host;\n            proxy_pass http://\\$host.${GROUP:-external}.marathon.l4lb.thisdcos.directory\\$request_uri;\n        }\n    }\n}",
   "healthChecks": [
     {
       "protocol": "TCP",
@@ -29,6 +29,7 @@
     }
   ],
   "upgradeStrategy": {
-    "minimumHealthCapacity": 0
+    "minimumHealthCapacity": 0.5,
+    "maximumOverCapacity": 0.2
   }
 }
