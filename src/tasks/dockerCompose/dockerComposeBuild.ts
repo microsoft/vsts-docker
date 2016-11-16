@@ -23,14 +23,16 @@ function addTag(promise: any, connection: DockerComposeConnection, source: strin
 
 function addOtherTags(connection: DockerComposeConnection, imageName: string): any {
     var baseImageName = imageUtils.imageNameWithoutTag(imageName);
-    return (function addAdditionalTags() {
+
+    function addAdditionalTags() {
         var promise: any;
         tl.getDelimitedInput("additionalImageTags", "\n").forEach(tag => {
             promise = addTag(promise, connection, imageName, baseImageName + ":" + tag);
         });
         return promise;
-    })()
-    .then(function addSourceTags() {
+    }
+
+    function addSourceTags() {
         var promise: any;
         var includeSourceTags = tl.getBoolInput("includeSourceTags");
         if (includeSourceTags) {
@@ -39,13 +41,20 @@ function addOtherTags(connection: DockerComposeConnection, imageName: string): a
             });
         }
         return promise;
-    })
-    .then(function addLatestTag() {
+    }
+
+    function addLatestTag() {
         var includeLatestTag = tl.getBoolInput("includeLatestTag");
         if (baseImageName !== imageName && includeLatestTag) {
             return dockerTag(connection, imageName, baseImageName);
         }
-    });
+    }
+
+    var promise = addAdditionalTags();
+    promise = !promise ? addSourceTags() : promise.then(addSourceTags);
+    promise = !promise ? addLatestTag() : promise.then(addLatestTag);
+
+    return promise;
 }
 
 export function run(connection: DockerComposeConnection): any {
