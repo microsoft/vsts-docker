@@ -95,7 +95,7 @@ class ACSClient(object):
 
     def _setup_tunnel_server(self):
         """
-        Gets the SSHTunnelForwarder instance and local_port
+        Gets the port of the tunnel server
         """
         if self.is_direct:
             return 80
