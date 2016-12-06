@@ -5,8 +5,8 @@ import * as tl from "vsts-task-lib/task";
 import * as yaml from "js-yaml";
 import DockerComposeConnection from "./dockerComposeConnection";
 
-export function run(connection: DockerComposeConnection): any {
-    return connection.getCombinedConfig().then(output => {
+export function run(connection: DockerComposeConnection, imageDigestComposeFile?: string): any {
+    return connection.getCombinedConfig(imageDigestComposeFile).then(output => {
         var removeBuildOptions = tl.getBoolInput("removeBuildOptions");
         if (removeBuildOptions) {
             var doc = yaml.safeLoad(output);

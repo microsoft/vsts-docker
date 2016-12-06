@@ -24,7 +24,8 @@ if (nopIfNoDockerComposeFile && !tl.globFirst(dockerComposeFile)) {
             "Push services": "./dockerComposePush",
             "Run services": "./dockerComposeUp",
             "Run a specific service": "./dockerComposeRun",
-            "Write service image digests": "./dockerComposeLock",
+            "Lock services": "./dockerComposeLock",
+            "Write service image digests": "./dockerComposeDigests",
             "Combine configuration": "./dockerComposeConfig",
             "Run a Docker Compose command": "./dockerComposeCommand"
         }[action]).run(connection);

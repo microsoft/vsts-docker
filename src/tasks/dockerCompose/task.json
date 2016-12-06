@@ -13,7 +13,7 @@
     "version": {
         "Major": 0,
         "Minor": 3,
-        "Patch": 1
+        "Patch": 2
     },
     "demands": [],
     "groups": [
@@ -82,6 +82,7 @@
                 "Push services": "Push service images",
                 "Run services": "Run service images",
                 "Run a specific service": "Run a specific service image",
+                "Lock services": "Lock service images",
                 "Write service image digests": "Write service image digests",
                 "Combine configuration": "Combine configuration",
                 "Run a Docker Compose command": "Run a Docker Compose command"
@@ -201,14 +202,14 @@
             "type": "boolean",
             "label": "Remove Build Options",
             "defaultValue": "false",
-            "visibleRule": "action = Combine configuration",
+            "visibleRule": "action = Lock services || action = Combine configuration",
             "helpMarkDown": "Remove the build options from the output Docker Compose file."
         },
         {
             "name": "baseResolveDirectory",
             "type": "filePath",
             "label": "Base Resolve Directory",
-            "visibleRule": "action = Combine configuration",
+            "visibleRule": "action = Lock services || action = Combine configuration",
             "helpMarkDown": "The base directory from which relative paths in the output Docker Compose file should be resolved."
         },
         {
@@ -217,7 +218,7 @@
             "label": "Output Docker Compose File",
             "defaultValue": "$(Build.StagingDirectory)/docker-compose.yml",
             "required": true,
-            "visibleRule": "action = Combine configuration",
+            "visibleRule": "action = Lock services || action = Combine configuration",
             "helpMarkDown": "Path to an output Docker Compose file."
         },
         {

@@ -93,8 +93,11 @@ export default class DockerComposeConnection extends DockerConnection {
         return command;
     }
 
-    public getCombinedConfig(): any {
+    public getCombinedConfig(imageDigestComposeFile?: string): any {
         var command = this.createComposeCommand();
+        if (imageDigestComposeFile) {
+            command.arg(["-f", imageDigestComposeFile]);
+        }
         command.arg("config");
         var result = "";
         command.on("stdout", data => {
