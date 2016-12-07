@@ -14,14 +14,13 @@ class Mesos(object):
         """
         Gets the contents of a log file from the tasks sandbox
         """
-        url_path = task.get_sandbox_path(filename)
+        url_path = task.get_sandbox_download_path(filename)
         try:
             log_file_response = self._get_request('slave', url_path)
-            log_json = log_file_response.json()
         except:
             return '<empty>'
 
-        return '<empty>' if not log_json['data'].strip() else log_json['data'].strip()
+        return log_file_response.content
 
     def _get_slave_ids(self):
         """

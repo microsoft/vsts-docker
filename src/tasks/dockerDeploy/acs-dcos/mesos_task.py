@@ -29,14 +29,14 @@ class MesosTask(object):
             timestamp = statuses[0]['timestamp']
         self.timestamp = timestamp
 
-    def get_sandbox_path(self, filename):
+    def get_sandbox_download_path(self, filename):
         """
-        Gets the path to the sandbox
+        Gets the path for downloading a file from sandbox
         """
         if not filename:
             raise ValueError('Filename is not set')
 
-        url_template = '{}/files/read.json?path={}/{}&length=999999&offset=0'
+        url_template = '{}/files/download?path={}/{}'
         return url_template.format(
             self.slave_id, self.directory, filename)
 
@@ -51,3 +51,7 @@ class MesosTask(object):
         Returns True if task is killed or being killed, false otherwise
         """
         return self.state == 'TASK_KILLED' or self.state == 'TASK_KILLING'
+
+    def __str__(self):
+        return 'task_id:{}\nslave_id:{}\nframework_id:{}\nstate:{}\ndirectory:{}\ntimestamp:{}\n'.format(
+            self.task_id, self.slave_id, self.framework_id, self.state, self.directory,self.timestamp)

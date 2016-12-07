@@ -84,8 +84,8 @@ class MesosTaskTest(unittest.TestCase):
             'statuses': []
         }
         task = MesosTask(base_task, 'directory')
-        expected = 'myslave_id/files/read.json?path=directory/myfile&length=999999&offset=0'
-        actual = task.get_sandbox_path('myfile')
+        expected = 'myslave_id/files/download?path=directory/myfile'
+        actual = task.get_sandbox_download_path('myfile')
 
         self.assertEqual(actual, expected)
 
@@ -98,7 +98,7 @@ class MesosTaskTest(unittest.TestCase):
             'statuses': []
         }
         task = MesosTask(base_task, 'directory')
-        self.assertRaises(ValueError, task.get_sandbox_path, None)
+        self.assertRaises(ValueError, task.get_sandbox_download_path, None)
 
     def test_is_failed(self):
         base_task = {
