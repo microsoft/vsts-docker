@@ -3,6 +3,8 @@ import logging
 import os
 import time
 
+from dcos.mesos import Mesos
+
 
 class Marathon(object):
     """
@@ -13,6 +15,7 @@ class Marathon(object):
 
     def __init__(self, acs_client):
         self.acs_client = acs_client
+        self.mesos = Mesos(self.acs_client)
 
     def get_request(self, path, endpoint='marathon/v2'):
         """
@@ -94,7 +97,6 @@ class Marathon(object):
             data = json.load(json_file)
         return data
 
-
     def deploy_app(self, app_json):
         """
         Deploys an app to marathon
@@ -104,12 +106,7 @@ class Marathon(object):
 
         start_timestamp = time.time()
         response = self.post_request('apps', post_data=app_json)
-        response_json = response.json()
-
-        if 'deployments' not in response_json:
-            raise Exception('Key "deployments" is missing from response: {}'.format(response_json))
-        deployment_id = response_json['deployments'][0]['id']
-        self._wait_for_deployment_complete(deployment_id, start_timestamp)
+        self._wait_for_deployment_complete(response, start_timestamp)
 
     def update_group(self, marathon_json):
         """
@@ -138,12 +135,7 @@ class Marathon(object):
         else:
             raise ValueError('Invalid method "{}"'.format(method))
 
-        response_json = response.json()
-
-        if 'deploymentId' not in response_json:
-            raise Exception('Key "deploymentId" is missing from response: {}'.format(response_json))
-        deployment_id = response_json['deploymentId']
-        self._wait_for_deployment_complete(deployment_id, start_timestamp)
+        self._wait_for_deployment_complete(response, start_timestamp)
         return response
 
     def _get_all_group_ids(self, data):
@@ -183,8 +175,7 @@ class Marathon(object):
         """
         start_timestamp = time.time()
         response = self.put_request('groups/{}'.format(group_id), json={'scaleBy': scale_factor})
-        deployment_id = response.json().get('deploymentId')
-        self._wait_for_deployment_complete(deployment_id, start_timestamp)
+        self._wait_for_deployment_complete(response, start_timestamp)
         return response.json()
 
     def is_group_id_unique(self, group_id):
@@ -199,32 +190,83 @@ class Marathon(object):
 
         return False
 
-    def _wait_for_deployment_complete(self, deployment_id, start_timestamp):
+    def _wait_for_deployment_complete(self, deployment_response, start_timestamp):
         """
         Waits for the deployment to complete.
         """
+        sleep_time = 5
         other_deployment_in_progress = False
         timeout_exceeded = True
+        task_failed = False
+        deployment_json = deployment_response.json()
+
+        if 'deploymentId' in deployment_json:
+            deployment_id = deployment_json['deploymentId']
+        elif 'deployments' in deployment_json:
+            deployment_id = deployment_json['deployments'][0]['id']
+        else:
+            raise Exception(
+                'Could not find "deploymentId" in {}'.format(deployment_json))
+
+        service_states = {}
+        get_deployments_response = self.get_deployments().json()
+
         while not self._wait_time_exceeded(self.deployment_max_wait_time, start_timestamp) \
-         and not other_deployment_in_progress:
-            response = self.get_deployments().json()
-            if response:
-                for a_deployment in response:
-                    if deployment_id in a_deployment['id']:
-                        logging.info('Waiting for deployment "%s" to complete ...', deployment_id)
-                        time.sleep(5)
-                    else:
-                        logging.info('Another service is being deployed. Continuing ...')
-                        other_deployment_in_progress = True
-                        timeout_exceeded = False
-                        break
-            else:
+         and not other_deployment_in_progress and not task_failed:
+            if not get_deployments_response:
                 timeout_exceeded = False
                 break
 
-        if timeout_exceeded:
-            raise Exception('Timeout exceeded waiting for deployment "{}" to complete'.format(
-                deployment_id))
+            a_deployment = [dep for dep in get_deployments_response if dep['id'] == deployment_id]
+
+            if len(a_deployment) == 0:
+                logging.info('Another service is being deployed. Continuing ...')
+                other_deployment_in_progress = True
+                break
+
+            a_deployment = a_deployment[0]
+
+            for affected_app in a_deployment['affectedApps']:
+                service_id = affected_app.strip('/').replace('/', '_')
+
+                if not service_id in service_states:
+                    service_states[service_id] = None
+
+                current_task = self.mesos.get_latest_task(service_id)
+
+                if not current_task:
+                    time.sleep(sleep_time)
+                    continue
+
+                current_state = current_task.state
+                if service_states[service_id] != current_state:
+                    logging.info('Service "%s" is in state: "%s"',
+                                 service_id, current_state)
+
+                    if current_task.is_failed() or\
+                        current_task.is_killed():
+                        logging.error('Service "%s" failed with status "%s".',
+                                      service_id, current_state)
+
+                        # Write out app logs
+                        stdout = self.mesos.get_task_log_file(
+                            current_task, 'stdout')
+                        stderr = self.mesos.get_task_log_file(
+                            current_task, 'stderr')
+
+                        logging.info('stdout:\n%s', stdout)
+                        logging.info('stderr:\n%s', stderr)
+                        task_failed = True
+                        break
+
+                    service_states[service_id] = current_task.get_state()
+
+            time.sleep(sleep_time)
+            get_deployments_response = self.get_deployments().json()
+
+        if task_failed or timeout_exceeded:
+            raise Exception('Deployment failed to complete')
+
         return
 
     def _wait_time_exceeded(self, max_wait, timestamp):
