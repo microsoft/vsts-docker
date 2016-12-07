@@ -3,7 +3,7 @@ import logging
 import os
 import time
 
-from dcos.mesos import Mesos
+from mesos import Mesos
 
 
 class Marathon(object):
@@ -259,7 +259,7 @@ class Marathon(object):
                         task_failed = True
                         break
 
-                    service_states[service_id] = current_task.get_state()
+                    service_states[service_id] = current_task.state
 
             time.sleep(sleep_time)
             get_deployments_response = self.get_deployments().json()
