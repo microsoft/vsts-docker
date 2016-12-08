@@ -22,5 +22,5 @@ export function run(connection: DockerComposeConnection): any {
         command.arg("--abort-on-container-exit");
     }
 
-    return command.exec();
+    return connection.execCommand(command);
 }

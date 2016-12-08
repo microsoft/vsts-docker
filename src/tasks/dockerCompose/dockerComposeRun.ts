@@ -30,6 +30,8 @@ export function run(connection: DockerComposeConnection): any {
         command.arg("--rm");
     }
 
+    command.arg("-T");
+
     var workDir = tl.getInput("workDir");
     if (workDir) {
         command.arg(["-w", workDir]);
@@ -43,13 +45,13 @@ export function run(connection: DockerComposeConnection): any {
         command.line(containerCommand);
     }
 
-    var promise = command.exec();
+    var promise = connection.execCommand(command);
 
     if (!detached) {
-        promise = promise.then(() => {
+        promise = promise.fin(() => {
             var downCommand = connection.createComposeCommand();
             downCommand.arg("down");
-            return downCommand.exec();
+            return connection.execCommand(downCommand);
         });
     }
 

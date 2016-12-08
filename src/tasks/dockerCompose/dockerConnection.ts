@@ -34,6 +34,17 @@ export default class DockerConnection {
         return command;
     }
 
+    public execCommand(command: tr.ToolRunner, options?: tr.IExecOptions) {
+        var errlines = [];
+        command.on("errline", line => {
+            errlines.push(line);
+        });
+        return command.exec(options).fail(error => {
+            errlines.forEach(line => tl.error(line));
+            throw error;
+        });
+    }
+
     public open(hostEndpoint?: string, registryEndpoint?: string): void {
         if (hostEndpoint) {
             this.hostUrl = tl.getEndpointUrl(hostEndpoint, false);

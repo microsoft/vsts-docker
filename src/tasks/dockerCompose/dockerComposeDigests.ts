@@ -16,7 +16,7 @@ function dockerPull(connection: DockerComposeConnection, imageName: string, imag
         output += data;
     });
 
-    return command.exec().then(() => {
+    return connection.execCommand(command).then(() => {
         // Parse the output to find the repository digest
         var imageDigest = output.match(/^Digest: (.*)$/m)[1];
         if (imageDigest) {

@@ -12,7 +12,7 @@ function dockerPush(connection: DockerConnection, imageName: string, imageDigest
     command.arg(imageName);
 
     if (!imageDigestFile) {
-        return command.exec();
+        return connection.execCommand(command);
     }
 
     var output = "";
@@ -20,7 +20,7 @@ function dockerPush(connection: DockerConnection, imageName: string, imageDigest
         output += data;
     });
 
-    return command.exec().then(() => {
+    return connection.execCommand(command).then(() => {
         // Parse the output to find the repository digest
         var imageDigest = output.match(/^[^:]*: digest: ([^ ]*) size: \d*$/m)[1];
         if (imageDigest) {

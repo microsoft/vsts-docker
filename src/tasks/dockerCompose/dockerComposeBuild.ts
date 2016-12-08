@@ -10,7 +10,7 @@ function dockerTag(connection: DockerComposeConnection, source: string, target: 
     command.arg("tag");
     command.arg(source);
     command.arg(target);
-    return command.exec();
+    return connection.execCommand(command);
 }
 
 function addTag(promise: any, connection: DockerComposeConnection, source: string, target: string) {
@@ -60,7 +60,7 @@ function addOtherTags(connection: DockerComposeConnection, imageName: string): a
 export function run(connection: DockerComposeConnection): any {
     var command = connection.createComposeCommand();
     command.arg("build");
-    return command.exec()
+    return connection.execCommand(command)
     .then(() => connection.getImages(true))
     .then(images => {
         var promise: any;

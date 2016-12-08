@@ -55,8 +55,6 @@ export function run(connection: DockerConnection): any {
         }
     }
 
-    command.arg("-t");
-
     tl.getDelimitedInput("volumes", "\n").forEach(volume => {
         command.arg(["-v", volume]);
     });
@@ -78,5 +76,5 @@ export function run(connection: DockerConnection): any {
         command.line(containerCommand);
     }
 
-    return command.exec();
+    return connection.execCommand(command);
 }

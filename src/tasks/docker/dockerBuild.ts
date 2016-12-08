@@ -11,6 +11,9 @@ export function run(connection: DockerConnection): any {
     command.arg("build");
 
     var dockerFile = tl.globFirst(tl.getInput("dockerFile", true));
+    if (!dockerFile) {
+        throw new Error("No Docker file matching " + tl.getInput("dockerFile") + " was found.");
+    }
     command.arg(["-f", dockerFile]);
 
     tl.getDelimitedInput("buildArguments", "\n").forEach(buildArgument => {
@@ -51,5 +54,5 @@ export function run(connection: DockerConnection): any {
     }
     command.arg(context);
 
-    return command.exec();
+    return connection.execCommand(command);
 }

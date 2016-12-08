@@ -7,10 +7,10 @@ import dockercomposeparser
 
 
 class VstsLogFormatter(logging.Formatter):
-    error_format = logging.Formatter('##[error] (%(name)s): %(message)s')
-    warning_format = logging.Formatter('##[warning] (%(name)s): %(message)s')
-    debug_format = logging.Formatter('##[debug] (%(name)s): %(message)s')
-    default_format = logging.Formatter('%(levelname)s (%(name)s): %(message)s')
+    error_format = logging.Formatter('##[error]%(message)s')
+    warning_format = logging.Formatter('##[warning]%(message)s')
+    debug_format = logging.Formatter('##[debug]%(message)s')
+    default_format = logging.Formatter('%(message)s')
 
     def format(self, record):
         if record.levelno == logging.ERROR:

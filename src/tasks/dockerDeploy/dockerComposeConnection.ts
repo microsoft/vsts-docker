@@ -20,6 +20,9 @@ export default class DockerComposeConnection extends DockerConnection {
         super();
         this.dockerComposePath = tl.which("docker-compose", true);
         this.dockerComposeFile = tl.globFirst(tl.getInput("dockerComposeFile", true));
+        if (!this.dockerComposeFile) {
+            throw new Error("No Docker Compose file matching " + tl.getInput("dockerComposeFile") + " was found.");
+        }
         this.additionalDockerComposeFiles = tl.getDelimitedInput("additionalDockerComposeFiles", "\n");
         this.requireAdditionalDockerComposeFiles = tl.getBoolInput("requireAdditionalDockerComposeFiles");
         this.projectName = tl.getInput("projectName");

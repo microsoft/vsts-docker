@@ -6,5 +6,5 @@ import DockerConnection from "./dockerConnection";
 export function run(connection: DockerConnection): any {
     var command = connection.createCommand();
     command.line(tl.getInput("customCommand", true));
-    return command.exec();
+    return connection.execCommand(command);
 }

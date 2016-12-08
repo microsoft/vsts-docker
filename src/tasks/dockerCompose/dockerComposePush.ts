@@ -9,7 +9,7 @@ function dockerPush(connection: DockerComposeConnection, imageName: string) {
     var command = connection.createCommand();
     command.arg("push");
     command.arg(imageName);
-    return command.exec();
+    return connection.execCommand(command);
 }
 
 function pushTag(promise: any, connection: DockerComposeConnection, imageName: string) {

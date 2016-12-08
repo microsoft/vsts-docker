@@ -65,39 +65,35 @@ export function run(): any {
         composeFile = path.join(srcPath, ".docker-compose." + Date.now() + ".yml");
         fs.writeFileSync(composeFile, config);
 
-        return connection.createCommand()
+        return connection.execCommand(connection.createCommand()
             .arg("build")
             .arg(["-f", path.join(srcPath, "Dockerfile.task")])
             .arg(["-t", imageName])
-            .arg(srcPath)
-            .exec()
-        .then(() => {
-            return connection.createCommand()
-                .arg("run")
-                .arg("--rm")
-                .arg("-t")
-                .arg(imageName)
-                .arg("createmarathon.py")
-                .arg(["--compose-file", path.basename(composeFile)])
-                .arg(masterUrl ? ["--dcos-master-url", masterUrl] : [
-                    "--acs-host", sshHost,
-                    "--acs-port", sshPort,
-                    "--acs-username", sshUsername,
-                    "--acs-private-key", sshPrivateKey,
-                    "--acs-password", sshPassword
-                ])
-                .arg(registryHost ? [
-                    "--registry-host", registryHost,
-                    "--registry-username", registryUsername,
-                    "--registry-password", registryPassword
-                ] : [])
-                .arg(["--group-name", appGroupName])
-                .arg(["--group-qualifier", appGroupQualifier])
-                .arg(["--group-version", appGroupVersion])
-                .arg(["--minimum-health-capacity", minHealthCapacity.toString()])
-                .arg(verbose ? ["--verbose"] : [])
-                .exec();
-        });
+            .arg(srcPath))
+        .then(() => connection.createCommand()
+            .arg("run")
+            .arg("--rm")
+            .arg(imageName)
+            .arg("createmarathon.py")
+            .arg(["--compose-file", path.basename(composeFile)])
+            .arg(masterUrl ? ["--dcos-master-url", masterUrl] : [
+                "--acs-host", sshHost,
+                "--acs-port", sshPort,
+                "--acs-username", sshUsername,
+                "--acs-private-key", sshPrivateKey,
+                "--acs-password", sshPassword
+            ])
+            .arg(registryHost ? [
+                "--registry-host", registryHost,
+                "--registry-username", registryUsername,
+                "--registry-password", registryPassword
+            ] : [])
+            .arg(["--group-name", appGroupName])
+            .arg(["--group-qualifier", appGroupQualifier])
+            .arg(["--group-version", appGroupVersion])
+            .arg(["--minimum-health-capacity", minHealthCapacity.toString()])
+            .arg(verbose ? ["--verbose"] : [])
+            .exec());
     })
     .fin(function cleanup() {
         if (composeFile && tl.exist(composeFile)) {
