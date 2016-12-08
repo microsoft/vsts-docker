@@ -1,8 +1,11 @@
 import json
 import logging
 import os
+import re
+import threading
 import time
 
+from marathon_deployments import DeploymentMonitor
 from mesos import Mesos
 
 
@@ -17,31 +20,31 @@ class Marathon(object):
         self.acs_client = acs_client
         self.mesos = Mesos(self.acs_client)
 
-    def get_request(self, path, endpoint='marathon/v2'):
+    def get_request(self, path, endpoint='marathon/v2', headers=None, timeout=None, stream=False):
         """
         Makes an HTTP GET request
         """
-        return self.acs_client.get_request('{}/{}'.format(endpoint, path))
+        return self.acs_client.get_request('{}/{}'.format(endpoint, path), headers=headers, timeout=timeout, stream=stream)
 
-    def delete_request(self, path, endpoint='marathon/v2'):
+    def delete_request(self, path, endpoint='marathon/v2', headers=None, timeout=None):
         """
         Makes an HTTP DELETE request
         """
-        return self.acs_client.delete_request('{}/{}'.format(endpoint, path))
+        return self.acs_client.delete_request('{}/{}'.format(endpoint, path), headers=headers, timeout=timeout, stream=False)
 
-    def post_request(self, path, post_data, endpoint='marathon/v2'):
+    def post_request(self, path, post_data, endpoint='marathon/v2', headers=None, timeout=None, stream=False):
         """
         Makes an HTTP POST request
         """
         return self.acs_client.post_request('{}/{}'.format(endpoint, path),
-                                            post_data=post_data)
+                                            post_data=post_data, headers=headers, timeout=timeout, stream=stream)
 
-    def put_request(self, path, put_data=None, endpoint='marathon/v2', **kwargs):
+    def put_request(self, path, put_data=None, endpoint='marathon/v2', headers=None, timeout=None, stream=False, **kwargs):
         """
         Makes an HTTP PUT request
         """
         return self.acs_client.put_request('{}/{}'.format(endpoint, path),
-                                           put_data=put_data, **kwargs)
+                                           put_data=put_data, headers=headers, timeout=timeout, stream=stream, **kwargs)
 
     def delete_group(self, group_id, force=None):
         """
@@ -192,14 +195,14 @@ class Marathon(object):
 
     def _wait_for_deployment_complete(self, deployment_response, start_timestamp):
         """
-        Waits for the deployment to complete.
+        Waits for deployment to Marathon to complete. We start an instance of
+        DeploymentMonitor that streams events from Marathon endpoint and monitors when
+        apps fail or succeed to deploy. Monitor also logs any app status changes.
         """
-        sleep_time = 5
-        other_deployment_in_progress = False
-        timeout_exceeded = True
-        task_failed = False
-        deployment_json = deployment_response.json()
 
+        # Get the deploymentId, so we can uniquely identify deployment
+        # we want to monitor
+        deployment_json = deployment_response.json()
         if 'deploymentId' in deployment_json:
             deployment_id = deployment_json['deploymentId']
         elif 'deployments' in deployment_json:
@@ -208,66 +211,43 @@ class Marathon(object):
             raise Exception(
                 'Could not find "deploymentId" in {}'.format(deployment_json))
 
-        service_states = {}
-        get_deployments_response = self.get_deployments().json()
-
-        while not self._wait_time_exceeded(self.deployment_max_wait_time, start_timestamp) \
-         and not other_deployment_in_progress and not task_failed:
-            if not get_deployments_response:
-                timeout_exceeded = False
-                break
-
-            a_deployment = [dep for dep in get_deployments_response if dep['id'] == deployment_id]
-
-            if len(a_deployment) == 0:
-                logging.info('Another service is being deployed. Continuing ...')
-                other_deployment_in_progress = True
-                break
-
-            a_deployment = a_deployment[0]
-
-            for affected_app in a_deployment['affectedApps']:
-                service_id = affected_app.strip('/').replace('/', '_')
-
-                if not service_id in service_states:
-                    service_states[service_id] = None
-
-                current_task = self.mesos.get_latest_task(service_id)
-
-                if not current_task:
-                    time.sleep(sleep_time)
-                    continue
-
-                current_state = current_task.state
-                if service_states[service_id] != current_state:
-                    logging.info('Service "%s" is in state: "%s"',
-                                 service_id, current_state)
-
-                    if current_task.is_failed() or\
-                        current_task.is_killed():
-                        logging.error('Service "%s" failed with status "%s".',
-                                      service_id, current_state)
-
-                        # Write out app logs
-                        stdout = self.mesos.get_task_log_file(
-                            current_task, 'stdout')
-                        stderr = self.mesos.get_task_log_file(
-                            current_task, 'stderr')
-
-                        logging.info('stdout:\n%s', stdout)
-                        logging.info('stderr:\n%s', stderr)
-                        task_failed = True
-                        break
-
-                    service_states[service_id] = current_task.state
-
-            time.sleep(sleep_time)
+        # Wait for the deployment to start, so we can get the IDs of apps involved
+        # in the deployment
+        while not self._wait_time_exceeded(self.deployment_max_wait_time, start_timestamp):
             get_deployments_response = self.get_deployments().json()
+            a_deployment = [dep for dep in get_deployments_response if dep['id'] == deployment_id]
+            if len(a_deployment) > 0:
+                app_ids = a_deployment[0]['affectedApps']
+                break
+            else:
+                # Nothing to do
+                return
 
-        if task_failed or timeout_exceeded:
+        deployment_completed = False
+        processor = DeploymentMonitor(self, app_ids)
+        processor.start()
+
+        while processor.is_running() and not deployment_completed:
+            if self._wait_time_exceeded(self.deployment_max_wait_time, start_timestamp):
+                processor.stop()
+                raise Exception('Timeout exceeded waiting for deployment to complete')
+
+            get_deployments_response = self.get_deployments().json()
+            a_deployment = [dep for dep in get_deployments_response if dep['id'] == deployment_id]
+            if len(a_deployment) == 0:
+                deployment_completed = True
+                break
+
+        if processor.deployment_failed():
+            failed_event = processor.get_failed_event()
+            failed_task = self.mesos.get_task(
+                failed_event.task_id(), failed_event.slave_id())
+            stderr_contents = self.mesos.get_task_log_file(failed_task, 'stderr')
+            logging.error(stderr_contents)
             raise Exception('Deployment failed to complete')
 
-        return
+        if processor.deployment_succeeded() or deployment_completed:
+            logging.info('Deployment succeeded')
 
     def _wait_time_exceeded(self, max_wait, timestamp):
         """

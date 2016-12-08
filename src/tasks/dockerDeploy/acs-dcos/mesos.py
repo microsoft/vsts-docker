@@ -44,14 +44,17 @@ class Mesos(object):
         slave_state_json = slave_state_response.json()
         return slave_state_json
 
-    def get_latest_task(self, service_id):
+    def get_task(self, task_id, slave_id=None):
         """
         Go through all frameworks and executors and get all tasks that
         start with the service_id. Returns the latest task with information
         needed to get the files from the sandbox
         """
         framework_name = 'marathon'
-        slave_ids = self._get_slave_ids()
+        slave_ids = [slave_id]
+        if not slave_id:
+            slave_ids = self._get_slave_ids()
+
         found_tasks = []
 
         for slave_id in slave_ids:
@@ -69,9 +72,9 @@ class Mesos(object):
             executors = []
             for framework in marathon_frameworks:
                 executors.extend(
-                    [e for e in framework['executors'] if e['id'].startswith(service_id)])
+                    [e for e in framework['executors'] if e['id'] == task_id])
                 executors.extend(
-                    [e for e in framework['completed_executors'] if e['id'].startswith(service_id)])
+                    [e for e in framework['completed_executors'] if e['id'] == task_id])
 
             for executor in executors:
                 for task in executor['tasks']:

@@ -137,7 +137,7 @@ class ACSClient(object):
             url = 'http://127.0.0.1:{}/{}'.format(str(local_port), path)
         return url
 
-    def _make_request(self, path, method, data=None, **kwargs):
+    def _make_request(self, path, method, data=None, headers=None, timeout=None, stream=False, **kwargs):
         """
         Makes an HTTP request with specified method
         """
@@ -148,48 +148,52 @@ class ACSClient(object):
             raise Exception('Invalid method {}'.format(method))
 
         method_to_call = getattr(requests, method)
-        headers = {'content-type': 'application/json'}
+
+        if not headers:
+            headers = {'content-type': 'application/json'}
 
         if not data:
-            response = method_to_call(url, headers=headers, **kwargs)
+            response = method_to_call(
+                url, headers=headers, timeout=timeout, stream=stream, **kwargs)
         else:
-            response = method_to_call(url, data, headers=headers, **kwargs)
+            response = method_to_call(
+                url, data, headers=headers, timeout=timeout, stream=stream, **kwargs)
 
         if response.status_code > 400:
             raise Exception('Call to "%s" failed with: %s', url, response.text)
         return response
 
-    def get_request(self, path):
+    def get_request(self, path, headers=None, timeout=None, stream=False):
         """
         Makes a GET request to Marathon endpoint (localhost:80 on the cluster)
         :param path: Path part of the URL to make the request to
         :type path: String
         """
-        return self._make_request(path, 'get')
+        return self._make_request(path, 'get', headers=headers, timeout=timeout, stream=stream)
 
-    def delete_request(self, path):
+    def delete_request(self, path, headers=None, timeout=None, stream=False):
         """
         Makes a DELETE request to Marathon endpoint (localhost:80 on the cluster)
         :param path: Path part of the URL to make the request to
         :type path: String
         """
-        return self._make_request(path, 'delete')
+        return self._make_request(path, 'delete', headers=headers, timeout=timeout, stream=stream)
 
-    def post_request(self, path, post_data):
+    def post_request(self, path, post_data, headers=None, timeout=None, stream=False):
         """
         Makes a POST request to Marathon endpoint (localhost:80 on the cluster)
         :param path: Path part of the URL to make the request to
         :type path: String
         """
-        return self._make_request(path, 'post', data=post_data)
+        return self._make_request(path, 'post', data=post_data, headers=headers, timeout=timeout, stream=stream)
 
-    def put_request(self, path, put_data=None, **kwargs):
+    def put_request(self, path, put_data=None, headers=None, timeout=None, stream=False, **kwargs):
         """
         Makes a POST request to Marathon endpoint (localhost:80 on the cluster)
         :param path: Path part of the URL to make the request to
         :type path: String
         """
-        return self._make_request(path, 'put', data=put_data, **kwargs)
+        return self._make_request(path, 'put', data=put_data, headers=headers, timeout=timeout, stream=stream, **kwargs)
 
     def get_available_local_port(self):
         """
