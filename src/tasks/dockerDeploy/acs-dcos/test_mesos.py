@@ -137,7 +137,7 @@ class MesosTest(unittest.TestCase):
     def test_get_latest_task(self, mock_acs_client):
         mock_acs_client.get_request.side_effect = mocked_requests_get
         m = Mesos(mock_acs_client)
-        actual = m.get_latest_task('service_id')
+        actual = m.get_task('service_id')
         self.assertEqual(actual.task_id, 'service_id')
         self.assertEqual(actual.slave_id, 'slave_id')
         self.assertEqual(actual.framework_id, 'framework_id_2')
