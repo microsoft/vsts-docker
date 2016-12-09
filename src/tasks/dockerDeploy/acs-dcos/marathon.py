@@ -224,7 +224,7 @@ class Marathon(object):
                 return
 
         deployment_completed = False
-        processor = DeploymentMonitor(self, app_ids)
+        processor = DeploymentMonitor(self, app_ids, deployment_id)
         processor.start()
 
         while processor.is_running() and not deployment_completed:

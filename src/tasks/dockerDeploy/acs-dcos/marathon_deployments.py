@@ -112,15 +112,16 @@ class DeploymentMonitor(object):
     Monitors deployment of apps to Marathon using their
     app IDs
     """
-    def __init__(self, marathon, app_ids):
+    def __init__(self, marathon, app_ids, deployment_id):
         self._marathon = marathon
         self._deployment_failed = False
         self._deployment_succeeded = False
         self._app_ids = app_ids
+        self._deployment_id = deployment_id
         self._stop_event = threading.Event()
         self._failed_event = None
         self._thread = StoppableThread(
-            target=DeploymentMonitor._process_events, args=(self, self._app_ids))
+            target=DeploymentMonitor._process_events, args=(self,))
 
     def start(self):
         """
@@ -160,7 +161,7 @@ class DeploymentMonitor(object):
         """
         return self._deployment_succeeded
 
-    def _process_events(self, app_ids):
+    def _process_events(self):
         """
         Reads the event stream from Marathon and handles events
         """
@@ -169,18 +170,18 @@ class DeploymentMonitor(object):
             try:
                 if self._stop_event.is_set():
                     break
-                self._handle_event(event, app_ids)
+                self._handle_event(event)
             except:
                 # Ignore any exceptions
                 pass
 
-    def _handle_event(self, event, app_ids):
+    def _handle_event(self, event):
         """
         Handles single event from Marathon by logging it
         and/or signaling to stop the deployment monitor
         """
         if event.is_status_update():
-            if event.app_id() in app_ids:
+            if event.app_id() in self._app_ids:
                 # Log the event information
                 logging.info(event.status())
                 if event.is_task_failed() or event.is_task_killed():
@@ -188,8 +189,9 @@ class DeploymentMonitor(object):
                     self._failed_event = event
                     self.stop()
         elif event.is_deployment_succeeded():
-            self._deployment_succeeded = True
-            self.stop()
+            if self._deployment_id == event.data['id']:
+                self._deployment_succeeded = True
+                self.stop()
 
     def _get_event_stream(self):
         """
