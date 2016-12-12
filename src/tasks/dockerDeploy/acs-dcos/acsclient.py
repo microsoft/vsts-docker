@@ -1,7 +1,9 @@
 import logging
+import os
 import socket
-import StringIO
+import subprocess
 import time
+from StringIO import StringIO
 
 import paramiko
 import requests
@@ -66,7 +68,7 @@ class ACSClient(object):
         """
         if not self.acs_info.private_key:
             raise Exception('Private key was not provided')
-        private_key_file = StringIO.StringIO()
+        private_key_file = StringIO()
         private_key_file.write(self.acs_info.private_key)
         private_key_file.seek(0)
         return paramiko.RSAKey.from_private_key(private_key_file, self.acs_info.password)
@@ -161,6 +163,18 @@ class ACSClient(object):
 
         if response.status_code > 400:
             raise Exception('Call to "%s" failed with: %s', url, response.text)
+        return response
+
+    def get_stream(self, path):
+        """
+        Makes a GET stream request to provided endpoint
+        """
+        headers = {
+            'Accept': 'text/event-stream'
+        }
+
+        url = self._get_request_url(path)
+        response = requests.get(url, headers=headers, stream=True)
         return response
 
     def get_request(self, path, headers=None, timeout=None, stream=False):

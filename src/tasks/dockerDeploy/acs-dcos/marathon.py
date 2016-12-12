@@ -20,6 +20,12 @@ class Marathon(object):
         self.acs_client = acs_client
         self.mesos = Mesos(self.acs_client)
 
+    def get_stream(self, path, endpoint='marathon/v2'):
+        """
+        Makes a GET stream request
+        """
+        return self.acs_client.get_stream('{}/{}'.format(endpoint, path))
+
     def get_request(self, path, endpoint='marathon/v2', headers=None, timeout=None, stream=False):
         """
         Makes an HTTP GET request

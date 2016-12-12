@@ -198,11 +198,8 @@ class DeploymentMonitor(object):
         Gets the event stream by making a GET request to
         Marathon /events endpoint
         """
-        headers = {
-            'Cache-control': 'no-cache',
-            'Accept': 'text/event-stream'
-        }
-        response = self._marathon.get_request('/events', headers=headers, stream=True)
+        response = self._marathon.get_stream('/events')
+
         for line in response.iter_lines():
             if line.strip() == '':
                 continue
