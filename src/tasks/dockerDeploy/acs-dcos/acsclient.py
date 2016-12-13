@@ -81,7 +81,7 @@ class ACSClient(object):
         min_dcos_version_tuple = map(int, (min_dcos_version_str.split('.')))
         path = '/dcos-metadata/dcos-version.json'
         # Need to make a call to the Mesos endpoint on port 80
-        version_json = self.make_request(path, 'get', port=80).json()
+        version_json = self.get_request(path).json()
 
         if not 'version' in version_json:
             raise Exception('Could not determine DC/OS version from %s', path)
@@ -141,7 +141,7 @@ class ACSClient(object):
             url = 'http://127.0.0.1:{}/{}'.format(str(local_port), path)
         return url
 
-    def make_request(self, path, method, data=None, port=8080, **kwargs):
+    def make_request(self, path, method, data=None, port=80, **kwargs):
         """
         Makes an HTTP request with specified method
         """

@@ -81,6 +81,12 @@ class MarathonEvent(object):
         """
         return self._get_event_type() == 'deployment_success'
 
+    def is_deployment_failed(self):
+        """
+        True if event represents a failed deployment
+        """
+        return self._get_event_type() == 'deployment_failed'
+
     def status(self):
         """
         Gets the event status
@@ -98,17 +104,6 @@ class MarathonEvent(object):
                 self.app_id(), self.data['message'])
         return event_status
 
-class StoppableThread(threading.Thread):
-    def __init__(self, target, args=()):
-        super(StoppableThread, self).__init__(target=target, args=args)
-        self._stop = threading.Event()
-
-    def stop(self):
-        self._stop.set()
-
-    def stopped(self):
-        return self._stop.isSet()
-
 class DeploymentMonitor(object):
     """
     Monitors deployment of apps to Marathon using their
@@ -122,7 +117,8 @@ class DeploymentMonitor(object):
         self._deployment_id = deployment_id
         self._stop_event = threading.Event()
         self._failed_event = None
-        self._thread = StoppableThread(
+        self._failure_message = None
+        self._thread = threading.Thread(
             target=DeploymentMonitor._process_events, args=(self,))
 
     def start(self):
@@ -137,7 +133,7 @@ class DeploymentMonitor(object):
         Stops the deployment monitor
         """
         self._stop_event.set()
-        self._thread.stop()
+        self._thread.join()
 
     def is_running(self):
         """
@@ -150,6 +146,12 @@ class DeploymentMonitor(object):
         Gets the last failed event
         """
         return self._failed_event
+
+    def get_failure_message(self):
+        """
+        Gets the failure message
+        """
+        return self._failure_message
 
     def deployment_failed(self):
         """
@@ -172,7 +174,9 @@ class DeploymentMonitor(object):
             try:
                 if self._stop_event.is_set():
                     break
-                self._handle_event(event)
+                if self._handle_event(event):
+                    self.stop()
+                    break
             except:
                 # Ignore any exceptions
                 pass
@@ -182,6 +186,7 @@ class DeploymentMonitor(object):
         Handles single event from Marathon by logging it
         and/or signaling to stop the deployment monitor
         """
+        deployment_finished = False
         if event.is_status_update():
             if event.app_id() in self._app_ids:
                 # Log the event information
@@ -189,18 +194,24 @@ class DeploymentMonitor(object):
                 if event.is_task_failed() or event.is_task_killed():
                     self._deployment_failed = True
                     self._failed_event = event
-                    self.stop()
+                    deployment_finished = True
         elif event.is_deployment_succeeded():
             if self._deployment_id == event.data['id']:
                 self._deployment_succeeded = True
-                self.stop()
+                deployment_finished = True
+        elif event.is_deployment_failed():
+            if self._deployment_id == event.data['id']:
+                self._deployment_failed = True
+                self._failure_message = 'Deployment failed.'
+                deployment_finished = True
+        return deployment_finished
 
     def _get_event_stream(self):
         """
         Gets the event stream by making a GET request to
         Marathon /events endpoint
         """
-        events_url = self._marathon.get_url('v2/events')
+        events_url = self._marathon.get_url('service/marathon/v2/events')
         messages = sseclient.SSEClient(events_url)
         for msg in messages:
             event = MarathonEvent(json.loads(msg.data))
