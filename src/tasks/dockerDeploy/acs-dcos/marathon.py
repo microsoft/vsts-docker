@@ -217,22 +217,18 @@ class Marathon(object):
             raise Exception(
                 'Could not find "deploymentId" in {}'.format(deployment_json))
 
-        # Wait for the deployment to start, so we can get the IDs of apps involved
-        # in the deployment
-        while not self._wait_time_exceeded(self.deployment_max_wait_time, start_timestamp):
-            get_deployments_response = self.get_deployments().json()
-            a_deployment = [dep for dep in get_deployments_response if dep['id'] == deployment_id]
-            if len(a_deployment) > 0:
-                app_ids = a_deployment[0]['affectedApps']
-                break
-            else:
-                # Nothing to do
-                return
+        # Get the deploymentId of a deployment that has started
+        # or just return if deployment already completed.
+        get_deployments_response = self.get_deployments().json()
+        a_deployment = [dep for dep in get_deployments_response if dep['id'] == deployment_id]
+        if len(a_deployment) > 0:
+            app_ids = a_deployment[0]['affectedApps']
+        else:
+            # Nothing to do
+            return
 
         deployment_completed = False
-
-        # Did we already give processor an extra second to finish up or not?
-        processor_catchup = False
+        processor_catchup = False # Did we already give processor an extra second to finish up or not?
         processor = DeploymentMonitor(self, app_ids, deployment_id)
         processor.start()
 

@@ -80,7 +80,6 @@ class ACSClient(object):
         min_dcos_version_str = '1.8.4'
         min_dcos_version_tuple = map(int, (min_dcos_version_str.split('.')))
         path = '/dcos-metadata/dcos-version.json'
-        # Need to make a call to the Mesos endpoint on port 80
         version_json = self.get_request(path).json()
 
         if not 'version' in version_json:
@@ -167,7 +166,7 @@ class ACSClient(object):
 
     def get_request(self, path):
         """
-        Makes a GET request to Marathon endpoint (localhost:80 on the cluster)
+        Makes a GET request to an endpoint (localhost:80 on the cluster)
         :param path: Path part of the URL to make the request to
         :type path: String
         """
@@ -175,7 +174,7 @@ class ACSClient(object):
 
     def delete_request(self, path):
         """
-        Makes a DELETE request to Marathon endpoint (localhost:80 on the cluster)
+        Makes a DELETE request to an endpoint (localhost:80 on the cluster)
         :param path: Path part of the URL to make the request to
         :type path: String
         """
@@ -183,7 +182,7 @@ class ACSClient(object):
 
     def post_request(self, path, post_data):
         """
-        Makes a POST request to Marathon endpoint (localhost:80 on the cluster)
+        Makes a POST request to an endpoint (localhost:80 on the cluster)
         :param path: Path part of the URL to make the request to
         :type path: String
         """
