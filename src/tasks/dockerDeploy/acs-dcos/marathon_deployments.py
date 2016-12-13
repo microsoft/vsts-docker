@@ -3,6 +3,8 @@ import logging
 import re
 import threading
 
+import sseclient
+
 
 class MarathonEvent(object):
     """
@@ -198,16 +200,8 @@ class DeploymentMonitor(object):
         Gets the event stream by making a GET request to
         Marathon /events endpoint
         """
-        response = self._marathon.get_stream('/events')
-
-        for line in response.iter_lines():
-            if line.strip() == '':
-                continue
-            for real_event_data in re.split(r'\r\n', line.decode('utf-8')):
-                if real_event_data[:6] != "data: ":
-                    continue
-                if real_event_data[6:].strip() == '':
-                    continue
-                for real_event_data in re.split(r'\r\n', real_event_data[6:]):
-                    event = MarathonEvent(json.loads(real_event_data))
-                    yield event
+        events_url = self._marathon.get_url('v2/events')
+        messages = sseclient.SSEClient(events_url)
+        for msg in messages:
+            event = MarathonEvent(json.loads(msg.data))
+            yield event

@@ -20,37 +20,37 @@ class Marathon(object):
         self.acs_client = acs_client
         self.mesos = Mesos(self.acs_client)
 
-    def get_stream(self, path, endpoint='marathon/v2'):
+    def get_url(self, path):
         """
-        Makes a GET stream request
+        Gets the URL to Marathon
         """
-        return self.acs_client.get_stream('{}/{}'.format(endpoint, path))
+        return self.acs_client.create_request_url(path, 8080)
 
-    def get_request(self, path, endpoint='marathon/v2', headers=None, timeout=None, stream=False):
+    def get_request(self, path, endpoint='v2'):
         """
         Makes an HTTP GET request
         """
-        return self.acs_client.get_request('{}/{}'.format(endpoint, path), headers=headers, timeout=timeout, stream=stream)
+        return self.acs_client.get_request('{}/{}'.format(endpoint, path))
 
-    def delete_request(self, path, endpoint='marathon/v2', headers=None, timeout=None):
+    def delete_request(self, path, endpoint='v2'):
         """
         Makes an HTTP DELETE request
         """
-        return self.acs_client.delete_request('{}/{}'.format(endpoint, path), headers=headers, timeout=timeout, stream=False)
+        return self.acs_client.delete_request('{}/{}'.format(endpoint, path))
 
-    def post_request(self, path, post_data, endpoint='marathon/v2', headers=None, timeout=None, stream=False):
+    def post_request(self, path, post_data, endpoint='v2'):
         """
         Makes an HTTP POST request
         """
         return self.acs_client.post_request('{}/{}'.format(endpoint, path),
-                                            post_data=post_data, headers=headers, timeout=timeout, stream=stream)
+                                            post_data=post_data)
 
-    def put_request(self, path, put_data=None, endpoint='marathon/v2', headers=None, timeout=None, stream=False, **kwargs):
+    def put_request(self, path, put_data=None, endpoint='v2', **kwargs):
         """
         Makes an HTTP PUT request
         """
         return self.acs_client.put_request('{}/{}'.format(endpoint, path),
-                                           put_data=put_data, headers=headers, timeout=timeout, stream=stream, **kwargs)
+                                           put_data=put_data, **kwargs)
 
     def delete_group(self, group_id, force=None):
         """
@@ -233,16 +233,10 @@ class Marathon(object):
         processor = DeploymentMonitor(self, app_ids, deployment_id)
         processor.start()
 
-        while processor.is_running() and not deployment_completed:
+        while processor.is_running(): # and not deployment_completed:
             if self._wait_time_exceeded(self.deployment_max_wait_time, start_timestamp):
                 processor.stop()
                 raise Exception('Timeout exceeded waiting for deployment to complete')
-
-            get_deployments_response = self.get_deployments().json()
-            a_deployment = [dep for dep in get_deployments_response if dep['id'] == deployment_id]
-            if len(a_deployment) == 0:
-                deployment_completed = True
-                break
 
         if processor.deployment_failed():
             failed_event = processor.get_failed_event()

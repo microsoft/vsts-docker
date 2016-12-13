@@ -8,7 +8,7 @@ class Mesos(object):
         """
         Makes a GET request to ACS
         """
-        return self.acs_client.get_request('{}/{}'.format(endpoint, path))
+        return self.acs_client.make_request('{}/{}'.format(endpoint, path), 'get', port=80)
 
     def get_task_log_file(self, task, filename):
         """

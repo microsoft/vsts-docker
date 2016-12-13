@@ -83,7 +83,7 @@ class AcsClientTest(unittest.TestCase):
     def test_setup_tunnel_direct(self):
         acs_info = acsinfo.AcsInfo('myhost', 2200, None, None, None, 'http://leader.mesos')
         acs_client = acsclient.ACSClient(acs_info)
-        self.assertEquals(acs_client._setup_tunnel_server(), 80)
+        self.assertEquals(acs_client._setup_tunnel_server(8080), 8080)
 
     @patch('acsclient.ACSClient.get_available_local_port')
     @patch('sshtunnel.SSHTunnelForwarder')
@@ -96,7 +96,7 @@ class AcsClientTest(unittest.TestCase):
 
         acs_info = acsinfo.AcsInfo('myhost', 2200, 'user', 'password', 'pkey', None)
         acs_client = acsclient.ACSClient(acs_info)
-        return_value = acs_client._setup_tunnel_server()
+        return_value = acs_client._setup_tunnel_server(8080)
 
         self.assertTrue(mock_available_port.called)
         self.assertIsNotNone(acs_client.current_tunnel[0])
@@ -124,7 +124,7 @@ class AcsClientTest(unittest.TestCase):
         mock_tunnel_server.return_value = 1234
         acs_info = acsinfo.AcsInfo('myhost', 2200, 'user', 'password', 'pkey', None)
         acs_client = acsclient.ACSClient(acs_info)
-        actual = acs_client._get_request_url('mypath')
+        actual = acs_client.create_request_url('mypath', 8080)
         self.assertEquals(actual, 'http://127.0.0.1:1234/mypath')
 
     @patch('acsclient.ACSClient._setup_tunnel_server')
@@ -133,105 +133,105 @@ class AcsClientTest(unittest.TestCase):
         acs_info = acsinfo.AcsInfo('myhost', 2200, 'user', 'password', 'pkey', 'http://leader.mesos')
         acs_client = acsclient.ACSClient(acs_info)
 
-        actual = acs_client._get_request_url('mypath')
-        self.assertEquals(actual, 'http://leader.mesos/mypath')
+        actual = acs_client.create_request_url('mypath', 8080)
+        self.assertEquals(actual, 'http://leader.mesos:1234/mypath')
 
-    @patch('acsclient.ACSClient._get_request_url')
+    @patch('acsclient.ACSClient.create_request_url')
     @patch('requests.get', side_effect=mocked_requests_get)
     def test_make_request_invalid_method(self, mock_get, mock_request_url):
         mock_request_url.return_value = 'http://make_request_200'
         acs_info = acsinfo.AcsInfo('myhost', 2200, 'user', 'password', 'pkey', 'http://leader.mesos')
         acs_client = acsclient.ACSClient(acs_info)
-        self.assertRaises(Exception, acs_client._make_request, '', 'INVALID')
+        self.assertRaises(Exception, acs_client.make_request, '', 'INVALID')
 
-    @patch('acsclient.ACSClient._get_request_url')
+    @patch('acsclient.ACSClient.create_request_url')
     @patch('requests.get', side_effect=mocked_requests_get)
     def test_make_request_get_200(self, mock_get, mock_request_url):
         mock_request_url.return_value = 'http://make_request_200'
         acs_info = acsinfo.AcsInfo('myhost', 2200, 'user', 'password', 'pkey', 'http://leader.mesos')
         acs_client = acsclient.ACSClient(acs_info)
         
-        actual = acs_client._make_request('', 'get')
+        actual = acs_client.make_request('', 'get')
         self.assertIsNotNone(actual)
         self.assertEquals(actual.status_code, 200)
 
-    @patch('acsclient.ACSClient._get_request_url')
+    @patch('acsclient.ACSClient.create_request_url')
     @patch('requests.get', side_effect=mocked_requests_get)
     def test_make_request_get_400(self, mock_get, mock_request_url):
         mock_request_url.return_value = 'http://make_request_400'
         acs_info = acsinfo.AcsInfo('myhost', 2200, 'user', 'password', 'pkey', 'http://leader.mesos')
         acs_client = acsclient.ACSClient(acs_info)
-        self.assertRaises(Exception, acs_client._make_request, '', 'get')
+        self.assertRaises(Exception, acs_client.make_request, '', 'get')
 
-    @patch('acsclient.ACSClient._get_request_url')
+    @patch('acsclient.ACSClient.create_request_url')
     @patch('requests.get', side_effect=mocked_requests_get)
     def test_make_request_get_200_data(self, mock_get, mock_request_url):
         mock_request_url.return_value = 'http://make_request_200'
         acs_info = acsinfo.AcsInfo('myhost', 2200, 'user', 'password', 'pkey', 'http://leader.mesos')
         acs_client = acsclient.ACSClient(acs_info)
-        
-        actual = acs_client._make_request('', 'get', data='mydata')
+
+        actual = acs_client.make_request('', 'get', data='mydata')
         self.assertIsNotNone(actual)
         self.assertEquals(actual.status_code, 200)
 
-    @patch('acsclient.ACSClient._get_request_url')
+    @patch('acsclient.ACSClient.create_request_url')
     @patch('requests.delete', side_effect=mocked_requests_get)
     def test_make_request_delete_200(self, mock_get, mock_request_url):
         mock_request_url.return_value = 'http://make_request_200'
         acs_info = acsinfo.AcsInfo('myhost', 2200, 'user', 'password', 'pkey', 'http://leader.mesos')
         acs_client = acsclient.ACSClient(acs_info)
         
-        actual = acs_client._make_request('', 'delete')
+        actual = acs_client.make_request('', 'delete')
         self.assertIsNotNone(actual)
         self.assertEquals(actual.status_code, 200)
 
-    @patch('acsclient.ACSClient._get_request_url')
+    @patch('acsclient.ACSClient.create_request_url')
     @patch('requests.delete', side_effect=mocked_requests_get)
     def test_make_request_delete_400(self, mock_get, mock_request_url):
         mock_request_url.return_value = 'http://make_request_400'
         acs_info = acsinfo.AcsInfo('myhost', 2200, 'user', 'password', 'pkey', 'http://leader.mesos')
         acs_client = acsclient.ACSClient(acs_info)
-        self.assertRaises(Exception, acs_client._make_request, '', 'delete')
+        self.assertRaises(Exception, acs_client.make_request, '', 'delete')
 
-    @patch('acsclient.ACSClient._get_request_url')
+    @patch('acsclient.ACSClient.create_request_url')
     @patch('requests.put', side_effect=mocked_requests_get)
     def test_make_request_put_200(self, mock_get, mock_request_url):
         mock_request_url.return_value = 'http://make_request_200'
         acs_info = acsinfo.AcsInfo('myhost', 2200, 'user', 'password', 'pkey', 'http://leader.mesos')
         acs_client = acsclient.ACSClient(acs_info)
         
-        actual = acs_client._make_request('', 'put', data='somedata')
+        actual = acs_client.make_request('', 'put', data='somedata')
         self.assertIsNotNone(actual)
         self.assertEquals(actual.status_code, 200)
 
-    @patch('acsclient.ACSClient._get_request_url')
+    @patch('acsclient.ACSClient.create_request_url')
     @patch('requests.put', side_effect=mocked_requests_get)
     def test_make_request_put_400(self, mock_get, mock_request_url):
         mock_request_url.return_value = 'http://make_request_400'
         acs_info = acsinfo.AcsInfo('myhost', 2200, 'user', 'password', 'pkey', 'http://leader.mesos')
         acs_client = acsclient.ACSClient(acs_info)
-        self.assertRaises(Exception, acs_client._make_request, '', 'put')
+        self.assertRaises(Exception, acs_client.make_request, '', 'put')
 
-    @patch('acsclient.ACSClient._get_request_url')
+    @patch('acsclient.ACSClient.create_request_url')
     @patch('requests.post', side_effect=mocked_requests_get)
     def test_make_request_post_200(self, mock_get, mock_request_url):
         mock_request_url.return_value = 'http://make_request_200'
         acs_info = acsinfo.AcsInfo('myhost', 2200, 'user', 'password', 'pkey', 'http://leader.mesos')
         acs_client = acsclient.ACSClient(acs_info)
         
-        actual = acs_client._make_request('', 'post', data='somedata')
+        actual = acs_client.make_request('', 'post', data='somedata')
         self.assertIsNotNone(actual)
         self.assertEquals(actual.status_code, 200)
 
-    @patch('acsclient.ACSClient._get_request_url')
+    @patch('acsclient.ACSClient.create_request_url')
     @patch('requests.post', side_effect=mocked_requests_get)
     def test_make_request_post_400(self, mock_get, mock_request_url):
         mock_request_url.return_value = 'http://make_request_400'
         acs_info = acsinfo.AcsInfo('myhost', 2200, 'user', 'password', 'pkey', 'http://leader.mesos')
         acs_client = acsclient.ACSClient(acs_info)
-        self.assertRaises(Exception, acs_client._make_request, '', 'post')
+        self.assertRaises(Exception, acs_client.make_request, '', 'post')
 
-    @patch('acsclient.ACSClient._make_request')
+    @patch('acsclient.ACSClient.make_request')
     def test_get_request(self, mock_make_request):
         acs_info = acsinfo.AcsInfo('myhost', 2200, 'user', 'password', 'pkey', 'http://leader.mesos')
         acs_client = acsclient.ACSClient(acs_info)
@@ -239,7 +239,7 @@ class AcsClientTest(unittest.TestCase):
         acs_client.get_request('mypath')
         mock_make_request.assert_called_with('mypath', 'get')
 
-    @patch('acsclient.ACSClient._make_request')
+    @patch('acsclient.ACSClient.make_request')
     def test_delete_request(self, mock_make_request):
         acs_info = acsinfo.AcsInfo('myhost', 2200, 'user', 'password', 'pkey', 'http://leader.mesos')
         acs_client = acsclient.ACSClient(acs_info)
@@ -247,21 +247,21 @@ class AcsClientTest(unittest.TestCase):
         acs_client.delete_request('mypath')
         mock_make_request.assert_called_with('mypath', 'delete')
 
-    @patch('acsclient.ACSClient._make_request')
+    @patch('acsclient.ACSClient.make_request')
     def test_put_request(self, mock_make_request):
         acs_info = acsinfo.AcsInfo('myhost', 2200, 'user', 'password', 'pkey', 'http://leader.mesos')
         acs_client = acsclient.ACSClient(acs_info)
 
         acs_client.put_request('mypath', put_data='mydata')
-        mock_make_request.assert_called_with('mypath', 'mypath', 'mydata')
+        mock_make_request.assert_called_with('mypath', 'put', data='mydata')
 
-    @patch('acsclient.ACSClient._make_request')
+    @patch('acsclient.ACSClient.make_request')
     def test_post_request(self, mock_make_request):
         acs_info = acsinfo.AcsInfo('myhost', 2200, 'user', 'password', 'pkey', 'http://leader.mesos')
         acs_client = acsclient.ACSClient(acs_info)
 
         acs_client.post_request('mypath', post_data='mydata')
-        mock_make_request.assert_called_with('mypath', 'mypath', 'mydata')
+        mock_make_request.assert_called_with('mypath', 'post', data='mydata')
 
     @patch('acsclient.ACSClient.current_tunnel')
     def test_shutdown_not_called(self, mock_current_tunnel):

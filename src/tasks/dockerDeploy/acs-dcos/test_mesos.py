@@ -16,7 +16,6 @@ def mocked_requests_get(*args, **kwargs):
                 raise Exception('raise_for_status exception')
             else:
                 pass
-
     if args[0].startswith('mesos/slaves/state.json'):
         return MockResponse({'slaves': [{'id': 'slave_1'}, {'id': 'slave_2'}]}, 200)
     elif args[0].startswith('slave/slave_1/state.json'):
@@ -87,18 +86,18 @@ class MesosTest(unittest.TestCase):
     def test_get_request(self, mock_acs_client):
         m = Mesos(mock_acs_client)
         m._get_request('endpoint', 'path')
-        mock_acs_client.get_request.assert_called_with('endpoint/path')
+        mock_acs_client.make_request.assert_called_with('endpoint/path', 'get', port=80)
 
     @patch('acsclient.ACSClient')
     def test_get_slave_ids(self, mock_acs_client):
-        mock_acs_client.get_request.side_effect = mocked_requests_get
+        mock_acs_client.make_request.side_effect = mocked_requests_get
         m = Mesos(mock_acs_client)
         actual = m._get_slave_ids()
         self.assertEqual(actual, ['slave_1', 'slave_2'])
 
     @patch('acsclient.ACSClient')
     def test_get_slave_state(self, mock_acs_client):
-        mock_acs_client.get_request.side_effect = mocked_requests_get
+        mock_acs_client.make_request.side_effect = mocked_requests_get
         m = Mesos(mock_acs_client)
         actual = m._get_slave_state('slave_1')
         expected = state = {
@@ -129,13 +128,13 @@ class MesosTest(unittest.TestCase):
 
     @patch('acsclient.ACSClient')
     def test_get_slave_state_404(self, mock_acs_client):
-        mock_acs_client.get_request.side_effect = mocked_requests_get
+        mock_acs_client.make_request.side_effect = mocked_requests_get
         m = Mesos(mock_acs_client)
         self.assertRaises(Exception, m._get_slave_state, '404')
 
     @patch('acsclient.ACSClient')
     def test_get_latest_task(self, mock_acs_client):
-        mock_acs_client.get_request.side_effect = mocked_requests_get
+        mock_acs_client.make_request.side_effect = mocked_requests_get
         m = Mesos(mock_acs_client)
         actual = m.get_task('service_id')
         self.assertEqual(actual.task_id, 'service_id')
