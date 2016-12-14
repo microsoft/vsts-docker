@@ -1,7 +1,9 @@
 import logging
+import os
 import socket
-import StringIO
+import subprocess
 import time
+from StringIO import StringIO
 
 import paramiko
 import requests
@@ -66,7 +68,7 @@ class ACSClient(object):
         """
         if not self.acs_info.private_key:
             raise Exception('Private key was not provided')
-        private_key_file = StringIO.StringIO()
+        private_key_file = StringIO()
         private_key_file.write(self.acs_info.private_key)
         private_key_file.seek(0)
         return paramiko.RSAKey.from_private_key(private_key_file, self.acs_info.password)
@@ -93,12 +95,13 @@ class ACSClient(object):
             raise ValueError(err_msg)
         return True
 
-    def _setup_tunnel_server(self):
+    def _setup_tunnel_server(self, server_port):
         """
-        Gets the port of the tunnel server
+        Gets the local port to access the tunnel running on
+        the server_port
         """
         if self.is_direct:
-            return 80
+            return server_port
 
         if not self.current_tunnel:
             logging.debug('Create a new SSH tunnel')
@@ -111,7 +114,7 @@ class ACSClient(object):
                 ssh_address_or_host=(self.acs_info.host, int(self.acs_info.port)),
                 ssh_username=self.acs_info.username,
                 ssh_pkey=self._get_private_key(),
-                remote_bind_address=('localhost', 80),
+                remote_bind_address=('localhost', server_port),
                 local_bind_address=('0.0.0.0', int(local_port)),
                 logger=log)
             forwarder.start()
@@ -125,23 +128,23 @@ class ACSClient(object):
 
         return self.current_tunnel[1]
 
-    def _get_request_url(self, path):
+    def create_request_url(self, path, port):
         """
         Creates the request URL from provided path. Depending on which
         connection type was picked, it will create an SSH tunnel
         """
-        local_port = self._setup_tunnel_server()
+        local_port = self._setup_tunnel_server(port)
         if self.is_direct:
-            url = '{}/{}'.format(self.acs_info.master_url, path)
+            url = '{}:{}/{}'.format(self.acs_info.master_url, local_port, path)
         else:
             url = 'http://127.0.0.1:{}/{}'.format(str(local_port), path)
         return url
 
-    def _make_request(self, path, method, data=None, **kwargs):
+    def make_request(self, path, method, data=None, port=80, **kwargs):
         """
         Makes an HTTP request with specified method
         """
-        url = self._get_request_url(path)
+        url = self.create_request_url(path, port)
         logging.debug('%s: %s (DATA=%s)', method, url, data)
 
         if not hasattr(requests, method):
@@ -151,9 +154,11 @@ class ACSClient(object):
         headers = {'content-type': 'application/json'}
 
         if not data:
-            response = method_to_call(url, headers=headers, **kwargs)
+            response = method_to_call(
+                url, headers=headers, **kwargs)
         else:
-            response = method_to_call(url, data, headers=headers, **kwargs)
+            response = method_to_call(
+                url, data, headers=headers, **kwargs)
 
         if response.status_code > 400:
             raise Exception('Call to "%s" failed with: %s', url, response.text)
@@ -161,27 +166,27 @@ class ACSClient(object):
 
     def get_request(self, path):
         """
-        Makes a GET request to Marathon endpoint (localhost:80 on the cluster)
+        Makes a GET request to an endpoint (localhost:80 on the cluster)
         :param path: Path part of the URL to make the request to
         :type path: String
         """
-        return self._make_request(path, 'get')
+        return self.make_request(path, 'get')
 
     def delete_request(self, path):
         """
-        Makes a DELETE request to Marathon endpoint (localhost:80 on the cluster)
+        Makes a DELETE request to an endpoint (localhost:80 on the cluster)
         :param path: Path part of the URL to make the request to
         :type path: String
         """
-        return self._make_request(path, 'delete')
+        return self.make_request(path, 'delete')
 
     def post_request(self, path, post_data):
         """
-        Makes a POST request to Marathon endpoint (localhost:80 on the cluster)
+        Makes a POST request to an endpoint (localhost:80 on the cluster)
         :param path: Path part of the URL to make the request to
         :type path: String
         """
-        return self._make_request(path, 'post', data=post_data)
+        return self.make_request(path, 'post', data=post_data)
 
     def put_request(self, path, put_data=None, **kwargs):
         """
@@ -189,7 +194,7 @@ class ACSClient(object):
         :param path: Path part of the URL to make the request to
         :type path: String
         """
-        return self._make_request(path, 'put', data=put_data, **kwargs)
+        return self.make_request(path, 'put', data=put_data, **kwargs)
 
     def get_available_local_port(self):
         """
