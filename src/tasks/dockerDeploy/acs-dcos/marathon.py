@@ -234,7 +234,6 @@ class Marathon(object):
 
         while processor.is_running() and not deployment_completed:
             if self._wait_time_exceeded(self.deployment_max_wait_time, start_timestamp):
-                processor.stop()
                 raise Exception('Timeout exceeded waiting for deployment to complete')
             get_deployments_response = self.get_deployments().json()
             a_deployment = [dep for dep in get_deployments_response if dep['id'] == deployment_id]

@@ -128,13 +128,6 @@ class DeploymentMonitor(object):
         self._thread.daemon = True
         self._thread.start()
 
-    def stop(self):
-        """
-        Stops the deployment monitor
-        """
-        self.stopped = True
-        self._thread.join()
-
     def is_running(self):
         """
         True if monitor is running, false otherwise.
