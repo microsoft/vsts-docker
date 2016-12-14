@@ -75,6 +75,18 @@ class MarathonEvent(object):
         """
         return self._get_task_status() == 'TASK_KILLED'
 
+    def is_task_killing(self):
+        """
+        True if task is being killed, false otherwise
+        """
+        return self._get_task_status() == 'TASK_KILLING'
+
+    def is_task_finished(self):
+        """
+        True if task is finished, false otherwise
+        """
+        return self._get_task_status() == 'TASK_FINISHED'
+
     def is_deployment_succeeded(self):
         """
         True if event represents a successful deployment
@@ -93,15 +105,27 @@ class MarathonEvent(object):
         """
         event_status = ""
         if self.is_task_running():
-            event_status = 'Service "{}" is running'.format(self.app_id())
+            event_status = 'Service "{}" task is running'.format(self.app_id())
         elif self.is_task_staging():
-            event_status = 'Service "{}" is being staged'.format(self.app_id())
+            event_status = 'Service "{}" task is being staged'.format(self.app_id())
         elif self.is_task_failed():
-            event_status = 'Service "{}" has failed: {}'.format(
+            event_status = 'Service "{}" task has failed: {}'.format(
                 self.app_id(), self.data['message'])
         elif self.is_task_killed():
-            event_status = 'Service "{}" was killed: {}'.format(
+            event_status = 'Service "{}" task was killed: {}'.format(
                 self.app_id(), self.data['message'])
+        elif self.is_task_killing():
+            if self.data['message'].strip() == '':
+                event_status = 'Service "{}" task is being killed.'.format(self.app_id())
+            else:
+                event_status = 'Service "{}" task is being killed: {}'.format(
+                    self.app_id(), self.data['message'])
+        elif self.is_task_finished():
+            if self.data['message'].strip() == '':
+                event_status = 'Service "{}" task is finished.'.format(self.app_id())
+            else:
+                event_status = 'Service "{}" task is finished: {}'.format(
+                    self.app_id(), self.data['message'])
         return event_status
 
 class DeploymentMonitor(object):
