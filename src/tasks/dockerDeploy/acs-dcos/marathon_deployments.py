@@ -115,7 +115,7 @@ class DeploymentMonitor(object):
         self._deployment_succeeded = False
         self._app_ids = app_ids
         self._deployment_id = deployment_id
-        self._stop_event = threading.Event()
+        self.stopped = False
         self._failed_event = None
         self._failure_message = None
         self._thread = threading.Thread(
@@ -132,14 +132,14 @@ class DeploymentMonitor(object):
         """
         Stops the deployment monitor
         """
-        self._stop_event.set()
+        self.stopped = True
         self._thread.join()
 
     def is_running(self):
         """
         True if monitor is running, false otherwise.
         """
-        return not self._stop_event.is_set()
+        return not self.stopped
 
     def get_failed_event(self):
         """
@@ -172,10 +172,10 @@ class DeploymentMonitor(object):
         events = self._get_event_stream()
         for event in events:
             try:
-                if self._stop_event.is_set():
+                if self.stopped:
                     break
                 if self._handle_event(event):
-                    self.stop()
+                    self.stopped = True
                     break
             except:
                 # Ignore any exceptions
