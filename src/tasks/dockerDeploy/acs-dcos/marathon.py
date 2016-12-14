@@ -217,7 +217,7 @@ class Marathon(object):
             raise Exception(
                 'Could not find "deploymentId" in {}'.format(deployment_json))
 
-        # Get the deploymentId of a deployment that has started
+        # Get the affected apps for the deployment that was started
         # or just return if deployment already completed.
         get_deployments_response = self.get_deployments().json()
         a_deployment = [dep for dep in get_deployments_response if dep['id'] == deployment_id]
