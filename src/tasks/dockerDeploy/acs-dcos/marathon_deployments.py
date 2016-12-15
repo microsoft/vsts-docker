@@ -150,13 +150,10 @@ class DeploymentMonitor(object):
     """
     def __init__(self, marathon, app_ids, deployment_id):
         self._marathon = marathon
-        self._deployment_failed = False
         self._deployment_succeeded = False
         self._app_ids = app_ids
         self._deployment_id = deployment_id
         self.stopped = False
-        self._failed_event = None
-        self._failure_message = None
         self._thread = threading.Thread(
             target=DeploymentMonitor._process_events, args=(self,))
 
@@ -166,12 +163,6 @@ class DeploymentMonitor(object):
         """
         self._thread.daemon = True
         self._thread.start()
-
-    def deployment_failed(self):
-        """
-        True if deployment failed, false otherwise
-        """
-        return self._deployment_failed
 
     def deployment_succeeded(self):
         """
@@ -199,15 +190,10 @@ class DeploymentMonitor(object):
             if event.app_id() in self._app_ids:
                 logging.info(event.status())
                 if event.is_task_failed() or event.is_task_killed():
-                    self._deployment_failed = True
-                    self._failed_event = event
                     self._log_stderr(event)
         elif event.is_deployment_succeeded():
             if self._deployment_id == event.data['id']:
                 self._deployment_succeeded = True
-        elif event.is_deployment_failed():
-            if self._deployment_id == event.data['id']:
-                self._deployment_failed = True
 
     def _log_stderr(self, event):
         """

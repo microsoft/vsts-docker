@@ -242,8 +242,7 @@ class Marathon(object):
                 if not processor_catchup:
                     logging.info('Giving deployment monitor more time to catch-up on events')
                     for _ in range(0, 5):
-                        if not processor.deployment_succeeded()\
-                           and not processor.deployment_failed():
+                        if not processor.deployment_succeeded():
                             time.sleep(1)
                     # TODO:Check that the group was deployed correctly (instance count, healthcheck)
                     processor_catchup = True
