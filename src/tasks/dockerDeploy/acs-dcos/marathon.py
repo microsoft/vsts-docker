@@ -205,7 +205,6 @@ class Marathon(object):
         DeploymentMonitor that streams events from Marathon endpoint and monitors when
         apps fail or succeed to deploy. Monitor also logs any app status changes.
         """
-
         # Get the deploymentId, so we can uniquely identify deployment
         # we want to monitor
         deployment_json = deployment_response.json()
@@ -228,22 +227,24 @@ class Marathon(object):
             return
 
         deployment_completed = False
+        timeout_exceeded = False
         processor_catchup = False # Did we already give processor an extra second to finish up or not?
         processor = DeploymentMonitor(self, app_ids, deployment_id)
         processor.start()
 
-        while processor.is_running() and not deployment_completed:
+        while not deployment_completed:
             if self._wait_time_exceeded(self.deployment_max_wait_time, start_timestamp):
-                raise Exception('Timeout exceeded waiting for deployment to complete')
+                timeout_exceeded = True
+                break
             get_deployments_response = self.get_deployments().json()
             a_deployment = [dep for dep in get_deployments_response if dep['id'] == deployment_id]
             if len(a_deployment) == 0:
-                # If deployment completed, but we don't know if it was a failure or
-                # success, we give the processor another second to catch up on events.
-                if not processor.deployment_failed() and \
-                   not processor.deployment_succeeded() and not processor_catchup:
-                    logging.debug('Giving deployment monitor another second to catch-up on events')
-                    time.sleep(1)
+                if not processor_catchup:
+                    logging.info('Giving deployment monitor more time to catch-up on events')
+                    for _ in range(0, 5):
+                        if not processor.deployment_succeeded():
+                            time.sleep(1)
+                    # TODO:Check that the group was deployed correctly (instance count, healthcheck)
                     processor_catchup = True
                     continue
                 else:
@@ -251,29 +252,12 @@ class Marathon(object):
                     break
             time.sleep(1)
 
-        if processor.deployment_failed():
-            failed_event = processor.get_failed_event()
-            failed_task = self.mesos.get_task(
-                failed_event.task_id(), failed_event.slave_id())
-            stderr_contents = self.mesos.get_task_log_file(failed_task, 'stderr')
-            logging.error(stderr_contents)
-            raise Exception('Deployment failed to complete')
-
-        if processor.deployment_succeeded():
-            logging.info('Deployment succeeded')
-            return
+        processor.stopped = True
+        if timeout_exceeded:
+            raise Exception('Timeout exceeded waiting for deployment to complete')
 
         if deployment_completed:
-            # If deployment completed but we didn't catch the succeeded/failed event
-            # we need to check for the failed_event or failure message
-            if not processor.deployment_failed() and not processor.deployment_succeeded():
-                failure_message = processor.get_failure_message()
-                if failure_message:
-                    logging.error(failure_message)
-                    raise Exception('Deployment failed to complete')
-                else:
-                    logging.info('Deployment ended')
-                    return
+            logging.info('Deployment ended')
 
     def _wait_time_exceeded(self, max_wait, timestamp):
         """
