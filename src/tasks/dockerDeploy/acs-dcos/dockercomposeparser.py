@@ -443,6 +443,8 @@ class DockerComposeParser(object):
                 # Calculate the new instances for each service
                 marathon_app = [app for app in marathon_json['apps'] \
                                  if app['id'] == app_id][0]
+                if not app_id in target_service_instances:
+                    target_service_instances[app_id] = 1
                 instance_count = math.ceil(
                     (target_service_instances[app_id] * self.minimum_health_capacity) / 100)
                 logging.info('Setting instances for app "%s" to %s',

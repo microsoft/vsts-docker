@@ -229,7 +229,7 @@ class Marathon(object):
         deployment_completed = False
         timeout_exceeded = False
         processor_catchup = False # Did we already give processor an extra second to finish up or not?
-        processor = DeploymentMonitor(self, app_ids, deployment_id)
+        processor = DeploymentMonitor(self, app_ids, deployment_id, log_failures)
         processor.start()
 
         while not deployment_completed:
@@ -240,7 +240,7 @@ class Marathon(object):
             a_deployment = [dep for dep in get_deployments_response if dep['id'] == deployment_id]
             if len(a_deployment) == 0:
                 if not processor_catchup:
-                    logging.info('Giving deployment monitor more time to catch-up on events')
+                    logging.debug('Giving deployment monitor more time to catch-up on events')
                     for _ in range(0, 5):
                         if not processor.deployment_succeeded():
                             time.sleep(1)
