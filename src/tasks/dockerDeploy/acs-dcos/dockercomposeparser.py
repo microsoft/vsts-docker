@@ -451,14 +451,14 @@ class DockerComposeParser(object):
 
             scale_factor = float(self.minimum_health_capacity)/100
             logging.info('Scale deployment "%s" by factor %s', existing_group_id, scale_factor)
-            self.marathon_helper.scale_group(existing_group_id, scale_factor)
+            self.marathon_helper.scale_group(existing_group_id, scale_factor, log_failures=False)
 
             logging.info('Update deployment "%s" with new instance counts', marathon_json['id'])
             self.marathon_helper.update_group(marathon_json)
 
             # Scale the existing deployment instances to 0
             logging.info('Scale deployment "%s" by factor %s', existing_group_id, 0)
-            self.marathon_helper.scale_group(existing_group_id, 0)
+            self.marathon_helper.scale_group(existing_group_id, 0, log_failures=False)
 
             # Scale up new deployment instances to target instance count
             for app in new_deployment_json['apps']:
