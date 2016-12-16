@@ -148,7 +148,8 @@ class DeploymentMonitor(object):
     Monitors deployment of apps to Marathon using their
     app IDs
     """
-    def __init__(self, marathon, app_ids, deployment_id):
+    def __init__(self, marathon, app_ids, deployment_id, log_failures=True):
+        self._log_failures = log_failures
         self._marathon = marathon
         self._deployment_succeeded = False
         self._app_ids = app_ids
@@ -189,7 +190,7 @@ class DeploymentMonitor(object):
         if event.is_status_update() or event.is_app_terminated():
             if event.app_id() in self._app_ids:
                 logging.info(event.status())
-                if event.is_task_failed() or event.is_task_killed():
+                if event.is_task_failed() or event.is_task_killed() and self._log_failures:
                     self._log_stderr(event)
         elif event.is_deployment_succeeded():
             if self._deployment_id == event.data['id']:

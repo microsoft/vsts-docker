@@ -178,13 +178,13 @@ class Marathon(object):
         response = self.get_request('groups/{}'.format(group_id)).json()
         return response
 
-    def scale_group(self, group_id, scale_factor):
+    def scale_group(self, group_id, scale_factor, log_failures=True):
         """
         Scales the group for provided scale_factor
         """
         start_timestamp = time.time()
         response = self.put_request('groups/{}'.format(group_id), json={'scaleBy': scale_factor})
-        self._wait_for_deployment_complete(response, start_timestamp)
+        self._wait_for_deployment_complete(response, start_timestamp, log_failures)
         return response.json()
 
     def is_group_id_unique(self, group_id):
@@ -199,7 +199,7 @@ class Marathon(object):
 
         return False
 
-    def _wait_for_deployment_complete(self, deployment_response, start_timestamp):
+    def _wait_for_deployment_complete(self, deployment_response, start_timestamp, log_failures=True):
         """
         Waits for deployment to Marathon to complete. We start an instance of
         DeploymentMonitor that streams events from Marathon endpoint and monitors when
