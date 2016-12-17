@@ -190,7 +190,7 @@ class DeploymentMonitor(object):
         if event.is_status_update() or event.is_app_terminated():
             if event.app_id() in self._app_ids:
                 logging.info(event.status())
-                if event.is_task_failed() or event.is_task_killed() and self._log_failures:
+                if (event.is_task_failed() or event.is_task_killed()) and self._log_failures:
                     self._log_stderr(event)
         elif event.is_deployment_succeeded():
             if self._deployment_id == event.data['id']:
