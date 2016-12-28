@@ -109,7 +109,7 @@ class ACSClient(object):
         """
         if self.is_direct:
             url = '{}:{}/{}'.format(
-                self.cluster_info.api_endpoint, self.cluster_info.get_api_endpoint_port(), path)
+                self.cluster_info.api_endpoint, self.cluster_info.get_api_endpoint_port(), path.strip('/'))
         else:
             local_port = self._setup_tunnel_server()
             url = 'http://127.0.0.1:{}/{}'.format(str(local_port), path)
@@ -126,7 +126,7 @@ class ACSClient(object):
             raise Exception('Invalid method {}'.format(method))
 
         method_to_call = getattr(requests, method)
-        headers = {'content-type': 'application/json'}
+        headers = {'Content-type': 'application/json'}
 
         if not data:
             response = method_to_call(

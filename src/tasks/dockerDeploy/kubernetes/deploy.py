@@ -4,7 +4,9 @@ import sys
 import traceback
 
 import dockercomposeparser
-
+from clusterinfo import ClusterInfo
+from registryinfo import RegistryInfo
+from groupinfo import GroupInfo
 
 class VstsLogFormatter(logging.Formatter):
     error_format = logging.Formatter('##[error]%(message)s')
@@ -31,8 +33,10 @@ def get_arg_parser():
 
     parser.add_argument('--compose-file',
                         help='[required] Docker-compose.yml file')
-    parser.add_argument('--dcos-master-url',
-                        help='DC/OS master URL')
+    parser.add_argument('--api-endpoint-url',
+                        help='API endpoint URL')
+    parser.add_argument('--orchestrator',
+                        help='Orchestrator type (DCOS or Kubernetes)')
 
     parser.add_argument('--group-name',
                         help='[required] Application group name')
@@ -103,14 +107,20 @@ def init_logger(verbose):
 if __name__ == '__main__':
     arguments = process_arguments()
     init_logger(arguments.verbose)
+
+    cluster_info = ClusterInfo(
+        arguments.acs_host, arguments.acs_port, arguments.acs_username, arguments.acs_password,
+        arguments.acs_private_key, arguments.api_endpoint_url, arguments.orchestrator)
+
+    registry_info = RegistryInfo(
+        arguments.registry_host, arguments.registry_username, arguments.registry_password)
+
+    group_info = GroupInfo(arguments.group_name, arguments.group_qualifier, arguments.group_version)
+
     try:
         with dockercomposeparser.DockerComposeParser(
-            arguments.compose_file, arguments.dcos_master_url, arguments.acs_host,
-            arguments.acs_port, arguments.acs_username, arguments.acs_password,
-            arguments.acs_private_key, arguments.group_name, arguments.group_qualifier,
-            arguments.group_version, arguments.registry_host, arguments.registry_username,
-            arguments.registry_password, arguments.minimum_health_capacity,
-            check_dcos_version=True) as compose_parser:
+            arguments.compose_file, cluster_info, registry_info, group_info,
+            arguments.minimum_health_capacity) as compose_parser:
             compose_parser.deploy()
             sys.exit(0)
     except Exception as deployment_exc:
