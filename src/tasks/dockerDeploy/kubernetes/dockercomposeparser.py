@@ -82,17 +82,19 @@ class DockerComposeParser(object):
         Parses the docker-compose file and returns the initial marathon.json file
         """
         group_name = self.group_info.get_id()
-        all_deployments =[]
 
         registry_secret = self.registry_info.create_secret_json()
         self.kubernetes.create_secret(registry_secret)
 
+        all_deployments = []
         for service_name, service_info in self.compose_data['services'].items():
             # Get the app_json for the service
             service_parser = serviceparser.Parser(
                 self.group_info, self.registry_info, service_name, service_info)
             deployment_json = service_parser.get_deployment_json()
-            all_deployments.append(deployment_json)
+            service_json = service_parser.get_service_json()
+
+            all_deployments.append({service_name: { 'deployment_json': deployment_json, 'service_json': service_json}})
 
         return all_deployments
 
@@ -119,6 +121,7 @@ class DockerComposeParser(object):
         """
         all_deployments = self._parse_compose()
 
-        for deployment in all_deployments:
-            # logging.info(json.dumps(deployment))
-            self.kubernetes.create_deployment(deployment)
+        print all_deployments[1]
+
+        # for deployment in all_deployments:
+        #     print deployment

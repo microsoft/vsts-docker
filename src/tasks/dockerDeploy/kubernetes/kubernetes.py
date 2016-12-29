@@ -46,3 +46,10 @@ class Kubernetes(object):
         endpoint = '/apis/extensions/v1beta1'
         url = 'namespaces/{}/deployments'.format(namespace)
         return self.post_request(url, post_data=deployment_json, endpoint=endpoint)
+
+    def create_service(self, service_json, namespace='default'):
+        """
+        Creates a service on Kubernetes
+        """
+        url = 'namespaces/{}/services'.format(namespace)
+        return self.post_request(url, post_data=service_json)

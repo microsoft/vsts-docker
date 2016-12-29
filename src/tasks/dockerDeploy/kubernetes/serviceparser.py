@@ -11,7 +11,8 @@ class Parser(object):
         self.service_info = service_info
         self.registry_info = registry_info
         self.group_info = group_info
-        self.deployment_json = {}
+        self.deployment_json = self._get_empty_deployment_json()
+        self.service_json = self._get_empty_service_json()
 
     def _add_label(self, name, value):
         """
@@ -25,8 +26,8 @@ class Parser(object):
         Adds a container with name and image to the JSON
         """
         self.deployment_json['spec']['template']['spec']['containers'].append({
-            'name': name,
-            'image': image
+            "name": name,
+            "image": image
         })
 
     def _add_image_pull_secret(self, name):
@@ -34,7 +35,7 @@ class Parser(object):
         Adds image pull secret to the deployment JSON
         """
         self.deployment_json['spec']['template']['spec']['imagePullSecrets'].append({
-            'name': name})
+            "name": name})
 
     def _add_container_port(self, container_port):
         """
@@ -47,13 +48,25 @@ class Parser(object):
             self.deployment_json['spec']['template']['spec']['containers'][0]['ports'] = []
 
         self.deployment_json['spec']['template']['spec']['containers'][0]['ports'].append({
-            'containerPort': container_port})
+            "containerPort": container_port})
 
+        self.service_json['spec']['ports'].append({
+            "protocol": "TCP",
+            "targetPort": container_port
+        })
+
+    def get_service_json(self):
+        """
+        Gets the service JSON for service
+        """
+        return self.service_json
+
+    # TODO: This should return an object with everything that needs to be deployed
+    # e.g. deployment.json, service.json, ???
     def get_deployment_json(self):
         """
-        Gets the app.json for the service in docker-compose
+        Gets the deployment JSON for the service in docker-compose
         """
-        self.deployment_json = self._get_empty_deployment_json()
         self._add_label('group_name', self.group_info.name)
         self._add_label('group_qualifier', self.group_info.qualifier)
         self._add_label('group_version', self.group_info.version)
@@ -77,6 +90,25 @@ class Parser(object):
                 method_to_call(key)
         return json.dumps(self.deployment_json)
 
+    def _get_empty_service_json(self):
+        """
+        Gets the empty service JSON for service that's being parsed
+        """
+        return {
+            "kind": "Service",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": self.service_name
+            },
+            "spec": {
+                "selector": {
+                    "group_id": self.group_info.get_id()
+                },
+                "ports": []
+            }
+        }
+
+
     def _parse_image(self, key):
         """
         Parses the 'image' key
@@ -92,6 +124,8 @@ class Parser(object):
             internal_ports = self._parse_internal_ports()
             for port_tuple in internal_ports:
                 # TODO: What do we do with host port???
+                # (hostPort:containerPort)
+                # targetPort == containerPort
                 self._add_container_port(port_tuple[1])
 
     def _parse_private_ports(self):
