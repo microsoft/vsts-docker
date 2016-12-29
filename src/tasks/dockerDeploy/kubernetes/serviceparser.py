@@ -13,6 +13,7 @@ class Parser(object):
         self.group_info = group_info
         self.deployment_json = self._get_empty_deployment_json()
         self.service_json = self._get_empty_service_json()
+        self.service_added = False
 
     def _add_label(self, name, value):
         """
@@ -21,14 +22,19 @@ class Parser(object):
         self.deployment_json['spec']['template'][
             'metadata']['labels'][name] = value
 
-    def _add_container(self, name, image):
+    def _add_container_image(self, name, image):
         """
         Adds a container with name and image to the JSON
         """
-        self.deployment_json['spec']['template']['spec']['containers'].append({
-            "name": name,
-            "image": image
-        })
+        for container in self.deployment_json['spec']['template']['spec']['containers']:
+            if container['name'] == name:
+                container['image'] = image
+                break
+
+        # self.deployment_json['spec']['template']['spec']['containers'].append({
+        #     "name": name,
+        #     "image": image
+        # })
 
     def _add_image_pull_secret(self, name):
         """
@@ -43,24 +49,20 @@ class Parser(object):
         """
         # TODO: Do we always grab the first container? Or do we need
         # to pass in the name of the container to find the right one
-
+        
         if not 'ports' in self.deployment_json['spec']['template']['spec']['containers'][0]:
             self.deployment_json['spec']['template']['spec']['containers'][0]['ports'] = []
 
         self.deployment_json['spec']['template']['spec']['containers'][0]['ports'].append({
             "containerPort": container_port})
 
-        self.service_json['spec']['ports'].append({
-            "protocol": "TCP",
-            "targetPort": container_port
-        })
-
     def get_service_json(self):
         """
         Gets the service JSON for service
         """
-        return self.service_json
-
+        if self.service_added:
+            return json.dumps(self.service_json)
+        return None
     # TODO: This should return an object with everything that needs to be deployed
     # e.g. deployment.json, service.json, ???
     def get_deployment_json(self):
@@ -102,7 +104,8 @@ class Parser(object):
             },
             "spec": {
                 "selector": {
-                    "group_id": self.group_info.get_id()
+                    "group_id": self.group_info.get_id(),
+                    "service_name": self.service_name
                 },
                 "ports": []
             }
@@ -114,7 +117,30 @@ class Parser(object):
         Parses the 'image' key
         """
         if key in self.service_info:
-            self._add_container(self.service_name, self.service_info[key])
+            self._add_container_image(self.service_name, self.service_info[key])
+
+    def _create_service(self, port_tuple):
+        # TODO: Do we need to create multiple ports if we have 'expose' and 'ports' key?
+        if self.service_added:
+            return
+
+        self.service_added = True
+        self.service_json['spec']['ports'].append({
+            "protocol": "TCP",
+            "targetPort": port_tuple[0],
+            "port": port_tuple[1]
+        })
+
+    def _parse_expose(self, key):
+        """
+        Parses the 'expose' key
+        """
+        # TODO: How is 'expose' different from 'ports' ??? 
+        if key in self.service_info:
+            private_ports = self._parse_private_ports()
+            for port_tuple in private_ports:
+                self._add_container_port(port_tuple[1])
+                self._create_service(port_tuple)
 
     def _parse_ports(self, key):
         """
@@ -127,6 +153,7 @@ class Parser(object):
                 # (hostPort:containerPort)
                 # targetPort == containerPort
                 self._add_container_port(port_tuple[1])
+                self._create_service(port_tuple)
 
     def _parse_private_ports(self):
         """
@@ -266,7 +293,9 @@ class Parser(object):
                         }
                     },
                     "spec": {
-                        "containers": [],
+                        "containers": [{
+                            "name": self.service_name
+                        }],
                         "imagePullSecrets": []
                     }
                 }

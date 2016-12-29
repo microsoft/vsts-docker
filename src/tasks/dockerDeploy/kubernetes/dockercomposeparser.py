@@ -1,6 +1,7 @@
 import logging
 import math
 import os
+import time
 import json
 
 import yaml
@@ -94,7 +95,7 @@ class DockerComposeParser(object):
             deployment_json = service_parser.get_deployment_json()
             service_json = service_parser.get_service_json()
 
-            all_deployments.append({service_name: { 'deployment_json': deployment_json, 'service_json': service_json}})
+            all_deployments.append({ 'deployment_json': deployment_json, 'service_json': service_json})
 
         return all_deployments
 
@@ -121,7 +122,8 @@ class DockerComposeParser(object):
         """
         all_deployments = self._parse_compose()
 
-        print all_deployments[1]
-
-        # for deployment in all_deployments:
-        #     print deployment
+        for deployment_item in all_deployments:
+            self.kubernetes.create_deployment(deployment_item['deployment_json'])
+            service_json = deployment_item['service_json']
+            if service_json:
+                self.kubernetes.create_service(service_json)
