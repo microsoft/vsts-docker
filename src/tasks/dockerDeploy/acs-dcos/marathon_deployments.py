@@ -215,5 +215,10 @@ class DeploymentMonitor(object):
         for msg in messages:
             if self.stopped:
                 break
-            event = MarathonEvent(json.loads(msg.data))
+            try:
+                json_data = json.loads(msg.data)
+            except ValueError:
+                logging.debug('Failed to parse event: %s', msg.data)
+                continue
+            event = MarathonEvent(json_data)
             yield event
