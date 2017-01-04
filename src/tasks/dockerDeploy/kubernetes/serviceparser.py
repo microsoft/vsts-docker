@@ -1,11 +1,12 @@
+import json
 import logging
 import pipes
 import re
-import json
+
+from portparser import PortParser
 
 
 class Parser(object):
-
     def __init__(self, group_info, registry_info, service_name, service_info):
         self.service_name = service_name
         self.service_info = service_info
@@ -14,6 +15,8 @@ class Parser(object):
         self.deployment_json = self._get_empty_deployment_json()
         self.service_json = self._get_empty_service_json()
         self.service_added = False
+
+        self.port_parser = PortParser(self.service_info)
 
     def _add_label(self, name, value):
         """
@@ -31,11 +34,6 @@ class Parser(object):
                 container['image'] = image
                 break
 
-        # self.deployment_json['spec']['template']['spec']['containers'].append({
-        #     "name": name,
-        #     "image": image
-        # })
-
     def _add_image_pull_secret(self, name):
         """
         Adds image pull secret to the deployment JSON
@@ -49,7 +47,6 @@ class Parser(object):
         """
         # TODO: Do we always grab the first container? Or do we need
         # to pass in the name of the container to find the right one
-        
         if not 'ports' in self.deployment_json['spec']['template']['spec']['containers'][0]:
             self.deployment_json['spec']['template']['spec']['containers'][0]['ports'] = []
 
@@ -63,6 +60,7 @@ class Parser(object):
         if self.service_added:
             return json.dumps(self.service_json)
         return None
+
     # TODO: This should return an object with everything that needs to be deployed
     # e.g. deployment.json, service.json, ???
     def get_deployment_json(self):
@@ -90,6 +88,11 @@ class Parser(object):
                 logging.info('Parsing key "%s"', key)
                 method_to_call = getattr(self, method_name)
                 method_to_call(key)
+
+        vhost = self.port_parser.get_all_vhosts()
+        if vhost:
+            # Add the loadbalancer 
+
         return json.dumps(self.deployment_json)
 
     def _get_empty_service_json(self):
@@ -107,10 +110,10 @@ class Parser(object):
                     "group_id": self.group_info.get_id(),
                     "service_name": self.service_name
                 },
-                "ports": []
+                "ports": [],
+                # TO EXPOSE ON PUBLIC IP: "type": "LoadBalancer"
             }
         }
-
 
     def _parse_image(self, key):
         """
@@ -121,15 +124,38 @@ class Parser(object):
 
     def _create_service(self, port_tuple):
         # TODO: Do we need to create multiple ports if we have 'expose' and 'ports' key?
-        if self.service_added:
-            return
-
         self.service_added = True
         self.service_json['spec']['ports'].append({
+            "name": "port-{}".format(port_tuple[1]),
             "protocol": "TCP",
             "targetPort": port_tuple[0],
             "port": port_tuple[1]
         })
+
+    def _parse_environment(self, key):
+        """
+        Parses the 'environment' key
+        """
+        containers_key = self.deployment_json['spec']['template']['spec']['containers'][0]
+        if key in self.service_info:
+            if 'env' not in containers_key:
+                containers_key['env'] = []
+            for env_pair in self.service_info[key]:
+                if isinstance(self.service_info[key], list):
+                    if '=' in env_pair:
+                        env_split = env_pair.split('=')
+                        env_var_name = env_split[0]
+                        env_var_value = env_split[1]
+                        containers_key['env'].append({"name": env_var_name, "value": env_var_value})
+                    else:
+                        # If environment var does not have a value set
+                        containers_key['env'].append({"name": env_pair, "value": ''})
+                else:
+                    value = self.service_info[key][env_pair]
+                    if value is None:
+                        containers_key['env'].append({"name": env_pair, "value": ''})
+                    else:
+                        containers_key['env'].append({"name": env_pair, "value": str(value)})
 
     def _parse_expose(self, key):
         """
@@ -137,7 +163,7 @@ class Parser(object):
         """
         # TODO: How is 'expose' different from 'ports' ??? 
         if key in self.service_info:
-            private_ports = self._parse_private_ports()
+            private_ports = self.port_parser.parse_private_ports()
             for port_tuple in private_ports:
                 self._add_container_port(port_tuple[1])
                 self._create_service(port_tuple)
@@ -147,7 +173,7 @@ class Parser(object):
         Parses the 'ports' key
         """
         if key in self.service_info:
-            internal_ports = self._parse_internal_ports()
+            internal_ports = self.port_parser.parse_internal_ports()
             for port_tuple in internal_ports:
                 # TODO: What do we do with host port???
                 # (hostPort:containerPort)
@@ -155,128 +181,33 @@ class Parser(object):
                 self._add_container_port(port_tuple[1])
                 self._create_service(port_tuple)
 
-    def _parse_private_ports(self):
+    def _parse_labels(self, key):
         """
-        Parses the 'expose' key in the docker-compose file and returns a
-        list of tuples with port numbers. These tuples are used
-        to create portMappings (blue/green only) in the marathon.json file
+        Parses the 'labels' key
         """
-        port_tuple_list = []
+        if key in self.service_info:
+            # TODO (peterj): Parse healthcheck labels here
+            # # Add healthchecks (if any healthcheck labels are set)
+            # healthcheck_helper = healthcheck.HealthCheck(self.service_info[key])
+            # healthcheck_json = healthcheck_helper.get_health_check_config()
+            # if not healthcheck_json is None:
+            #     self.app_json['healthChecks'] = healthcheck_json
 
-        if 'expose' not in self.service_info:
-            return port_tuple_list
+            for label in self.service_info[key]:
+                if label.lower().startswith('com.microsoft.acs.kubernetes.vhost'):
+                    continue
 
-        for port_entry in self.service_info['expose']:
-            if self._is_number(port_entry):
-                port_tuple_list.append((int(port_entry), int(port_entry)))
-            else:
-                raise ValueError(
-                    'Port number "%s" is not a valid number', port_entry)
-        return port_tuple_list
-
-    def _parse_internal_ports(self):
-        """
-        Parses the 'ports' key in the docker-compose file and returns a list of
-        tuples with port numbers. These tuples are used to create
-        portMappings (blue/green and cyan) in the marathon.json file
-        """
-        port_tuple_list = []
-
-        if 'ports' not in self.service_info:
-            return port_tuple_list
-
-        for port_entry in self.service_info['ports']:
-            if ':' in str(port_entry):
-                split = port_entry.split(':')
-                vip_port = split[0]
-                container_port = split[1]
-                if self._is_port_range(vip_port) and self._is_port_range(container_port):
-                    # "8080-8090:9080-9090"
-                    if self._are_port_ranges_same_length(vip_port, container_port):
-                        vip_start, vip_end = self._split_port_range(vip_port)
-                        container_start, container_end = self._split_port_range(
-                            container_port)
-                        # vp = vip_port, cp = container_port; we do +1 on the end range to
-                        # include the last port as well
-                        for vp, cp in zip(range(vip_start, vip_end + 1), range(container_start, container_end + 1)):
-                            port_tuple_list.append((int(vp), int(cp)))
-                    else:
-                        raise ValueError('Port ranges "{}" and "{}" are not equal in length',
-                                         vip_port, container_port)
+                if isinstance(self.service_info[key], dict):
+                    self._add_label(label, str(self.service_info[key][label]))
                 else:
-                    # "8080:8080"
-                    if self._is_number(vip_port) and self._is_number(container_port):
-                        port_tuple_list.append(
-                            (int(vip_port), int(container_port)))
+                    if '=' in label:
+                        label_split = label.split('=')
+                        label_name = label_split[0]
+                        label_value = label_split[1]
+                        self._add_label(label_name, str(label_value))
                     else:
-                        # e.g. invalid entry: 8080-8082:9000
-                        raise ValueError(
-                            'One of the ports is not a valid number or a valid range')
-            else:
-                if self._is_port_range(port_entry):
-                    # "3000-3005"
-                    range_start, range_end = self._split_port_range(port_entry)
-                    for i in range(range_start, range_end + 1):
-                        port_tuple_list.append((i, i))
-                else:
-                    # "3000"
-                    if self._is_number(port_entry):
-                        port_tuple_list.append(
-                            (int(port_entry), int(port_entry)))
-                    else:
-                        raise ValueError(
-                            'One of the ports is not a valid number')
-        return port_tuple_list
-
-    def _is_number(self, input_str):
-        """
-        Checks if the string is a number or not
-        """
-        try:
-            int(input_str)
-            return True
-        except ValueError:
-            return False
-
-    def _is_port_range(self, port_entry):
-        """
-        Checks if the provided string is a port entry or not
-        """
-        if not port_entry:
-            return False
-
-        if '-' in str(port_entry) and str(port_entry).count('-') == 1:
-            split = port_entry.split('-')
-            first_part = split[0]
-            second_part = split[1]
-            return self._is_number(first_part) and self._is_number(second_part)
-        return False
-
-    def _split_port_range(self, port_range):
-        """
-        Splits a port range and returns a tuple with start and end port
-        """
-        if not self._is_port_range(port_range):
-            raise ValueError(
-                'Provided value "%s" is not a port range', port_range)
-        split = port_range.split('-')
-        return (int(split[0]), int(split[1]))
-
-    def _are_port_ranges_same_length(self, first_range, second_range):
-        """
-        Checks if two port ranges are the same length
-        """
-
-        if not self._is_port_range(first_range) or not self._is_port_range(second_range):
-            raise ValueError(
-                'At least one of the provided values is not a port range')
-
-        first_split_start, first_split_end = self._split_port_range(
-            first_range)
-        second_split_start, second_split_end = self._split_port_range(
-            second_range)
-
-        return len(range(first_split_start, first_split_end)) == len(range(second_split_start, second_split_end))
+                        # label without a value
+                        self._add_label(label, '')
 
     def _get_empty_deployment_json(self):
         deployment_json = {
