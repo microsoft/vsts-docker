@@ -9,11 +9,6 @@
   },
   "spec": {
     "replicas": 1,
-    "selector": {
-      "matchLabels": {
-        "k8s-app": "nginx-ingress-lb"
-      }
-    },
     "template": {
       "metadata": {
         "labels": {
