@@ -1,0 +1,27 @@
+{
+    "kind": "Service",
+    "spec": {
+        "ports": [
+            {
+                "targetPort": 80,
+                "protocol": "TCP",
+                "port": 80,
+                "name": "http"
+            },
+            {
+                "targetPort": 443,
+                "protocol": "TCP",
+                "port": 443,
+                "name": "https"
+            }
+        ],
+        "selector": {
+            "k8s-app": "nginx-ingress-lb"
+        },
+        "type": "LoadBalancer"
+    },
+    "apiVersion": "v1",
+    "metadata": {
+        "name": "nginx-ingress-lb"
+    }
+}

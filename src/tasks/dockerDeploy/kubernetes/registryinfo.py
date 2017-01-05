@@ -12,6 +12,12 @@ class RegistryInfo(object):
         self.username = username
         self.password = password
 
+    def get_secret_name(self):
+        """
+        Gets the value used for the secret name
+        """
+        return self.host
+
     def create_secret_json(self):
         """
         Creates the JSON with Kubernetes secret object
@@ -20,7 +26,10 @@ class RegistryInfo(object):
             "apiVersion": "v1",
             "kind": "Secret",
             "metadata": {
-                "name": self.host
+                "name": self.host,
+                "labels": {
+                    "name": self.host
+                }
             },
             "data": {
                 ".dockerconfigjson": self._get_encoded_config()

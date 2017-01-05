@@ -7,6 +7,7 @@ from portparser import PortParser
 
 
 class Parser(object):
+
     def __init__(self, group_info, registry_info, service_name, service_info):
         self.service_name = service_name
         self.service_info = service_info
@@ -14,6 +15,7 @@ class Parser(object):
         self.group_info = group_info
         self.deployment_json = self._get_empty_deployment_json()
         self.service_json = self._get_empty_service_json()
+        self.ingress_rules = []
         self.service_added = False
 
         self.port_parser = PortParser(self.service_info)
@@ -48,7 +50,8 @@ class Parser(object):
         # TODO: Do we always grab the first container? Or do we need
         # to pass in the name of the container to find the right one
         if not 'ports' in self.deployment_json['spec']['template']['spec']['containers'][0]:
-            self.deployment_json['spec']['template']['spec']['containers'][0]['ports'] = []
+            self.deployment_json['spec']['template'][
+                'spec']['containers'][0]['ports'] = []
 
         self.deployment_json['spec']['template']['spec']['containers'][0]['ports'].append({
             "containerPort": container_port})
@@ -59,6 +62,25 @@ class Parser(object):
         """
         if self.service_added:
             return json.dumps(self.service_json)
+        return None
+
+    def get_ingress_json(self):
+        """
+        Gets the ingress JSON for the service
+        """
+        # TODO: should we have 1 ingress resource per docker-compose or one
+        # per service?
+        if self.ingress_rules:
+            return json.dumps({
+                "apiVersion": "extensions/v1beta1",
+                "kind": "Ingress",
+                "metadata": {
+                    "name": "{}-ingress".format(self.service_name)
+                },
+                "spec": {
+                    "rules": self.ingress_rules
+                }
+            })
         return None
 
     # TODO: This should return an object with everything that needs to be deployed
@@ -89,41 +111,68 @@ class Parser(object):
                 method_to_call = getattr(self, method_name)
                 method_to_call(key)
 
-        vhost = self.port_parser.get_all_vhosts()
-        if vhost:
-            # Add the loadbalancer 
+        vhosts = self.port_parser.get_all_vhosts()
+        for vhost in vhosts:
+            host_name = vhost
+            service_port = vhosts[vhost]
+            self._add_ingress_rule(host_name, service_port, self.service_name)
 
         return json.dumps(self.deployment_json)
 
-    def _get_empty_service_json(self):
+    def _create_new_ingress_rule(self, host_name, service_port, service_name):
         """
-        Gets the empty service JSON for service that's being parsed
+        Creates a new ingress rule and adds it to the list of rules.
         """
-        return {
-            "kind": "Service",
-            "apiVersion": "v1",
-            "metadata": {
-                "name": self.service_name
-            },
-            "spec": {
-                "selector": {
-                    "group_id": self.group_info.get_id(),
-                    "service_name": self.service_name
-                },
-                "ports": [],
-                # TO EXPOSE ON PUBLIC IP: "type": "LoadBalancer"
+        self.ingress_rules.append({
+            "host": host_name,
+            "http": {
+                "paths": [{
+                    # TODO: How can we specify path in docker-compose
+                    "path": "/",
+                    "backend": {
+                        "serviceName": service_name,
+                        "servicePort": service_port
+                    }
+                }]
             }
-        }
+        })
+
+    def _add_ingress_rule(self, host_name, service_port, service_name):
+        """
+        Create a new ingress rule or updates an existing one
+        """
+        if not self.ingress_rules:
+            self._create_new_ingress_rule(
+                host_name, service_port, service_name)
+        else:
+            # Check if there's an existing rule for host_name
+            existing_rules = [
+                rule for rule in self.ingress_rules if rule["host"] == host_name]
+            if len(existing_rules) == 0:
+                self._create_new_ingress_rule(
+                    host_name, service_port, service_name)
+            else:
+                # Add a new path to an existing rule
+                existing_rule = existing_rules[0]
+                existing_rule['http']['paths'].append({
+                    "backend": {
+                        "path": "/",
+                        "serviceName": service_name,
+                        "servicePort": service_port
+                    }
+                })
 
     def _parse_image(self, key):
         """
         Parses the 'image' key
         """
         if key in self.service_info:
-            self._add_container_image(self.service_name, self.service_info[key])
+            self._add_container_image(
+                self.service_name, self.service_info[key])
 
     def _create_service(self, port_tuple):
-        # TODO: Do we need to create multiple ports if we have 'expose' and 'ports' key?
+        # TODO: Do we need to create multiple ports if we have 'expose' and
+        # 'ports' key?
         self.service_added = True
         self.service_json['spec']['ports'].append({
             "name": "port-{}".format(port_tuple[1]),
@@ -136,7 +185,8 @@ class Parser(object):
         """
         Parses the 'environment' key
         """
-        containers_key = self.deployment_json['spec']['template']['spec']['containers'][0]
+        containers_key = self.deployment_json['spec'][
+            'template']['spec']['containers'][0]
         if key in self.service_info:
             if 'env' not in containers_key:
                 containers_key['env'] = []
@@ -146,22 +196,26 @@ class Parser(object):
                         env_split = env_pair.split('=')
                         env_var_name = env_split[0]
                         env_var_value = env_split[1]
-                        containers_key['env'].append({"name": env_var_name, "value": env_var_value})
+                        containers_key['env'].append(
+                            {"name": env_var_name, "value": env_var_value})
                     else:
                         # If environment var does not have a value set
-                        containers_key['env'].append({"name": env_pair, "value": ''})
+                        containers_key['env'].append(
+                            {"name": env_pair, "value": ''})
                 else:
                     value = self.service_info[key][env_pair]
                     if value is None:
-                        containers_key['env'].append({"name": env_pair, "value": ''})
+                        containers_key['env'].append(
+                            {"name": env_pair, "value": ''})
                     else:
-                        containers_key['env'].append({"name": env_pair, "value": str(value)})
+                        containers_key['env'].append(
+                            {"name": env_pair, "value": str(value)})
 
     def _parse_expose(self, key):
         """
         Parses the 'expose' key
         """
-        # TODO: How is 'expose' different from 'ports' ??? 
+        # TODO: How is 'expose' different from 'ports' ???
         if key in self.service_info:
             private_ports = self.port_parser.parse_private_ports()
             for port_tuple in private_ports:
@@ -234,6 +288,25 @@ class Parser(object):
         }
 
         return deployment_json
+
+    def _get_empty_service_json(self):
+        """
+        Gets the empty service JSON for service that's being parsed
+        """
+        return {
+            "kind": "Service",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": self.service_name
+            },
+            "spec": {
+                "selector": {
+                    "group_id": self.group_info.get_id(),
+                    "service_name": self.service_name
+                },
+                "ports": [],
+            }
+        }
 
     def _to_quoted_string(self, args):
         """

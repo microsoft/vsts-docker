@@ -85,7 +85,11 @@ class DockerComposeParser(object):
         group_name = self.group_info.get_id()
 
         registry_secret = self.registry_info.create_secret_json()
-        self.kubernetes.create_secret(registry_secret)
+        if not self.kubernetes.secret_exists('name={}'.format(self.registry_info.get_secret_name())):
+            logging.info('Deploying registry secret')
+            self.kubernetes.create_secret(registry_secret)
+        else:
+            logging.info('Registry secret already exists')
 
         all_deployments = []
         for service_name, service_info in self.compose_data['services'].items():
@@ -94,8 +98,12 @@ class DockerComposeParser(object):
                 self.group_info, self.registry_info, service_name, service_info)
             deployment_json = service_parser.get_deployment_json()
             service_json = service_parser.get_service_json()
+            ingress_json = service_parser.get_ingress_json()
 
-            all_deployments.append({ 'deployment_json': deployment_json, 'service_json': service_json})
+            all_deployments.append({
+                'deployment_json': deployment_json,
+                'service_json': service_json,
+                'ingress_json': ingress_json})
 
         return all_deployments
 
@@ -123,7 +131,13 @@ class DockerComposeParser(object):
         all_deployments = self._parse_compose()
 
         for deployment_item in all_deployments:
-            self.kubernetes.create_deployment(deployment_item['deployment_json'])
+            deployment_json = deployment_item['deployment_json']
+            self.kubernetes.create_deployment(deployment_json)
+
             service_json = deployment_item['service_json']
             if service_json:
                 self.kubernetes.create_service(service_json)
+
+            ingress_json = deployment_item['ingress_json']
+            if ingress_json:
+                self.kubernetes.create_ingress(ingress_json)
