@@ -1,13 +1,15 @@
 {
-  "apiVersion": "v1",
-  "kind": "ReplicationController",
+  "apiVersion": "extensions/v1beta1",
+  "kind": "Deployment",
   "metadata": {
     "name": "default-http-backend"
   },
   "spec": {
     "replicas": 1,
     "selector": {
-      "app": "default-http-backend"
+      "matchLabels": {
+        "app": "default-http-backend"
+      }
     },
     "template": {
       "metadata": {
