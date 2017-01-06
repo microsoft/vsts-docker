@@ -11,6 +11,7 @@ import DockerConnection from "./dockerConnection";
 export default class DockerComposeConnection extends DockerConnection {
     private dockerComposePath: string;
     private dockerComposeFile: string;
+    private dockerComposeVersion: string;
     private additionalDockerComposeFiles: string[];
     private requireAdditionalDockerComposeFiles: boolean;
     private projectName: string;
@@ -23,6 +24,7 @@ export default class DockerComposeConnection extends DockerConnection {
         if (!this.dockerComposeFile) {
             throw new Error("No Docker Compose file matching " + tl.getInput("dockerComposeFile") + " was found.");
         }
+        this.dockerComposeVersion = "2";
         this.additionalDockerComposeFiles = tl.getDelimitedInput("additionalDockerComposeFiles", "\n");
         this.requireAdditionalDockerComposeFiles = tl.getBoolInput("requireAdditionalDockerComposeFiles");
         this.projectName = tl.getInput("projectName");
@@ -64,7 +66,7 @@ export default class DockerComposeConnection extends DockerConnection {
                 };
             }
             fs.writeFileSync(this.finalComposeFile, yaml.safeDump({
-                version: "2",
+                version: this.dockerComposeVersion,
                 services: services
             }, { lineWidth: -1 } as any));
         });
@@ -115,6 +117,9 @@ export default class DockerComposeConnection extends DockerConnection {
     public getImages(builtOnly?: boolean): any {
         return this.getCombinedConfig().then(input => {
             var doc = yaml.safeLoad(input);
+            if (doc.version) {
+                this.dockerComposeVersion = doc.version;
+            }
             var projectName = this.projectName;
             if (!projectName) {
                 projectName = path.basename(path.dirname(this.dockerComposeFile));
@@ -132,6 +137,10 @@ export default class DockerComposeConnection extends DockerConnection {
             }
             return images;
         });
+    }
+
+    public getVersion(): string {
+        return this.dockerComposeVersion;
     }
 
     public close(): void {

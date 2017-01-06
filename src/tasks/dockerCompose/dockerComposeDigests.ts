@@ -26,7 +26,7 @@ function dockerPull(connection: DockerComposeConnection, imageName: string, imag
     });
 }
 
-function writeImageDigestComposeFile(imageDigests: any, imageDigestComposeFile: string): void {
+function writeImageDigestComposeFile(version: string, imageDigests: any, imageDigestComposeFile: string): void {
     var services = {};
     Object.keys(imageDigests).forEach(serviceName => {
         services[serviceName] = {
@@ -34,7 +34,7 @@ function writeImageDigestComposeFile(imageDigests: any, imageDigestComposeFile: 
         };
     });
     fs.writeFileSync(imageDigestComposeFile, yaml.safeDump({
-        version: "2",
+        version: version,
         services: services
     }, { lineWidth: -1 } as any));
 }
@@ -42,6 +42,7 @@ function writeImageDigestComposeFile(imageDigests: any, imageDigestComposeFile: 
 export function createImageDigestComposeFile(connection: DockerComposeConnection, imageDigestComposeFile: string) {
     return connection.getImages().then(images => {
         var promise: any;
+        var version = connection.getVersion();
         var imageDigests = {};
         Object.keys(images).forEach(serviceName => {
             (imageName => {
@@ -53,9 +54,9 @@ export function createImageDigestComposeFile(connection: DockerComposeConnection
             })(images[serviceName]);
         });
         if (!promise) {
-            writeImageDigestComposeFile(imageDigests, imageDigestComposeFile);
+            writeImageDigestComposeFile(version, imageDigests, imageDigestComposeFile);
         } else {
-            return promise.then(() => writeImageDigestComposeFile(imageDigests, imageDigestComposeFile));
+            return promise.then(() => writeImageDigestComposeFile(version, imageDigests, imageDigestComposeFile));
         }
     });
 }
