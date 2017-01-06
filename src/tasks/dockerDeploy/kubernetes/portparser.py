@@ -1,3 +1,4 @@
+import json
 
 class PortParser(object):
     def __init__(self, service_info):

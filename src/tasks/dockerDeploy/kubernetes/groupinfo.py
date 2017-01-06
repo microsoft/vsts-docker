@@ -25,6 +25,12 @@ class GroupInfo(object):
         hash_qualifier = self._get_hash(self.qualifier)[:8]
 
         if include_version:
-            return '{}.{}.{}'.format(self.name, hash_qualifier, self.version)
+            return '{}_{}_{}'.format(self.name, hash_qualifier, self.version)
 
-        return '{}.{}.'.format(self.name, hash_qualifier)
+        return '{}_{}'.format(self.name, hash_qualifier)
+
+    def get_version(self):
+        """
+        Gets the group version
+        """
+        return self.version
