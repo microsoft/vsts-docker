@@ -180,7 +180,7 @@ class DockerComposeParser(object):
         self._deploy_registry_secret()
 
         all_deployments = self._parse_compose()
-        namespace = self.group_info.get_id()
+        namespace = self.group_info.name
 
         for deployment_item in all_deployments:
             service_json = deployment_item['service_json']
