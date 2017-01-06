@@ -29,6 +29,12 @@ class GroupInfo(object):
 
         return '{}_{}'.format(self.name, hash_qualifier)
 
+    def get_namespace(self):
+        """
+        Gets the value used for service namespace
+        """
+        return '{}-{}'.format(self.name, self.version)
+
     def get_version(self):
         """
         Gets the group version

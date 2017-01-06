@@ -75,7 +75,12 @@ class Parser(object):
                 "apiVersion": "extensions/v1beta1",
                 "kind": "Ingress",
                 "metadata": {
-                    "name": "{}-ingress".format(self.service_name)
+                    "name": "{}-ingress".format(self.group_info.get_namespace())
+                },
+                "labels":{
+                    "group_name": self.group_info.name,
+                    "group_qualifier": self.group_info.qualifier,
+                    "group_id": self.group_info.get_id()
                 },
                 "spec": {
                     "rules": self.ingress_rules

@@ -105,7 +105,7 @@ class Kubernetes(object):
             "kind": "Namespace",
             "apiVersion": "v1",
             "metadata": {
-                "name": name, 
+                "name": name,
                 "labels": labels
             }
         }
