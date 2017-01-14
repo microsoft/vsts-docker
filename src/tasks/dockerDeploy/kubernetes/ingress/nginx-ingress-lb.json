@@ -4,16 +4,16 @@
   "metadata": {
     "name": "nginx-ingress-controller",
     "labels": {
-      "k8s-app": "nginx-ingress-lb"
-    }
+      "k8s-app": "nginx-ingress-controller"
+    },
+    "namespace": "kube-system"
   },
   "spec": {
     "replicas": 1,
     "template": {
       "metadata": {
         "labels": {
-          "k8s-app": "nginx-ingress-lb",
-          "name": "nginx-ingress-lb"
+          "k8s-app": "nginx-ingress-controller"
         }
       },
       "spec": {
@@ -21,7 +21,7 @@
         "containers": [
           {
             "image": "gcr.io/google_containers/nginx-ingress-controller:0.8.3",
-            "name": "nginx-ingress-lb",
+            "name": "nginx-ingress-controller",
             "imagePullPolicy": "Always",
             "readinessProbe": {
               "httpGet": {
@@ -39,6 +39,16 @@
               "initialDelaySeconds": 10,
               "timeoutSeconds": 1
             },
+            "ports": [
+              {
+                "containerPort": 80,
+                "hostPort": 80
+              },
+              {
+                "containerPort": 443,
+                "hostPort": 443
+              }
+            ],
             "env": [
               {
                 "name": "POD_NAME",
@@ -55,16 +65,6 @@
                     "fieldPath": "metadata.namespace"
                   }
                 }
-              }
-            ],
-            "ports": [
-              {
-                "containerPort": 80,
-                "hostPort": 80
-              },
-              {
-                "containerPort": 443,
-                "hostPort": 443
               }
             ],
             "args": [

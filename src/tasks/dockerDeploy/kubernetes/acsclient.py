@@ -135,8 +135,8 @@ class ACSClient(object):
             response = method_to_call(
                 url, data, headers=headers, **kwargs)
 
-        if response.status_code > 400:
-            raise Exception('Call to "%s" failed with: %s', url, response.text)
+        # if response.status_code > 400:
+        #     raise Exception('Call to "%s" failed with: %s', url, response.text)
         return response
 
     def get_request(self, path):

@@ -9,6 +9,7 @@ import yaml
 import acsclient
 from kubernetes import Kubernetes
 import serviceparser
+from ingress_controller import IngressController
 
 
 class DockerComposeParser(object):
@@ -29,6 +30,7 @@ class DockerComposeParser(object):
 
         self.acs_client = acsclient.ACSClient(self.cluster_info)
         self.kubernetes = Kubernetes(self.acs_client)
+        self.ingress_controller = IngressController(self.kubernetes)
 
     def __enter__(self):
         """
@@ -84,6 +86,7 @@ class DockerComposeParser(object):
         Parses the docker-compose file and returns the initial marathon.json file
         """
         all_deployments = []
+        needs_ingress_controller = False
         for service_name, service_info in self.compose_data['services'].items():
             service_parser = serviceparser.Parser(
                 self.group_info, self.registry_info, service_name, service_info)
@@ -91,12 +94,18 @@ class DockerComposeParser(object):
             service_json = service_parser.get_service_json()
             ingress_json = service_parser.get_ingress_json()
 
-            all_deployments.append({
-                'deployment_json': deployment_json,
-                'service_json': service_json,
-                'ingress_json': ingress_json})
+            # Check if need to deploy ingress controller or not
+            if not needs_ingress_controller:
+                needs_ingress_controller = service_parser.needs_ingress_controller
 
-        return all_deployments
+            all_deployments.append({
+                'service_name': service_name,
+                'deployment': {'json': deployment_json},
+                'service': {'json': service_json},
+                'ingress': {'json': ingress_json}
+            })
+
+        return needs_ingress_controller, all_deployments
 
     def _cleanup(self):
         """
@@ -107,13 +116,25 @@ class DockerComposeParser(object):
             return
 
         try:
-            group_id = self.group_info.get_id()
-            logging.info('Removing "%s".', group_id)
-            # self.marathon_helper.delete_group(group_id)
+            namespace = self.group_info.get_namespace()
+            logging.info('Removing all resources from namespace "%s".', namespace)
+            self._delete_all(namespace)
         except Exception as remove_exception:
             raise remove_exception
         finally:
             self._shutdown()
+
+    def _create_namespace(self, group_info):
+        """
+        Creates a new namespace
+        """
+        labels = {
+            "group_id": group_info.get_id(include_version=False),
+            "group_version": group_info.version,
+            "name": group_info.get_namespace()
+        }
+        logging.info('Creating namespace "%s"', group_info.get_namespace())
+        self.kubernetes.create_namespace(group_info.get_namespace(), labels)
 
     def _predeployment_check(self):
         """
@@ -122,39 +143,34 @@ class DockerComposeParser(object):
         False if this is the first deployment
         """
         group_id = self.group_info.get_id(include_version=False)
+        namespaces = self.kubernetes.get_namespaces(
+            'group_id={}'.format(group_id))
         group_version = self.group_info.get_version()
-        namespaces = self.kubernetes.get_namespaces('group_id={}'.format(group_id))
         is_update = False
-        existing_namespace = None
 
         if len(namespaces) > 1:
             raise Exception('Another deployment is already in progress')
 
         if len(namespaces) == 1:
-            # Make sure that the version we are trying to deploy
-            # is different from the version that's already deployed
-            namespaces_with_version = self.kubernetes.get_namespaces(
-                'group_id={}&group_version={}'.format(group_id, group_version))
-            if len(namespaces_with_version) > 0:
+            # There is one namespace with the group_id already deployed
+            # we need to check the version to see if it's an update
+            deployed_version = namespaces[0][
+                'metadata']['labels']['group_version']
+            if deployed_version == group_version:
                 raise Exception('App with the same version already deployed')
             else:
+                # This version is not deployed yet, so we are doing an update
                 is_update = True
-                print 'NAMESPACES WITH VERSION: ', namespaces_with_version
-                # TODO: Return a tuple here with existing group_id and existing group_version
+                existing_namespace = namespaces[0]['metadata']['name']
+                return (is_update, deployed_version, existing_namespace)
 
-        if len(namespaces) == 0:
-            # Create a new namespace
-            labels = {"group_id": group_id, "group_version": group_version}
-            logging.info('Creating namespace "%s"', self.group_info.name)
-            self.kubernetes.create_namespace(self.group_info.name, labels)
-
-        return is_update
+        return (is_update, None, None)
 
     def _deploy_registry_secret(self):
         """
         Deploys the registry secret
         """
-        namespace = self.group_info.name
+        namespace = self.group_info.get_namespace()
 
         # TODO: Could registry be global; otherwise we are going to deploy
         # the secret on each service deployment because of a different
@@ -167,29 +183,78 @@ class DockerComposeParser(object):
         else:
             logging.info('Registry secret already exists')
 
+    def _delete_all(self, namespace):
+        """
+        Deletes all resources from the specified namespace
+        """
+        self.kubernetes.delete_ingresses(namespace)
+        self.kubernetes.delete_services(namespace)
+        self.kubernetes.delete_deployments(namespace)
+        self.kubernetes.delete_replicasets(namespace)
+        self.kubernetes.delete_namespace(namespace)
 
     def deploy(self):
         """
         Deploys the services defined in docker-compose.yml file
         """
-        is_update = self._predeployment_check()
+        new_namespace = self.group_info.get_namespace()
+        is_update, _, existing_namespace = self._predeployment_check()
 
-        if is_update:
-            raise Exception('NOT SUPPORTED YET!')
+        # Create a new namespace - it's either a first deployment or an upgrade
+        self._create_namespace(self.group_info)
+        self.cleanup_needed = True
 
         self._deploy_registry_secret()
+        needs_ingress_controller, all_deployments = self._parse_compose()
 
-        all_deployments = self._parse_compose()
-        namespace = self.group_info.name
+        if needs_ingress_controller:
+            # Deploy Ingress controller if it's not running yet
+            self.ingress_controller.deploy(wait_for_external_ip=True)
+            logging.info('NGINX Ingress Loadbalancer deployed')
+        else:
+            logging.info('Skipping NGINX Ingress Loadbalancer deployment')
 
-        for deployment_item in all_deployments:
-            service_json = deployment_item['service_json']
-            if service_json:
-                self.kubernetes.create_service(service_json, namespace)
+        if is_update:
+            for deployment_item in all_deployments:
+                service_name = deployment_item['service_name']
+                existing_replicas = self.kubernetes.get_replicas(
+                    existing_namespace, service_name)
+                logging.info('Updating replicas for "%s" to "%s"',
+                             service_name, existing_replicas)
+                deployment_json = json.loads(
+                    deployment_item['deployment']['json'])
+                deployment_json['spec']['replicas'] = existing_replicas
 
-            deployment_json = deployment_item['deployment_json']
-            self.kubernetes.create_deployment(deployment_json, namespace)
+                # Create the deployment
+                self.kubernetes.create_deployment(
+                    json.dumps(deployment_json), new_namespace, wait_for_complete=True)
 
-            ingress_json = deployment_item['ingress_json']
-            if ingress_json:
-                self.kubernetes.create_ingress(ingress_json, namespace)
+                # Create the service
+                service_json = deployment_item['service']['json']
+                if service_json:
+                    self.kubernetes.create_service(service_json, new_namespace)
+
+                # Create ingress
+                ingress_json = deployment_item['ingress']['json']
+                if ingress_json:
+                    self.kubernetes.create_ingress(ingress_json, new_namespace)
+
+            logging.info('Removing previous deployment')
+            self._delete_all(existing_namespace)
+        else:
+            for deployment_item in all_deployments:
+                service_json = deployment_item['service']['json']
+                if service_json:
+                    self.kubernetes.create_service(service_json, new_namespace)
+
+                deployment_json = deployment_item['deployment']['json']
+                self.kubernetes.create_deployment(
+                    deployment_json, new_namespace)
+
+                ingress_json = deployment_item['ingress']['json']
+                if ingress_json:
+                    self.kubernetes.create_ingress(ingress_json, new_namespace)
+
+        if needs_ingress_controller:
+            logging.info(
+                'ExternalIP of NGINX Ingress Loadbalancer: "%s"', self.ingress_controller.get_external_ip())

@@ -17,6 +17,7 @@ class Parser(object):
         self.service_json = self._get_empty_service_json()
         self.ingress_rules = []
         self.service_added = False
+        self.needs_ingress_controller = False
 
         self.port_parser = PortParser(self.service_info)
 
@@ -47,8 +48,6 @@ class Parser(object):
         """
         Adds a container port
         """
-        # TODO: Do we always grab the first container? Or do we need
-        # to pass in the name of the container to find the right one
         if not 'ports' in self.deployment_json['spec']['template']['spec']['containers'][0]:
             self.deployment_json['spec']['template'][
                 'spec']['containers'][0]['ports'] = []
@@ -68,25 +67,29 @@ class Parser(object):
         """
         Gets the ingress JSON for the service
         """
-        # TODO: should we have 1 ingress resource per docker-compose or one
-        # per service?
         if self.ingress_rules:
             return json.dumps({
                 "apiVersion": "extensions/v1beta1",
                 "kind": "Ingress",
                 "metadata": {
-                    "name": "{}-ingress".format(self.group_info.get_namespace())
+                    "name": self.service_name
                 },
-                "labels":{
-                    "group_name": self.group_info.name,
-                    "group_qualifier": self.group_info.qualifier,
-                    "group_id": self.group_info.get_id()
-                },
+                "labels": self._get_default_labels(),
                 "spec": {
                     "rules": self.ingress_rules
                 }
             })
         return None
+
+    def _get_default_labels(self):
+        """
+        Gets the default labels that should be on every resource
+        """
+        return {
+            "service_name": self.service_name,
+            "version": self.group_info.version,
+            "group_id": self.group_info.get_id()
+        }
 
     # TODO: This should return an object with everything that needs to be deployed
     # e.g. deployment.json, service.json, ???
@@ -94,15 +97,7 @@ class Parser(object):
         """
         Gets the deployment JSON for the service in docker-compose
         """
-        self._add_label('group_name', self.group_info.name)
-        self._add_label('group_qualifier', self.group_info.qualifier)
-        self._add_label('group_version', self.group_info.version)
-        self._add_label('group_id', self.group_info.get_id())
-        self._add_label('service_name', self.service_name)
-
         self._add_image_pull_secret(self.registry_info.host)
-
-        # self.['id'] = '{}/{}'.format(self.group_name, self.service_name)
 
         for key in self.service_info:
             # We look for the method named _parse_{key} (for example: _parse_ports)
@@ -121,6 +116,7 @@ class Parser(object):
             host_name = vhost
             service_port = vhosts[vhost]
             self._add_ingress_rule(host_name, service_port, self.service_name)
+            self.needs_ingress_controller = True
 
         return json.dumps(self.deployment_json)
 
@@ -268,6 +264,12 @@ class Parser(object):
                         # label without a value
                         self._add_label(label, '')
 
+    def _get_versioned_name(self):
+        """
+        Gets the versioned name for the service
+        """
+        return "{}-{}".format(self.service_name, self.group_info.version)
+
     def _get_empty_deployment_json(self):
         deployment_json = {
             "apiVersion": "extensions/v1beta1",
@@ -279,8 +281,7 @@ class Parser(object):
                 "replicas": 1,
                 "template": {
                     "metadata": {
-                        "labels": {
-                        }
+                        "labels": self._get_default_labels()
                     },
                     "spec": {
                         "containers": [{
@@ -305,11 +306,8 @@ class Parser(object):
                 "name": self.service_name
             },
             "spec": {
-                "selector": {
-                    "group_id": self.group_info.get_id(),
-                    "service_name": self.service_name
-                },
-                "ports": [],
+                "selector": self._get_default_labels(),
+                "ports": []
             }
         }
 
