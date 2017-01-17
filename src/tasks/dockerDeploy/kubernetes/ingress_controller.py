@@ -24,7 +24,7 @@ class IngressController(object):
     NGINX_INGRESS_SERVICE_FILE = 'ingress/nginx-ingress-lb-svc.json'
 
     DEFAULT_BACKEND_NAME = 'default-http-backend'
-    NGINX_INGRESS_LB_NAME = 'nginx-ingress-lb'
+    NGINX_INGRESS_LB_NAME = 'nginx-ingress-controller'
 
     def __init__(self, kubernetes):
         self.kubernetes = kubernetes
@@ -48,7 +48,7 @@ class IngressController(object):
         Gets the ExternalIP where the Nginx loadbalacer is exposed on
         """
         service = self.kubernetes.get_service(
-            IngressController.NGINX_INGRESS_LB_NAME)
+            IngressController.NGINX_INGRESS_LB_NAME, IngressController.DEFAULT_NAMESPACE)
         external_ip = None
 
         try:

@@ -16,15 +16,15 @@
             }
         ],
         "selector": {
-            "k8s-app": "nginx-ingress-lb"
+            "k8s-app": "nginx-ingress-controller"
         },
         "type": "LoadBalancer"
     },
     "apiVersion": "v1",
     "metadata": {
-        "name": "nginx-ingress-lb",
+        "name": "nginx-ingress-controller",
         "labels": {
-            "k8s-app": "nginx-ingress-lb"
+            "k8s-app": "nginx-ingress-controller"
         }
     }
 }

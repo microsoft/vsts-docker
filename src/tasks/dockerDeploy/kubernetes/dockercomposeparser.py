@@ -219,7 +219,7 @@ class DockerComposeParser(object):
                 service_name = deployment_item['service_name']
                 existing_replicas = self.kubernetes.get_replicas(
                     existing_namespace, service_name)
-                logging.info('Updating replicas for "%s" to "%s"',
+                logging.info('Update replicas for "%s" to "%s"',
                              service_name, existing_replicas)
                 deployment_json = json.loads(
                     deployment_item['deployment']['json'])
@@ -239,7 +239,7 @@ class DockerComposeParser(object):
                 if ingress_json:
                     self.kubernetes.create_ingress(ingress_json, new_namespace)
 
-            logging.info('Removing previous deployment')
+            logging.info('Remove previous deployment')
             self._delete_all(existing_namespace)
         else:
             for deployment_item in all_deployments:
@@ -257,4 +257,6 @@ class DockerComposeParser(object):
 
         if needs_ingress_controller:
             logging.info(
-                'ExternalIP of NGINX Ingress Loadbalancer: "%s"', self.ingress_controller.get_external_ip())
+                'ExternalIP of NGINX Ingress Loadbalancer: "%s"',
+                self.ingress_controller.get_external_ip())
+        logging.info('Deployment completed')
