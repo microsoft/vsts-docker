@@ -7,8 +7,7 @@ class PortParser(object):
     def parse_private_ports(self):
         """
         Parses the 'expose' key in the docker-compose file and returns a
-        list of tuples with port numbers. These tuples are used
-        to create portMappings (blue/green only) in the marathon.json file
+        list of tuples with port numbers.
         """
         port_tuple_list = []
 
@@ -26,8 +25,7 @@ class PortParser(object):
     def parse_internal_ports(self):
         """
         Parses the 'ports' key in the docker-compose file and returns a list of
-        tuples with port numbers. These tuples are used to create
-        portMappings (blue/green and cyan) in the marathon.json file
+        tuples with port numbers.
         """
         port_tuple_list = []
 

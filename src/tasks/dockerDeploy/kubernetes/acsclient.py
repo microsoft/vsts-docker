@@ -85,10 +85,12 @@ class ACSClient(object):
             log.setLevel(logging.INFO)
 
             forwarder = SSHTunnelForwarder(
-                ssh_address_or_host=(self.cluster_info.host, int(self.cluster_info.port)),
+                ssh_address_or_host=(self.cluster_info.host,
+                                     int(self.cluster_info.port)),
                 ssh_username=self.cluster_info.username,
                 ssh_pkey=self._get_private_key(),
-                remote_bind_address=('localhost', self.cluster_info.get_api_endpoint_port()),
+                remote_bind_address=(
+                    'localhost', self.cluster_info.get_api_endpoint_port()),
                 local_bind_address=('0.0.0.0', int(local_port)),
                 logger=log)
             forwarder.start()
@@ -109,7 +111,9 @@ class ACSClient(object):
         """
         if self.is_direct:
             url = '{}:{}/{}'.format(
-                self.cluster_info.api_endpoint, self.cluster_info.get_api_endpoint_port(), path.strip('/'))
+                self.cluster_info.api_endpoint,
+                self.cluster_info.get_api_endpoint_port(),
+                path.strip('/'))
         else:
             local_port = self._setup_tunnel_server()
             url = 'http://127.0.0.1:{}/{}'.format(str(local_port), path)
@@ -134,14 +138,11 @@ class ACSClient(object):
         else:
             response = method_to_call(
                 url, data, headers=headers, **kwargs)
-
-        # if response.status_code > 400:
-        #     raise Exception('Call to "%s" failed with: %s', url, response.text)
         return response
 
     def get_request(self, path):
         """
-        Makes a GET request to an endpoint (localhost:80 on the cluster)
+        Makes a GET request to an endpoint on the cluster
         :param path: Path part of the URL to make the request to
         :type path: String
         """
@@ -149,7 +150,7 @@ class ACSClient(object):
 
     def delete_request(self, path):
         """
-        Makes a DELETE request to an endpoint (localhost:80 on the cluster)
+        Makes a DELETE request to an endpoint on the cluster
         :param path: Path part of the URL to make the request to
         :type path: String
         """
@@ -157,7 +158,7 @@ class ACSClient(object):
 
     def post_request(self, path, post_data):
         """
-        Makes a POST request to an endpoint (localhost:80 on the cluster)
+        Makes a POST request to an endpoint on the cluster
         :param path: Path part of the URL to make the request to
         :type path: String
         """
@@ -165,7 +166,7 @@ class ACSClient(object):
 
     def put_request(self, path, put_data=None, **kwargs):
         """
-        Makes a POST request to Marathon endpoint (localhost:80 on the cluster)
+        Makes a POST request to an endpoint on the cluster)
         :param path: Path part of the URL to make the request to
         :type path: String
         """

@@ -14,8 +14,7 @@ from ingress_controller import IngressController
 
 class DockerComposeParser(object):
 
-    def __init__(self, compose_file, cluster_info, registry_info, group_info,
-                 minimum_health_capacity):
+    def __init__(self, compose_file, cluster_info, registry_info, group_info):
 
         self.cleanup_needed = False
         self._ensure_docker_compose(compose_file)
@@ -25,8 +24,6 @@ class DockerComposeParser(object):
         self.cluster_info = cluster_info
         self.registry_info = registry_info
         self.group_info = group_info
-
-        self.minimum_health_capacity = minimum_health_capacity
 
         self.acs_client = acsclient.ACSClient(self.cluster_info)
         self.kubernetes = Kubernetes(self.acs_client)
@@ -83,7 +80,7 @@ class DockerComposeParser(object):
 
     def _parse_compose(self):
         """
-        Parses the docker-compose file and returns the initial marathon.json file
+        Parses the docker-compose file and returns the list of all deployments
         """
         all_deployments = []
         needs_ingress_controller = False

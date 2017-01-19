@@ -8,6 +8,7 @@ from clusterinfo import ClusterInfo
 from registryinfo import RegistryInfo
 from groupinfo import GroupInfo
 
+
 class VstsLogFormatter(logging.Formatter):
     error_format = logging.Formatter('##[error]%(message)s')
     warning_format = logging.Formatter('##[warning]%(message)s')
@@ -22,6 +23,7 @@ class VstsLogFormatter(logging.Formatter):
         elif record.levelno == logging.DEBUG:
             return self.debug_format.format(record)
         return self.default_format.format(record)
+
 
 def get_arg_parser():
     """
@@ -44,8 +46,6 @@ def get_arg_parser():
                         help='[required] Application group qualifier')
     parser.add_argument('--group-version',
                         help='[required] Application group version')
-    parser.add_argument('--minimum-health-capacity', type=int,
-                        help='[required] Minimum health capacity')
 
     parser.add_argument('--registry-host',
                         help='Registry host (e.g. myregistry.azurecr-test.io:1234)')
@@ -70,6 +70,7 @@ def get_arg_parser():
                         action='store_true')
     return parser
 
+
 def process_arguments():
     """
     Makes sure required arguments are provided
@@ -88,6 +89,7 @@ def process_arguments():
     if args.minimum_health_capacity is None:
         arg_parser.error('argument --minimum-health-capacity is required')
     return args
+
 
 def init_logger(verbose):
     """
@@ -115,14 +117,16 @@ if __name__ == '__main__':
     registry_info = RegistryInfo(
         arguments.registry_host, arguments.registry_username, arguments.registry_password)
 
-    group_info = GroupInfo(arguments.group_name, arguments.group_qualifier, arguments.group_version)
+    group_info = GroupInfo(arguments.group_name,
+                           arguments.group_qualifier, arguments.group_version)
 
     try:
         with dockercomposeparser.DockerComposeParser(
-            arguments.compose_file, cluster_info, registry_info, group_info,
-            arguments.minimum_health_capacity) as compose_parser:
+                arguments.compose_file, cluster_info, registry_info, group_info) as compose_parser:
             compose_parser.deploy()
             sys.exit(0)
     except Exception as deployment_exc:
+        import traceback
+        traceback.print_exc()
         logging.error('Error occurred during deployment: %s', deployment_exc)
         sys.exit(1)
