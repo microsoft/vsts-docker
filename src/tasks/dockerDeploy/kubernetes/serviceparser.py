@@ -74,21 +74,18 @@ class Parser(object):
                 "metadata": {
                     "name": self.service_name
                 },
-                "labels": self._get_default_labels(),
                 "spec": {
                     "rules": self.ingress_rules
                 }
             })
         return None
 
-    def _get_default_labels(self):
+    def _get_service_name_label(self):
         """
-        Gets the default labels that should be on every resource
+        Gets the service_name label
         """
         return {
-            "service_name": self.service_name,
-            "version": self.group_info.version,
-            "group_id": self.group_info.get_id()
+            "com.microsoft.acs.k8s.service_name": self.service_name,
         }
 
     # TODO: This should return an object with everything that needs to be deployed
@@ -264,12 +261,6 @@ class Parser(object):
                         # label without a value
                         self._add_label(label, '')
 
-    def _get_versioned_name(self):
-        """
-        Gets the versioned name for the service
-        """
-        return "{}-{}".format(self.service_name, self.group_info.version)
-
     def _get_empty_deployment_json(self):
         deployment_json = {
             "apiVersion": "extensions/v1beta1",
@@ -281,7 +272,7 @@ class Parser(object):
                 "replicas": 1,
                 "template": {
                     "metadata": {
-                        "labels": self._get_default_labels()
+                        "labels": self._get_service_name_label()
                     },
                     "spec": {
                         "containers": [{
@@ -306,7 +297,7 @@ class Parser(object):
                 "name": self.service_name
             },
             "spec": {
-                "selector": self._get_default_labels(),
+                "selector": self._get_service_name_label(),
                 "ports": []
             }
         }

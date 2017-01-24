@@ -14,7 +14,7 @@ from ingress_controller import IngressController
 
 class DockerComposeParser(object):
 
-    def __init__(self, compose_file, cluster_info, registry_info, group_info):
+    def __init__(self, compose_file, cluster_info, registry_info, group_info, deploy_ingress_controller):
 
         self.cleanup_needed = False
         self._ensure_docker_compose(compose_file)
@@ -27,6 +27,7 @@ class DockerComposeParser(object):
 
         self.acs_client = acsclient.ACSClient(self.cluster_info)
         self.kubernetes = Kubernetes(self.acs_client)
+        self.deploy_ingress_controller = deploy_ingress_controller
         self.ingress_controller = IngressController(self.kubernetes)
 
     def __enter__(self):
@@ -173,8 +174,7 @@ class DockerComposeParser(object):
         # the secret on each service deployment because of a different
         # namespace
         registry_secret = self.registry_info.create_secret_json()
-        if not self.kubernetes.secret_exists('name={}'.format(
-                self.registry_info.get_secret_name()), namespace):
+        if not self.kubernetes.secret_exists(self.registry_info.get_secret_name(), namespace):
             logging.info('Deploying registry secret')
             self.kubernetes.create_secret(registry_secret, namespace)
         else:
@@ -204,7 +204,7 @@ class DockerComposeParser(object):
         self._deploy_registry_secret()
         needs_ingress_controller, all_deployments = self._parse_compose()
 
-        if needs_ingress_controller:
+        if needs_ingress_controller and self.deploy_ingress_controller:
             # Deploy Ingress controller if it's not running yet
             self.ingress_controller.deploy(wait_for_external_ip=True)
             logging.info('NGINX Ingress Loadbalancer deployed')
@@ -252,7 +252,7 @@ class DockerComposeParser(object):
                 if ingress_json:
                     self.kubernetes.create_ingress(ingress_json, new_namespace)
 
-        if needs_ingress_controller:
+        if needs_ingress_controller and self.deploy_ingress_controller:
             logging.info(
                 'ExternalIP of NGINX Ingress Loadbalancer: "%s"',
                 self.ingress_controller.get_external_ip())

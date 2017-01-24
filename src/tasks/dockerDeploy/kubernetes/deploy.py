@@ -46,6 +46,8 @@ def get_arg_parser():
                         help='[required] Application group qualifier')
     parser.add_argument('--group-version',
                         help='[required] Application group version')
+    parser.add_argument('--deploy-ingress-controller',
+                        help='[required] Should Ingress controller be deployed or not')
 
     parser.add_argument('--registry-host',
                         help='Registry host (e.g. myregistry.azurecr-test.io:1234)')
@@ -86,8 +88,6 @@ def process_arguments():
         arg_parser.error('argument --group-qualifier is required')
     if args.group_version is None:
         arg_parser.error('argument --group-version is required')
-    if args.minimum_health_capacity is None:
-        arg_parser.error('argument --minimum-health-capacity is required')
     return args
 
 
@@ -122,7 +122,7 @@ if __name__ == '__main__':
 
     try:
         with dockercomposeparser.DockerComposeParser(
-                arguments.compose_file, cluster_info, registry_info, group_info) as compose_parser:
+                arguments.compose_file, cluster_info, registry_info, group_info, arguments.deploy_ingress_controller) as compose_parser:
             compose_parser.deploy()
             sys.exit(0)
     except Exception as deployment_exc:

@@ -1,6 +1,7 @@
 import json
-import time
 import logging
+import time
+
 
 class Kubernetes(object):
     """
@@ -52,21 +53,17 @@ class Kubernetes(object):
         response = self.post_request(url, post_data=secret_json).json()
         return response
 
-    def secret_exists(self, label_selector, namespace):
+    def secret_exists(self, name, namespace):
         """
-        Checks if secret defined by label_selector ("name=secret_name") exists or not
+        Checks if secret exists in a namespace
         """
-        logging.debug('Check if secret in namespace "%s" with selector "%s" exists',
-                      namespace, label_selector)
-        url = 'namespaces/{}/secrets?labelSelector={}'.format(
-            namespace, label_selector)
+        logging.debug('Check if secret "%s.%s" exists',
+                      name, namespace)
+        url = 'namespaces/{}/secrets/{}'.format(
+            namespace, name)
         response = self.get_request(url).json()
-        if len(response['items']) == 0:
-            logging.debug('\tSecret does not exist')
-            return False
-        
-        logging.debug('\tSecret exists')
-        return True
+
+        return not self._has_failed(response)
 
     def create_deployment(self, deployment_json, namespace, wait_for_complete=False):
         """
@@ -89,13 +86,7 @@ class Kubernetes(object):
         """
         logging.debug('Check if deployment "%s.%s" exists', name, namespace)
         response = self.get_deployment(namespace, name)
-        if self._has_failed(response):
-            logging.debug('\tDeployment "%s.%s" does not exists', name, namespace)
-            return False
-        if response['kind'] == 'Deployment':
-            logging.debug('\tDeployment "%s.%s" exists', name, namespace)
-            return True
-        raise ValueError('Unknown response kind: "%s"', response)
+        return not self._has_failed(response)
 
     def delete_deployment(self, name, namespace):
         """
@@ -121,7 +112,7 @@ class Kubernetes(object):
         """
         logging.debug('Delete replicasets from "%s"', namespace)
         url = 'namespaces/{}/replicasets'.format(namespace)
-        return  self.delete_request(url, endpoint=self._beta_endpoint())
+        return self.delete_request(url, endpoint=self._beta_endpoint())
 
     def create_ingress(self, ingress_json, namespace):
         """
@@ -170,15 +161,7 @@ class Kubernetes(object):
         logging.debug('Check if service "%s.%s" exists', name, namespace)
         url = 'namespaces/{}/services/{}'.format(namespace, name)
         response = self.get_request(url).json()
-        if self._has_failed(response):
-            logging.debug('\tService "%s.%s" does not exist', name, namespace)
-            return False
-
-        if response['kind'] == 'Service':
-            logging.debug('\tService "%s.%s" exists', name, namespace)
-            return True
-
-        raise ValueError('Unknown response kind: "%s"', response)
+        return not self._has_failed(response)
 
     def delete_services(self, namespace):
         """
@@ -194,20 +177,6 @@ class Kubernetes(object):
             logging.debug('Delete service "%s.%s"', service_name, namespace)
             self.delete_service(service_name, namespace)
 
-    def namespace_exists(self, label_selector):
-        """
-        Checks if a namespace defined by the label_selector exists or not
-        """
-        logging.debug('Check if namespace with selector "%s" exists', label_selector)
-        response = self.get_request(
-            'namespaces?labelSelector={}'.format(label_selector)).json()
-        if len(response['items'] == 0):
-            logging.debug('\tNamespace with selector "%s" does not exist', label_selector)
-            return False
-
-        logging.debug('\tNamespace with selector "%s" exists', label_selector)
-        return True
-
     def get_namespaces(self, label_selector):
         """
         Gets an array of namespaces based on the label_selector
@@ -221,8 +190,7 @@ class Kubernetes(object):
         Deletes a namespace
         """
         logging.debug('Delete namespace "%s"', name)
-        response = self.delete_request(
-            'namespaces?labelSelector=name={}'.format(name)).json()
+        response = self.delete_request('namespaces/{}'.format(name)).json()
         return response
 
     def create_namespace(self, name, labels):
@@ -265,7 +233,7 @@ class Kubernetes(object):
         deployment_completed = False
         timeout_exceeded = False
 
-        logging.info('Wait for deployment "%s.%s" to complete', namespace, deployment_name)
+        logging.info('Wait for deployment "%s.%s" to complete', deployment_name, namespace)
         while not deployment_completed:
             if self._wait_time_exceeded(self.deployment_max_wait_time, start_timestamp):
                 timeout_exceeded = True
@@ -289,7 +257,7 @@ class Kubernetes(object):
                 'Timeout exceeded waiting for deployment to complete')
 
         if deployment_completed:
-            logging.info('Deployment "%s.%s" completed', namespace, deployment_name)
+            logging.info('Deployment "%s.%s" completed', deployment_name, namespace)
 
     def _wait_time_exceeded(self, max_wait, timestamp):
         """

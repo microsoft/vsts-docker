@@ -26,10 +26,7 @@ class RegistryInfo(object):
             "apiVersion": "v1",
             "kind": "Secret",
             "metadata": {
-                "name": self.host,
-                "labels": {
-                    "name": self.host
-                }
+                "name": self.host
             },
             "data": {
                 ".dockerconfigjson": self._get_encoded_config()
