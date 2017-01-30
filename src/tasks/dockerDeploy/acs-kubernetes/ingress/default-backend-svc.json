@@ -1,0 +1,23 @@
+{
+    "kind": "Service",
+    "spec": {
+        "ports": [
+            {
+                "targetPort": 8080,
+                "protocol": "TCP",
+                "port": 80,
+                "name": "default-http-backend"
+            }
+        ],
+        "selector": {
+            "app": "default-http-backend"
+        }
+    },
+    "apiVersion": "v1",
+    "metadata": {
+        "name": "default-http-backend",
+        "labels": {
+            "app": "default-http-backend"
+        }
+    }
+}
