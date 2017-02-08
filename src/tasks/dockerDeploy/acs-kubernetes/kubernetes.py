@@ -16,32 +16,32 @@ class Kubernetes(object):
         """
         Gets the beta endpoint
         """
-        return '/apis/extensions/v1beta1'
+        return 'apis/extensions/v1beta1'
 
     def get_request(self, path, endpoint='api/v1'):
         """
         Makes an HTTP GET request
         """
-        return self.acs_client.get_request('{}/{}'.format(endpoint, path))
+        return self.acs_client.get_request('{}/{}'.format(endpoint, path.strip('/')))
 
     def delete_request(self, path, endpoint='api/v1'):
         """
         Makes an HTTP DELETE request
         """
-        return self.acs_client.delete_request('{}/{}'.format(endpoint, path))
+        return self.acs_client.delete_request('{}/{}'.format(endpoint, path.strip('/')))
 
     def post_request(self, path, post_data, endpoint='api/v1'):
         """
         Makes an HTTP POST request
         """
-        return self.acs_client.post_request('{}/{}'.format(endpoint, path),
+        return self.acs_client.post_request('{}/{}'.format(endpoint, path.strip('/')),
                                             post_data=post_data)
 
     def put_request(self, path, put_data=None, endpoint='api/v1', **kwargs):
         """
         Makes an HTTP PUT request
         """
-        return self.acs_client.put_request('{}/{}'.format(endpoint, path),
+        return self.acs_client.put_request('{}/{}'.format(endpoint, path.strip('/')),
                                            put_data=put_data, **kwargs)
 
     def create_secret(self, secret_json, namespace):

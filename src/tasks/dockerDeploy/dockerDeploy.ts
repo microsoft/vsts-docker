@@ -9,7 +9,8 @@ tl.cd(tl.getInput("cwd"));
 var targetType = tl.getInput("targetType", true);
 /* tslint:disable:no-var-requires */
 require({
-    "ACS DCOS": "./dockerDeployAcsDcos"
+    "ACS DCOS": "./dockerDeployAcsDcos",
+    "Kubernetes": "./dockerDeployAcsKube"
 }[targetType]).run()
 /* tslint:enable:no-var-requires */
 .fail(function failure(err) {

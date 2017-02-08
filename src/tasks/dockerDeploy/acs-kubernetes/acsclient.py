@@ -96,7 +96,7 @@ class ACSClient(object):
             forwarder.start()
 
             start_time = time.time()
-            url = 'http://127.0.0.1:{}/'.format(str(local_port))
+            url = 'http://127.0.0.1:{}'.format(str(local_port))
             self._wait_for_tunnel(start_time, url)
 
             self.current_tunnel = (forwarder, int(local_port))
@@ -110,10 +110,7 @@ class ACSClient(object):
         connection type was picked, it will create an SSH tunnel
         """
         if self.is_direct:
-            url = '{}:{}/{}'.format(
-                self.cluster_info.api_endpoint,
-                self.cluster_info.get_api_endpoint_port(),
-                path.strip('/'))
+            raise NotImplementedError("Direct connection is not implemented yet")
         else:
             local_port = self._setup_tunnel_server()
             url = 'http://127.0.0.1:{}/{}'.format(str(local_port), path)
@@ -130,7 +127,9 @@ class ACSClient(object):
             raise Exception('Invalid method {}'.format(method))
 
         method_to_call = getattr(requests, method)
-        headers = {'Content-type': 'application/json'}
+        headers = {
+            'Content-type': 'application/json',
+        }
 
         if not data:
             response = method_to_call(
