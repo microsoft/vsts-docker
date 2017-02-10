@@ -51,6 +51,11 @@ class Kubernetes(object):
         logging.debug('Create secret in namespace "%s"', namespace)
         url = 'namespaces/{}/secrets'.format(namespace)
         response = self.post_request(url, post_data=secret_json).json()
+        if self._has_failed(response):
+            logging.debug(
+                'Failed creating a secret in namespace "%s": %s', namespace, response)
+            raise Exception(
+                'Failed creating a secret in namespace "{}".'.format(namespace))
         return response
 
     def secret_exists(self, name, namespace):
@@ -62,7 +67,6 @@ class Kubernetes(object):
         url = 'namespaces/{}/secrets/{}'.format(
             namespace, name)
         response = self.get_request(url).json()
-
         return not self._has_failed(response)
 
     def create_deployment(self, deployment_json, namespace, wait_for_complete=False):
@@ -74,6 +78,12 @@ class Kubernetes(object):
         url = 'namespaces/{}/deployments'.format(namespace)
         response = self.post_request(
             url, post_data=deployment_json, endpoint=self._beta_endpoint()).json()
+
+        if self._has_failed(response):
+            logging.debug(
+                'Failed creating a deployment in namespace "%s": %s', namespace, response)
+            raise Exception(
+                'Failed creating a deployment in namespace "{}".'.format(namespace))
 
         if wait_for_complete:
             self._wait_for_deployment_complete(
@@ -94,7 +104,12 @@ class Kubernetes(object):
         """
         logging.debug('Delete deployment "%s.%s', name, namespace)
         url = 'namespaces/{}/deployments/{}'.format(namespace, name)
-        response = self.delete_request(url)
+        response = self.delete_request(url).json()
+        if self._has_failed(response):
+            logging.debug(
+                'Failed deleting deployment "%s" from namespace "%s": %s', name, namespace, response)
+            raise Exception(
+                'Failed deleting deployment "{}" from namespace "{}".', name, namespace)
         return response
 
     def delete_deployments(self, namespace):
@@ -103,7 +118,13 @@ class Kubernetes(object):
         """
         logging.debug('Delete all deployments from "%s"', namespace)
         url = 'namespaces/{}/deployments'.format(namespace)
-        response = self.delete_request(url, endpoint=self._beta_endpoint()).json()
+        response = self.delete_request(
+            url, endpoint=self._beta_endpoint()).json()
+        if self._has_failed(response):
+            logging.debug(
+                'Failed deleting deployments from namespace "%s": %s', namespace, response)
+            raise Exception(
+                'Failed deleting deployments from namespace "{}".'.format(namespace))
         return response
 
     def delete_replicasets(self, namespace):
@@ -112,7 +133,14 @@ class Kubernetes(object):
         """
         logging.debug('Delete replicasets from "%s"', namespace)
         url = 'namespaces/{}/replicasets'.format(namespace)
-        return self.delete_request(url, endpoint=self._beta_endpoint())
+        response = self.delete_request(
+            url, endpoint=self._beta_endpoint()).json()
+        if self._has_failed(response):
+            logging.debug(
+                'Failed deleting replicasets from namespace "%s": %s', namespace, response)
+            raise Exception(
+                'Failed deleting replicasets from namespace "{}".'.format(namespace))
+        return response
 
     def create_ingress(self, ingress_json, namespace):
         """
@@ -120,7 +148,14 @@ class Kubernetes(object):
         """
         logging.debug('Create ingress in "%s"', namespace)
         url = 'namespaces/{}/ingresses'.format(namespace)
-        return self.post_request(url, post_data=ingress_json, endpoint=self._beta_endpoint())
+        response = self.post_request(
+            url, post_data=ingress_json, endpoint=self._beta_endpoint()).json()
+        if self._has_failed(response):
+            logging.debug(
+                'Failed creating an ingress in namespace "%s": %s', namespace, response)
+            raise Exception(
+                'Failed creating an ingress in namespace "{}".'.format(namespace))
+        return response
 
     def delete_ingresses(self, namespace):
         """
@@ -128,7 +163,14 @@ class Kubernetes(object):
         """
         logging.debug('Delete ingresses from namespace "%s"', namespace)
         url = 'namespaces/{}/ingresses'.format(namespace)
-        return self.delete_request(url, endpoint=self._beta_endpoint())
+        response = self.delete_request(
+            url, endpoint=self._beta_endpoint()).json()
+        if self._has_failed(response):
+            logging.debug(
+                'Failed deleting ingresses from namespace "%s": %s', namespace, response)
+            raise Exception(
+                'Failed deleting ingresses from namespace "{}".'.format(namespace))
+        return response
 
     def create_service(self, service_json, namespace):
         """
@@ -136,7 +178,13 @@ class Kubernetes(object):
         """
         logging.debug('Create a service in namespace "%s"', namespace)
         url = 'namespaces/{}/services'.format(namespace)
-        return self.post_request(url, post_data=service_json)
+        response = self.post_request(url, post_data=service_json).json()
+        if self._has_failed(response):
+            logging.debug(
+                'Failed creating service in namespace "%s": %s', namespace, response)
+            raise Exception(
+                'Failed creating a service in namespace "{}".'.format(namespace))
+        return response
 
     def get_service(self, name, namespace):
         """
@@ -152,7 +200,13 @@ class Kubernetes(object):
         """
         logging.debug('Delete service "%s.%s"', name, namespace)
         url = 'namespaces/{}/services/{}'.format(namespace, name)
-        return self.delete_request(url)
+        response = self.delete_request(url).json()
+        if self._has_failed(response):
+            logging.debug(
+                'Failed deleting service "%s" from namespace "%s": %s', name, namespace, response)
+            raise Exception(
+                'Failed deleting service "{}" from namespace "{}".'.format(name, namespace))
+        return response
 
     def service_exists(self, name, namespace):
         """
@@ -170,6 +224,10 @@ class Kubernetes(object):
         logging.debug('Delete all services from namespace "%s"', namespace)
         url = 'namespaces/{}/services'.format(namespace)
         response = self.get_request(url).json()
+        if self._has_failed(response):
+            logging.debug('Failed deleting services: %s', response)
+            raise Exception(
+                'Failed deleting services from namespace "{}".'.format(namespace))
         all_services = response['items']
 
         for service in all_services:
@@ -183,7 +241,13 @@ class Kubernetes(object):
         """
         response = self.get_request(
             'namespaces?labelSelector={}'.format(label_selector)).json()
-        return response['items']
+        if self._has_failed(response):
+            logging.debug('Failed getting namespaces: %s', response)
+            raise Exception('Failed getting namespaces.')
+
+        if 'items' in response:
+            return response['items']
+        return []
 
     def delete_namespace(self, name):
         """
@@ -191,6 +255,9 @@ class Kubernetes(object):
         """
         logging.debug('Delete namespace "%s"', name)
         response = self.delete_request('namespaces/{}'.format(name)).json()
+        if self._has_failed(response):
+            logging.debug('Failed deleting namespace "%s": %s', name, response)
+            raise Exception('Failed deleting namespace "{}".'.format(name))
         return response
 
     def create_namespace(self, name, labels):
@@ -206,9 +273,12 @@ class Kubernetes(object):
                 "labels": labels
             }
         }
-
         response = self.post_request(
             'namespaces', post_data=json.dumps(namespace_json)).json()
+
+        if self._has_failed(response):
+            logging.debug('Failed creating namespace "%s": %s', name, response)
+            raise Exception('Failed creating namespace "{}".'.format(name))
         return response
 
     def get_deployment(self, namespace, deployment_name):
@@ -218,22 +288,34 @@ class Kubernetes(object):
         logging.debug('Get deployment "%s.%s', deployment_name, namespace)
         response = self.get_request(
             'namespaces/{}/deployments/{}'.format(
-                namespace, deployment_name), self._beta_endpoint())
-        return response.json()
+                namespace, deployment_name), self._beta_endpoint()).json()
+        if self._has_failed(response):
+            logging.debug('Failed getting deployment "%s" from "%s": %s',
+                          deployment_name, namespace, response)
+            raise Exception('Failed getting deployment "{}" from namespace "{}".'.format(
+                deployment_name, namespace))
+        return response
 
     def get_replicas(self, namespace, deployment_name):
         """
         Gets the number of replicas for a deployment
         """
         deployment = self.get_deployment(namespace, deployment_name)
-        return deployment['spec']['replicas']
+
+        if 'spec' in deployment:
+            if 'replicas' in deployment:
+                return deployment['spec']['replicas']
+        raise Exception(
+            'Could not find replicas in deployment "{}" from namespace "{}".',
+            deployment_name, namespace)
 
     def _wait_for_deployment_complete(self, start_timestamp, namespace, deployment_name):
         deployment = ''
         deployment_completed = False
         timeout_exceeded = False
 
-        logging.info('Wait for deployment "%s.%s" to complete', deployment_name, namespace)
+        logging.info('Wait for deployment "%s.%s" to complete',
+                     deployment_name, namespace)
         while not deployment_completed:
             if self._wait_time_exceeded(self.deployment_max_wait_time, start_timestamp):
                 timeout_exceeded = True
@@ -247,7 +329,7 @@ class Kubernetes(object):
                 continue
 
             if (status['observedGeneration'] >= deployment['metadata']['generation']) and\
-               (status['updatedReplicas'] == deployment['spec']['replicas']):
+                    (status['updatedReplicas'] == deployment['spec']['replicas']):
                 deployment_completed = True
                 break
             time.sleep(1)
@@ -257,7 +339,8 @@ class Kubernetes(object):
                 'Timeout exceeded waiting for deployment to complete')
 
         if deployment_completed:
-            logging.info('Deployment "%s.%s" completed', deployment_name, namespace)
+            logging.info('Deployment "%s.%s" completed',
+                         deployment_name, namespace)
 
     def _wait_time_exceeded(self, max_wait, timestamp):
         """
