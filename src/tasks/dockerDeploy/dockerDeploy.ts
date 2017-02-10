@@ -10,7 +10,7 @@ var targetType = tl.getInput("targetType", true);
 /* tslint:disable:no-var-requires */
 require({
     "ACS DCOS": "./dockerDeployAcsDcos",
-    "Kubernetes": "./dockerDeployAcsKube"
+    "ACS Kubernetes": "./dockerDeployAcsKube"
 }[targetType]).run()
 /* tslint:enable:no-var-requires */
 .fail(function failure(err) {
