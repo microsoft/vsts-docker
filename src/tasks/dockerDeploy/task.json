@@ -141,7 +141,7 @@
             "label": "Kubernetes SSH Connection",
             "required": true,
             "visibleRule": "targetType = ACS Kubernetes && kubernetesEndpointType = SSH",
-            "helpMarkDown": "Select an AzurE container Service Kubernetes SSH connection."
+            "helpMarkDown": "Select an Azure container Service Kubernetes SSH connection."
         },
         {
             "name": "acsDcosAppGroupName",
