@@ -168,12 +168,28 @@ class Parser(object):
             self._add_container_image(
                 self.service_name, self.service_info[key])
 
+    def _get_port_name(self, port):
+        """
+        Gets the port name to use in the service
+        """
+        port_name = "port-{}".format(port)
+
+        # Check if the service already has a
+        # port with this name
+        counter = 1
+        for port_entry in self.service_json['spec']['ports']:
+            if port_entry['name'] == port_name:
+                port_name = "port-{}-{}".format(port, counter)
+                counter = counter + 1
+        return port_name
+
     def _create_service(self, port_tuple):
         # TODO: Do we need to create multiple ports if we have 'expose' and
         # 'ports' key?
         self.service_added = True
+
         self.service_json['spec']['ports'].append({
-            "name": "port-{}".format(port_tuple[1]),
+            "name": self._get_port_name(port_tuple[1]),
             "protocol": "TCP",
             "targetPort": port_tuple[0],
             "port": port_tuple[1]

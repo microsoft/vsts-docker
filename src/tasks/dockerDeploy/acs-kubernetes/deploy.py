@@ -47,7 +47,8 @@ def get_arg_parser():
     parser.add_argument('--group-version',
                         help='[required] Application group version')
     parser.add_argument('--deploy-ingress-controller',
-                        help='[required] Should Ingress controller be deployed or not')
+                        help='[required] Should Ingress controller be deployed or not',
+                        dest='deploy_ingress_controller', action='store_true')
 
     parser.add_argument('--registry-host',
                         help='Registry host (e.g. myregistry.azurecr-test.io:1234)')
@@ -128,5 +129,5 @@ if __name__ == '__main__':
     except Exception as deployment_exc:
         import traceback
         traceback.print_exc()
-        logging.error('Error occurred during deployment: %s', deployment_exc)
+        logging.error('Error occurred during deployment: \n%s', deployment_exc)
         sys.exit(1)

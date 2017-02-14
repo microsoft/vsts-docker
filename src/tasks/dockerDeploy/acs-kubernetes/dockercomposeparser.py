@@ -1,21 +1,18 @@
-import logging
-import math
-import os
-import time
 import json
+import logging
+import os
 
 import yaml
 
 import acsclient
-from kubernetes import Kubernetes
 import serviceparser
 from ingress_controller import IngressController
+from kubernetes import Kubernetes
 
 
 class DockerComposeParser(object):
 
     def __init__(self, compose_file, cluster_info, registry_info, group_info, deploy_ingress_controller):
-
         self.cleanup_needed = False
         self._ensure_docker_compose(compose_file)
         with open(compose_file, 'r') as compose_stream:
@@ -115,7 +112,8 @@ class DockerComposeParser(object):
 
         try:
             namespace = self.group_info.get_namespace()
-            logging.info('Removing all resources from namespace "%s".', namespace)
+            logging.info(
+                'Removing all resources from namespace "%s".', namespace)
             self._delete_all(namespace)
         except Exception as remove_exception:
             raise remove_exception
@@ -146,21 +144,24 @@ class DockerComposeParser(object):
         group_version = self.group_info.get_version()
         is_update = False
 
-        if len(namespaces) > 1:
-            raise Exception('Another deployment is already in progress')
+        if namespaces:
+            if len(namespaces) > 1:
+                raise Exception('Another deployment is already in progress')
 
-        if len(namespaces) == 1:
-            # There is one namespace with the group_id already deployed
-            # we need to check the version to see if it's an update
-            deployed_version = namespaces[0][
-                'metadata']['labels']['group_version']
-            if deployed_version == group_version:
-                raise Exception('App with the same version already deployed')
-            else:
-                # This version is not deployed yet, so we are doing an update
-                is_update = True
-                existing_namespace = namespaces[0]['metadata']['name']
-                return (is_update, deployed_version, existing_namespace)
+            if len(namespaces) == 1:
+                # There is one namespace with the group_id already deployed
+                # we need to check the version to see if it's an update
+                deployed_version = namespaces[0][
+                    'metadata']['labels']['group_version']
+                if deployed_version == group_version:
+                    raise Exception(
+                        'App with the same version already deployed')
+                else:
+                    # This version is not deployed yet, so we are doing an
+                    # update
+                    is_update = True
+                    existing_namespace = namespaces[0]['metadata']['name']
+                    return (is_update, deployed_version, existing_namespace)
 
         return (is_update, None, None)
 
@@ -214,13 +215,17 @@ class DockerComposeParser(object):
         if is_update:
             for deployment_item in all_deployments:
                 service_name = deployment_item['service_name']
-                existing_replicas = self.kubernetes.get_replicas(
-                    existing_namespace, service_name)
-                logging.info('Update replicas for "%s" to "%s"',
-                             service_name, existing_replicas)
+
                 deployment_json = json.loads(
                     deployment_item['deployment']['json'])
-                deployment_json['spec']['replicas'] = existing_replicas
+                if self.kubernetes.deployment_exists(service_name, existing_namespace):
+                    existing_replicas = self.kubernetes.get_replicas(
+                        existing_namespace, service_name)
+                    logging.info('Update replicas for "%s" to "%s"',
+                                 service_name, existing_replicas)
+                    deployment_json['spec']['replicas'] = existing_replicas
+                else:
+                    logging.info('Deploying new service "%s"', service_name)
 
                 # Create the deployment
                 self.kubernetes.create_deployment(
