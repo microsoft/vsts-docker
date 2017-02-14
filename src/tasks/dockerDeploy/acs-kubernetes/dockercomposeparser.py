@@ -112,7 +112,8 @@ class DockerComposeParser(object):
 
         try:
             namespace = self.group_info.get_namespace()
-            logging.info('Removing all resources from namespace "%s".', namespace)
+            logging.info(
+                'Removing all resources from namespace "%s".', namespace)
             self._delete_all(namespace)
         except Exception as remove_exception:
             raise remove_exception
@@ -153,9 +154,11 @@ class DockerComposeParser(object):
                 deployed_version = namespaces[0][
                     'metadata']['labels']['group_version']
                 if deployed_version == group_version:
-                    raise Exception('App with the same version already deployed')
+                    raise Exception(
+                        'App with the same version already deployed')
                 else:
-                    # This version is not deployed yet, so we are doing an update
+                    # This version is not deployed yet, so we are doing an
+                    # update
                     is_update = True
                     existing_namespace = namespaces[0]['metadata']['name']
                     return (is_update, deployed_version, existing_namespace)
@@ -212,13 +215,17 @@ class DockerComposeParser(object):
         if is_update:
             for deployment_item in all_deployments:
                 service_name = deployment_item['service_name']
-                existing_replicas = self.kubernetes.get_replicas(
-                    existing_namespace, service_name)
-                logging.info('Update replicas for "%s" to "%s"',
-                             service_name, existing_replicas)
+
                 deployment_json = json.loads(
                     deployment_item['deployment']['json'])
-                deployment_json['spec']['replicas'] = existing_replicas
+                if self.kubernetes.deployment_exists(service_name, existing_namespace):
+                    existing_replicas = self.kubernetes.get_replicas(
+                        existing_namespace, service_name)
+                    logging.info('Update replicas for "%s" to "%s"',
+                                 service_name, existing_replicas)
+                    deployment_json['spec']['replicas'] = existing_replicas
+                else:
+                    logging.info('Deploying new service "%s"', service_name)
 
                 # Create the deployment
                 self.kubernetes.create_deployment(

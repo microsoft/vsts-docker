@@ -95,7 +95,9 @@ class Kubernetes(object):
         Checks if deployment exists in a namespace or not
         """
         logging.debug('Check if deployment "%s.%s" exists', name, namespace)
-        response = self.get_deployment(namespace, name)
+        response = self.get_request(
+            'namespaces/{}/deployments/{}'.format(
+                namespace, name), self._beta_endpoint()).json()
         return not self._has_failed(response)
 
     def delete_deployment(self, name, namespace):
@@ -300,10 +302,10 @@ class Kubernetes(object):
         """
         Gets the number of replicas for a deployment
         """
+        logging.debug('Getting replicas for "%s" from "%s".', deployment_name, namespace)
         deployment = self.get_deployment(namespace, deployment_name)
-
         if 'spec' in deployment:
-            if 'replicas' in deployment:
+            if 'replicas' in deployment['spec']:
                 return deployment['spec']['replicas']
         raise Exception(
             'Could not find replicas in deployment "{}" from namespace "{}".',
