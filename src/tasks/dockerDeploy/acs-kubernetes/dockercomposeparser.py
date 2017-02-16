@@ -251,7 +251,7 @@ class DockerComposeParser(object):
 
                 deployment_json = deployment_item['deployment']['json']
                 self.kubernetes.create_deployment(
-                    deployment_json, new_namespace)
+                    deployment_json, new_namespace, wait_for_complete=True)
 
                 ingress_json = deployment_item['ingress']['json']
                 if ingress_json:

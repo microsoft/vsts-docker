@@ -5,8 +5,9 @@ cat << EOF > r.sh
 {
     #!/bin/bash
     set -e
-    python -m pip install requests pyyaml mock paramiko sshtunnel coverage
+    python -m pip install requests pyyaml mock paramiko sshtunnel coverage sseclient
     coverage run --source=src/tasks/dockerDeploy/acs-dcos -m unittest discover -s src/tasks/dockerDeploy/acs-dcos
+    coverage run --source=src/tasks/dockerDeploy/acs-kubernetes -m unittest discover -s src/tasks/dockerDeploy/acs-kubernetes
     coverage report -m
 }
 EOF
