@@ -20,11 +20,14 @@ class Parser(object):
         self.needs_ingress_controller = False
 
         self.port_parser = PortParser(self.service_info)
+        self._parse_vhosts()
 
     def _add_label(self, name, value):
         """
         Adds a label to deployment JSON
         """
+        if not name:
+            return
         self.deployment_json['spec']['template'][
             'metadata']['labels'][name] = value
 
@@ -32,6 +35,8 @@ class Parser(object):
         """
         Adds a container with name and image to the JSON
         """
+        if not name or not image:
+            return
         for container in self.deployment_json['spec']['template']['spec']['containers']:
             if container['name'] == name:
                 container['image'] = image
@@ -41,6 +46,8 @@ class Parser(object):
         """
         Adds image pull secret to the deployment JSON
         """
+        if not name:
+            return
         self.deployment_json['spec']['template']['spec']['imagePullSecrets'].append({
             "name": name})
 
@@ -48,6 +55,8 @@ class Parser(object):
         """
         Adds a container port
         """
+        if not container_port:
+            return
         if not 'ports' in self.deployment_json['spec']['template']['spec']['containers'][0]:
             self.deployment_json['spec']['template'][
                 'spec']['containers'][0]['ports'] = []
@@ -62,6 +71,17 @@ class Parser(object):
         if self.service_added:
             return json.dumps(self.service_json)
         return None
+
+    def _parse_vhosts(self):
+        """
+        Parses vhosts and creates Ingress rules
+        """
+        vhosts = self.port_parser.get_all_vhosts()
+        for vhost in vhosts:
+            host_name = vhost
+            service_port = vhosts[vhost]
+            self._add_ingress_rule(host_name, service_port, self.service_name)
+            self.needs_ingress_controller = True
 
     def get_ingress_json(self):
         """
@@ -108,57 +128,52 @@ class Parser(object):
                 method_to_call = getattr(self, method_name)
                 method_to_call(key)
 
-        vhosts = self.port_parser.get_all_vhosts()
-        for vhost in vhosts:
-            host_name = vhost
-            service_port = vhosts[vhost]
-            self._add_ingress_rule(host_name, service_port, self.service_name)
-            self.needs_ingress_controller = True
-
         return json.dumps(self.deployment_json)
 
-    def _create_new_ingress_rule(self, host_name, service_port, service_name):
+    def _create_new_ingress_rule(self, host_name, service_port, service_name, path="/"):
         """
         Creates a new ingress rule and adds it to the list of rules.
         """
-        self.ingress_rules.append({
+        if not host_name or not service_port or not service_name:
+            raise ValueError(
+                'host_name, service_port or service_name cannot be empty')
+        if not path:
+            path = "/"
+
+        return {
             "host": host_name,
             "http": {
                 "paths": [{
                     # TODO: How can we specify path in docker-compose
-                    "path": "/",
+                    "path": path,
                     "backend": {
                         "serviceName": service_name,
                         "servicePort": service_port
                     }
                 }]
             }
-        })
+        }
 
     def _add_ingress_rule(self, host_name, service_port, service_name):
         """
-        Create a new ingress rule or updates an existing one
+        Creates or updates an ingress rule by adding it to ingress_rules
         """
-        if not self.ingress_rules:
-            self._create_new_ingress_rule(
+        existing_rules = [
+            rule for rule in self.ingress_rules if rule["host"] == host_name]
+        if len(existing_rules) == 0:
+            rule = self._create_new_ingress_rule(
                 host_name, service_port, service_name)
+            self.ingress_rules.append(rule)
         else:
-            # Check if there's an existing rule for host_name
-            existing_rules = [
-                rule for rule in self.ingress_rules if rule["host"] == host_name]
-            if len(existing_rules) == 0:
-                self._create_new_ingress_rule(
-                    host_name, service_port, service_name)
-            else:
-                # Add a new path to an existing rule
-                existing_rule = existing_rules[0]
-                existing_rule['http']['paths'].append({
-                    "backend": {
-                        "path": "/",
-                        "serviceName": service_name,
-                        "servicePort": service_port
-                    }
-                })
+            # Add a new path to an existing rule
+            existing_rule = existing_rules[0]
+            existing_rule['http']['paths'].append({
+                "path": "/",
+                "backend": {
+                    "serviceName": service_name,
+                    "servicePort": service_port
+                }
+            })
 
     def _parse_image(self, key):
         """
@@ -183,17 +198,32 @@ class Parser(object):
                 counter = counter + 1
         return port_name
 
+    def _port_exists(self, port_tuple):
+        """
+        Checks if the port already exists in the ports list
+        """
+        if not port_tuple:
+            return False
+
+        port_name = "port-{}".format(port_tuple[1])
+        for port_entry in self.service_json['spec']['ports']:
+            if port_entry['name'] == port_name and \
+                    port_entry['targetPort'] == port_tuple[0] and \
+                    port_entry['port'] == port_tuple[1]:
+                return True
+        return False
+
     def _create_service(self, port_tuple):
         # TODO: Do we need to create multiple ports if we have 'expose' and
         # 'ports' key?
         self.service_added = True
-
-        self.service_json['spec']['ports'].append({
-            "name": self._get_port_name(port_tuple[1]),
-            "protocol": "TCP",
-            "targetPort": port_tuple[0],
-            "port": port_tuple[1]
-        })
+        if not self._port_exists(port_tuple):
+            self.service_json['spec']['ports'].append({
+                "name": self._get_port_name(port_tuple[1]),
+                "protocol": "TCP",
+                "targetPort": port_tuple[0],
+                "port": port_tuple[1]
+            })
 
     def _parse_environment(self, key):
         """
@@ -229,7 +259,6 @@ class Parser(object):
         """
         Parses the 'expose' key
         """
-        # TODO: How is 'expose' different from 'ports' ???
         if key in self.service_info:
             private_ports = self.port_parser.parse_private_ports()
             for port_tuple in private_ports:

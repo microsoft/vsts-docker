@@ -131,9 +131,13 @@ class PortParser(object):
         """
         if not vhost_json:
             return None
-
-        vhost_items = json.loads(vhost_json)
         parsed = {}
+
+        try:
+            vhost_items = json.loads(vhost_json)
+        except ValueError:
+            return parsed
+
         for item in vhost_items:
             vhost, port = self._parse_vhost_label(item)
             parsed[vhost] = port
