@@ -1,8 +1,8 @@
 {
     "id": "DD7C9344-1179-44A9-891B-177FBB98B9A7",
     "name": "DockerDeploy",
-    "friendlyName": "Docker Deploy",
-    "description": "Deploy single or multi-container Docker applications to a variety of Azure resources",
+    "friendlyName": "Container Deploy",
+    "description": "Deploy single or multi-container applications to a variety of Azure resources",
     "helpMarkDown": "[More Information](http://aka.ms/dockertoolsforvsts)",
     "category": "Deploy",
     "visibility": [
@@ -27,8 +27,8 @@
         {
             "name": "dockerRegistryEndpoint",
             "type": "connectedService:dockerregistry",
-            "label": "Docker Registry Connection",
-            "helpMarkDown": "Select a Docker registry connection. Required for deployments that need to authenticate with a registry."
+            "label": "Container Registry Connection",
+            "helpMarkDown": "Select a container registry connection. Required for deployments that need to authenticate with a registry."
         },
         {
             "name": "targetType",
@@ -85,7 +85,7 @@
             "label": "Qualify Image Names",
             "defaultValue": "false",
             "visibleRule": "targetType = ACS DCOS || targetType = ACS Kubernetes",
-            "helpMarkDown": "Automatically qualify image names for built services with the Docker registry connection's hostname if not otherwise specified."
+            "helpMarkDown": "Automatically qualify image names for built services with the container registry connection's hostname if not otherwise specified."
         },
         {
             "name": "kubernetesDeployIngressController",
