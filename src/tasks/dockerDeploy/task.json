@@ -36,8 +36,7 @@
             "label": "Target Type",
             "required": true,
             "options": {
-                "ACS DCOS": "Azure Container Service (DC/OS)",
-                "ACS Kubernetes": "Azure Container Service (Kubernetes) (PREVIEW)"
+                "ACS DCOS": "Azure Container Service (DC/OS)"
             },
             "helpMarkDown": "Select a deployment target type."
         },
