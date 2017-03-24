@@ -73,58 +73,58 @@
                 "url": "https://hub.docker.com",
                 "authenticationSchemes": [
                     {
-                    "type": "ms.vss-endpoint.endpoint-auth-scheme-basic",
-                    "inputDescriptors": [
-                        {
-                            "id": "registry",
-                            "name": "Docker Registry",
-                            "description": "The URL for your Docker Registry",
-                            "inputMode": "textbox",
-                            "isConfidential": false,
-                            "validation": {
-                                "isRequired": false,
-                                "dataType": "string"
+                        "type": "ms.vss-endpoint.endpoint-auth-scheme-basic",
+                        "inputDescriptors": [
+                            {
+                                "id": "registry",
+                                "name": "Docker Registry",
+                                "description": "The URL for your Docker Registry",
+                                "inputMode": "textbox",
+                                "isConfidential": false,
+                                "validation": {
+                                    "isRequired": false,
+                                    "dataType": "string"
+                                },
+                                "values": {
+                                    "inputId": "registryInput",
+                                    "defaultValue": "https://index.docker.io/v1/"
+                                }
                             },
-                            "values": {
-                                "inputId": "registryInput",
-                                "defaultValue": "https://index.docker.io/v1/"
+                            {
+                                "id": "username",
+                                "name": "Docker ID",
+                                "description": "The username for your Docker Registry",
+                                "inputMode": "textbox",
+                                "isConfidential": false,
+                                "validation": {
+                                    "isRequired": true,
+                                    "dataType": "string"
+                                }
+                            },
+                            {
+                                "id": "password",
+                                "name": "Password",
+                                "description": "The password for your Docker Registry",
+                                "inputMode": "passwordBox",
+                                "isConfidential": true,
+                                "validation": {
+                                    "isRequired": true,
+                                    "dataType": "string"
+                                }
+                            },
+                            {
+                                "id": "email",
+                                "name": "Email",
+                                "description": "The email address for your Docker Registry",
+                                "inputMode": "textbox",
+                                "isConfidential": false,
+                                "validation": {
+                                    "isRequired": false,
+                                    "dataType": "string"
+                                }
                             }
-                        },
-                        {
-                            "id": "username",
-                            "name": "Docker ID",
-                            "description": "The username for your Docker Registry",
-                            "inputMode": "textbox",
-                            "isConfidential": false,
-                            "validation": {
-                                "isRequired": true,
-                                "dataType": "string"
-                            }
-                        },
-                        {
-                            "id": "password",
-                            "name": "Password",
-                            "description": "The password for your Docker Registry",
-                            "inputMode": "passwordBox",
-                            "isConfidential": true,
-                            "validation": {
-                                "isRequired": true,
-                                "dataType": "string"
-                            }
-                        },
-                        {
-                            "id": "email",
-                            "name": "Email",
-                            "description": "The email address for your Docker Registry",
-                            "inputMode": "textbox",
-                            "isConfidential": false,
-                            "validation": {
-                                "isRequired": false,
-                                "dataType": "string"
-                            }
-                        }
-                    ]
-                }
+                        ]
+                    }
                 ],
                 "dataSources": [
                     {
@@ -164,55 +164,55 @@
                     {
                         "type": "ms.vss-endpoint.endpoint-auth-scheme-cert",
                         "inputDescriptors": [
-                             {
-                                  "id": "cacert",
-                                  "name": "CA Certificate",
-                                  "description": "Contents of ca.pem",
-                                  "inputMode": "textarea",
-                                  "isConfidential": true,
-                                  "validation": {
-                                      "isRequired": true,
-                                      "dataType": "string"
-                                  }
-                              },
-                              {
-                                  "id": "cert",
-                                  "name": "Certificate",
-                                  "description": "Contents of cert.pem",
-                                  "inputMode": "textarea",
-                                  "isConfidential": true,
-                                  "validation": {
-                                      "isRequired": true,
-                                      "dataType": "string"
-                                  }
-                              },
-                              {
-                                  "id": "key",
-                                  "name": "Key",
-                                  "description": "Contents of key.pem",
-                                  "inputMode": "textarea",
-                                  "isConfidential": true,
-                                  "validation": {
-                                      "isRequired": true,
-                                      "dataType": "string"
-                                  }
-                              },
-                              {
-                                  "id": "certificate",
-                                  "name": "Certificate",
-                                  "description": "Content of the certificate",
-                                  "inputMode": "TextArea",
-                                  "isConfidential": true,
-                                  "validation": {
-                                      "isRequired": false,
-                                      "dataType": "string"
-                                  },
-                                  "values": {
-                                      "inputId": "certificateInput",
-                                      "defaultValue": "",
-                                      "isDisabled": true
-                                  }
-                             }
+                            {
+                                "id": "cacert",
+                                "name": "CA Certificate",
+                                "description": "Contents of ca.pem",
+                                "inputMode": "textarea",
+                                "isConfidential": true,
+                                "validation": {
+                                    "isRequired": true,
+                                    "dataType": "string"
+                                }
+                            },
+                            {
+                                "id": "cert",
+                                "name": "Certificate",
+                                "description": "Contents of cert.pem",
+                                "inputMode": "textarea",
+                                "isConfidential": true,
+                                "validation": {
+                                    "isRequired": true,
+                                    "dataType": "string"
+                                }
+                            },
+                            {
+                                "id": "key",
+                                "name": "Key",
+                                "description": "Contents of key.pem",
+                                "inputMode": "textarea",
+                                "isConfidential": true,
+                                "validation": {
+                                    "isRequired": true,
+                                    "dataType": "string"
+                                }
+                            },
+                            {
+                                "id": "certificate",
+                                "name": "Certificate",
+                                "description": "Content of the certificate",
+                                "inputMode": "TextArea",
+                                "isConfidential": true,
+                                "validation": {
+                                    "isRequired": false,
+                                    "dataType": "string"
+                                },
+                                "values": {
+                                    "inputId": "certificateInput",
+                                    "defaultValue": "",
+                                    "isDisabled": true
+                                }
+                            }
                         ]
                     }
                 ],
