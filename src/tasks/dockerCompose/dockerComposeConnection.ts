@@ -80,7 +80,7 @@ export default class DockerComposeConnection extends DockerConnection {
         var basePath = path.dirname(this.dockerComposeFile);
         this.additionalDockerComposeFiles.forEach(file => {
             // If the path is relative, resolve it
-            if (file.indexOf("/") !== 0) {
+            if (!path.isAbsolute(file)) {
                 file = path.join(basePath, file);
             }
             if (this.requireAdditionalDockerComposeFiles || tl.exist(file)) {
