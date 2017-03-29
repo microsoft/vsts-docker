@@ -1,8 +1,8 @@
 {
     "id": "DD7C9344-1179-44A9-891B-177FBB98B9A7",
     "name": "DockerDeploy",
-    "friendlyName": "Container Deploy",
-    "description": "Deploy single or multi-container applications to a variety of Azure resources",
+    "friendlyName": "Docker Deploy",
+    "description": "Deploy single or multi-container Docker applications to a variety of Azure resources",
     "helpMarkDown": "[More Information](http://aka.ms/dockertoolsforvsts)",
     "category": "Deploy",
     "visibility": [
@@ -27,8 +27,8 @@
         {
             "name": "dockerRegistryEndpoint",
             "type": "connectedService:dockerregistry",
-            "label": "Container Registry Connection",
-            "helpMarkDown": "Select a container registry connection. Required for deployments that need to authenticate with a registry."
+            "label": "Docker Registry Connection",
+            "helpMarkDown": "Select a Docker registry connection. Required for deployments that need to authenticate with a registry."
         },
         {
             "name": "targetType",
@@ -45,7 +45,7 @@
             "type": "filePath",
             "label": "Docker Compose File",
             "required": true,
-            "visibleRule": "targetType = ACS DCOS || targetType = ACS Kubernetes",
+            "visibleRule": "targetType = ACS DCOS",
             "helpMarkDown": "Path to the primary Docker Compose file to use."
         },
         {
@@ -56,7 +56,7 @@
                 "rows": "2"
             },
             "label": "Additional Docker Compose Files",
-            "visibleRule": "targetType = ACS DCOS || targetType = ACS Kubernetes",
+            "visibleRule": "targetType = ACS DCOS",
             "helpMarkDown": "Additional Docker Compose files to be combined with the primary Docker Compose file. Relative paths are resolved relative to the directory containing the primary Docker Compose file. If a specified file is not found, it is ignored. Specify each file path on a new line."
         },
         {
@@ -67,7 +67,7 @@
                 "rows": "2"
             },
             "label": "Environment Variables",
-            "visibleRule": "targetType = ACS DCOS || targetType = ACS Kubernetes",
+            "visibleRule": "targetType = ACS DCOS",
             "helpMarkDown": "Environment variables to be set during the command. Specify each name=value pair on a new line."
         },
         {
@@ -75,7 +75,7 @@
             "type": "string",
             "label": "Project Name",
             "defaultValue": "$(Release.DefinitionName)",
-            "visibleRule": "targetType = ACS DCOS || targetType = ACS Kubernetes",
+            "visibleRule": "targetType = ACS DCOS",
             "helpMarkDown": "Project name used for default naming of images and containers."
         },
         {
@@ -83,16 +83,8 @@
             "type": "boolean",
             "label": "Qualify Image Names",
             "defaultValue": "false",
-            "visibleRule": "targetType = ACS DCOS || targetType = ACS Kubernetes",
-            "helpMarkDown": "Automatically qualify image names for built services with the container registry connection's hostname if not otherwise specified."
-        },
-        {
-            "name": "kubernetesDeployIngressController",
-            "type": "boolean",
-            "label": "Deploy Kubernetes Ingress Controller",
-            "defaultValue": "true",
-            "helpMarkDown": "Deploys the Kubernetes Ingress Controller.",
-            "visibleRule": "targetType = Kubernetes"
+            "visibleRule": "targetType = ACS DCOS",
+            "helpMarkDown": "Automatically qualify image names for built services with the Docker registry connection's hostname if not otherwise specified."
         },
         {
             "name": "acsDcosEndpointType",
@@ -105,17 +97,6 @@
             },
             "visibleRule": "targetType = ACS DCOS",
             "helpMarkDown": "Select an Azure Container Service DC/OS connection type."
-        },
-        {
-            "name": "kubernetesEndpointType",
-            "type": "pickList",
-            "label": "ACS Kubernetes Connection Type",
-            "required": true,
-            "options": {
-                "SSH": "SSH"
-            },
-            "visibleRule": "targetType = ACS Kubernetes",
-            "helpMarkDown": "Select a Azure Container Service Kubernetes connection type."
         },
         {
             "name": "acsDcosMasterUrl",
@@ -135,19 +116,12 @@
             "helpMarkDown": "Select an Azure Container Service DC/OS SSH connection."
         },
         {
-            "name": "kubernetesSshEndpoint",
-            "type": "connectedService:ssh",
-            "label": "Kubernetes SSH Connection",
-            "required": true,
-            "visibleRule": "targetType = ACS Kubernetes && kubernetesEndpointType = SSH",
-            "helpMarkDown": "Select an Azure container Service Kubernetes SSH connection."
-        },
-        {
             "name": "acsDcosAppGroupName",
             "type": "string",
             "label": "Application Group Name",
             "required": true,
             "defaultValue": "$(Release.EnvironmentName)/$(Release.DefinitionName)",
+            "visibleRule": "targetType = ACS DCOS",
             "helpMarkDown": "Name of the Marathon application group to deploy."
         },
         {
@@ -156,7 +130,7 @@
             "label": "Application Group Qualifier",
             "required": true,
             "defaultValue": "$(System.TeamFoundationCollectionUri)/$(System.TeamProject)",
-            "visibleRule": "targetType = ACS DCOS || targetType = ACS Kubernetes",
+            "visibleRule": "targetType = ACS DCOS",
             "helpMarkDown": "Qualifier for the Marathon application group name that is hashed and appended to create a unique identifier for deployment definitions."
         },
         {
@@ -165,7 +139,7 @@
             "label": "Application Group Version",
             "required": true,
             "defaultValue": "$(Release.ReleaseId).$(Release.AttemptNumber)",
-            "visibleRule": "targetType = ACS DCOS || targetType = ACS Kubernetes",
+            "visibleRule": "targetType = ACS DCOS",
             "helpMarkDown": "Version for the Marathon application group name that is appended to create a unique identifier for specific deployments."
         },
         {
