@@ -70,7 +70,7 @@
             "properties": {
                 "name": "dockerregistry",
                 "displayName": "Docker Registry",
-                "url": "http://hub.docker.com",
+                "url": "https://hub.docker.com",
                 "authenticationSchemes": [
                     {
                         "type": "ms.vss-endpoint.endpoint-auth-scheme-basic",
@@ -124,6 +124,28 @@
                                 }
                             }
                         ]
+                    }
+                ],
+                "dataSources": [
+                    {
+                        "name": "TestConnection",
+                        "endpointUrl": "https://hub.docker.com/v2/repositories/namespaces/",
+                        "resultSelector": "jsonpath:$.namespaces[*]"
+                    },
+                    {
+                        "name": "DockerNamespace",
+                        "endpointUrl": "https://hub.docker.com/v2/repositories/namespaces/",
+                        "resultSelector": "jsonpath:$.namespaces[*]"
+                    },
+                    {
+                        "name": "DockerRepositories",
+                        "endpointUrl": "https://hub.docker.com/v2/repositories/{{{DockerNamespace}}}/",
+                        "resultSelector": "jsonpath:$.results[?(@.is_private == true)].name"
+                    },
+                    {
+                        "name": "DockerRepositoryTags",
+                        "endpointUrl": "https://hub.docker.com/v2/repositories/{{{DockerNamespace}}}/{{{DockerRepository}}}/tags/",
+                        "resultSelector": "jsonpath:$.results[*].name"
                     }
                 ]
             }
