@@ -1,5 +1,5 @@
 {
-    "id": "DD7C9344-1179-44A9-891B-177FBB98B9A7",
+    "id": "F5CF8FEE-3D06-4C3C-A0CB-5E484F9CDAB0",
     "name": "DockerDeploy",
     "friendlyName": "Docker Deploy",
     "description": "Deploy single or multi-container Docker applications to a variety of Azure resources",

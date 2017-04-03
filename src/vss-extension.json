@@ -2,11 +2,11 @@
     "manifestVersion": 1,
     "id": "docker",
     "name": "Docker Integration",
-    "version": "0.3.9",
-    "publisher": "ms-vscs-rm",
+    "version": "0.3.9.10",
+    "publisher": "Devedse",
     "description": "Build, push, run or deploy Docker images and multi-container Docker applications.",
     "galleryFlags": [
-        "Public"
+        
     ],
     "icons": {
         "default": "images/docker_logo.png",
