@@ -17,7 +17,8 @@ require({
     "Build an image": "./dockerBuild",
     "Push an image": "./dockerPush",
     "Run an image": "./dockerRun",
-    "Run a Docker command": "./dockerCommand"
+    "Run a Docker command": "./dockerCommand",
+    "Clean all images": "./dockerClean"
 }[action]).run(connection)
 /* tslint:enable:no-var-requires */
 .fin(function cleanup() {
