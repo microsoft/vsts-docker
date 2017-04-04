@@ -36,13 +36,21 @@ export default class DockerConnection {
 
     public execCommand(command: tr.ToolRunner, options?: tr.IExecOptions) {
         var errlines = [];
+        var result = "";
+        command.on("stdout", data => {
+            var dataAsString = data + "";
+            if (result.length > 0) {
+                result += " ";
+            }
+            result += dataAsString.replace(/[\r\n]+/g, " ");
+        });
         command.on("errline", line => {
             errlines.push(line);
         });
         return command.exec(options).fail(error => {
             errlines.forEach(line => tl.error(line));
             throw error;
-        });
+        }).then(() => result);
     }
 
     public open(hostEndpoint?: string, registryEndpoint?: string): void {

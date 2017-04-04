@@ -2,7 +2,7 @@
     "manifestVersion": 1,
     "id": "docker",
     "name": "Docker Integration",
-    "version": "0.3.9.10",
+    "version": "0.3.9.20",
     "publisher": "Devedse",
     "description": "Build, push, run or deploy Docker images and multi-container Docker applications.",
     "galleryFlags": [
