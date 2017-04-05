@@ -21,6 +21,7 @@ require({
 }[action]).run(connection)
 /* tslint:enable:no-var-requires */
 .then((result) => {
+    // Write the output of the command to the configured output variable
     const outputVariable = tl.getInput("outputVariableName", false);
     if (outputVariable !== null) {
         tl.setVariable(outputVariable, result);
