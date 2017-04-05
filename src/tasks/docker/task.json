@@ -247,7 +247,7 @@
         },
         {
             "defaultValue": "",
-            "helpMarkdown": "Variable to set write the output to. Only supply the variable name and do not include `$(...)`.",
+            "helpMarkdown": "Variable to write the output of the Docker command to. Only supply the variable name and do not include `$(...)`.",
             "label": "Output Variable",
             "name": "outputVariableName",
             "type": "string"
