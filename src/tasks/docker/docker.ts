@@ -20,6 +20,14 @@ require({
     "Run a Docker command": "./dockerCommand"
 }[action]).run(connection)
 /* tslint:enable:no-var-requires */
+.then((result) => {
+    // Write the output of the command to the configured output variable
+    const outputVariable = tl.getInput("outputVariableName", false);
+    if (outputVariable !== null) {
+        tl.setVariable(outputVariable, result);
+        tl._writeLine(`Set ${outputVariable} to: ${result}`);
+    }
+})
 .fin(function cleanup() {
     connection.close();
 })

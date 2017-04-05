@@ -13,7 +13,7 @@
     "version": {
         "Major": 0,
         "Minor": 3,
-        "Patch": 1
+        "Patch": 2
     },
     "demands": [],
     "groups": [
@@ -243,7 +243,14 @@
             "defaultValue": "$(System.DefaultWorkingDirectory)",
             "helpMarkDown": "Working directory for the Docker command.",
             "groupName": "advanced"
-        }
+        },
+        {
+            "defaultValue": "",
+            "helpMarkdown": "Variable to write the output of the Docker command to. Only supply the variable name and do not include `$(...)`.",
+            "label": "Output Variable",
+            "name": "outputVariableName",
+            "type": "string"
+        },
     ],
     "instanceNameFormat": "$(action)",
     "execution": {
