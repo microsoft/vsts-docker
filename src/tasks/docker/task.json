@@ -40,8 +40,7 @@
                 "Build an image": "Build an image",
                 "Push an image": "Push an image",
                 "Run an image": "Run an image",
-                "Run a Docker command": "Run a Docker command",
-                "Clean all images": "Clean all the images"
+                "Run a Docker command": "Run a Docker command"
             },
             "helpMarkDown": "Select a Docker action."
         },
