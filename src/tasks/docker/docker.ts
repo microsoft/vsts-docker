@@ -12,7 +12,6 @@ connection.open(tl.getInput("dockerHostEndpoint"), tl.getInput("dockerRegistryEn
 
 // Run the specified action
 var action = tl.getInput("action", true);
-var output = "";
 /* tslint:disable:no-var-requires */
 require({
     "Build an image": "./dockerBuild",
