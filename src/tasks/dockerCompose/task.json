@@ -2,8 +2,9 @@
     "id": "ADCFA1C1-3BE7-45FC-871F-13634B2CFF1D",
     "name": "DockerCompose",
     "friendlyName": "Docker Compose",
-    "description": "Build, push or run multi-container Docker applications",
+    "description": "Build, push or run multi-container Docker applications. This task has been deprecated in favor of a VSTS built-in task",
     "helpMarkDown": "[More Information](http://aka.ms/dockertoolsforvsts)",
+    "deprecated": true,
     "category": "Build",
     "visibility": [
         "Build",
@@ -13,7 +14,7 @@
     "version": {
         "Major": 0,
         "Minor": 3,
-        "Patch": 5
+        "Patch": 6
     },
     "demands": [],
     "groups": [

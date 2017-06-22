@@ -1,6 +1,8 @@
 The world's largest enterprises rely on Docker to develop the world’s best applications. With the Docker extension, you can integrate Docker images and containers into your existing agile and DevOps workflows.
 
-The Docker extension adds a task that enables you to build Docker images, push Docker images to an authenticated Docker registry, run Docker images or execute other operations offered by the Docker CLI. It also adds a Docker Compose task that enables you to build, push and run multi-container Docker applications or execute other operations offered by the Docker Compose CLI. Lastly, it offers a Docker Deploy task that enables you to deploy single Docker images or multi-container Docker applications into Azure. 
+  **NOTE**: the Docker and Docker Compose tasks in this extension have been deprecated in favor of equivalent built-in VSTS tasks. If you are looking to use only one or both of these tasks and not the Docker Deploy task, please do not install this extension and instead use the built-in VSTS tasks.
+
+The Docker extension adds a task that enables you to build Docker images, push Docker images to an authenticated Docker registry, run Docker images or execute other operations offered by the Docker CLI. It also adds a Docker Compose task that enables you to build, push and run multi-container Docker applications or execute other operations offered by the Docker Compose CLI. Lastly, it offers a Docker Deploy task that enables you to deploy single Docker images or multi-container Docker applications into Azure.
 
 The Docker extension introduces two new service endpoints for Docker hosts and registries. The tasks default to using a local Docker host if available (this currently requires a custom VSTS agent), otherwise they require a Docker host connection to be provided. Actions that depend on being authenticated with a Docker registry, such as pushing an image, require a Docker registry connection to be provided.
 

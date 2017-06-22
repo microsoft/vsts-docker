@@ -2,8 +2,9 @@
     "id": "B93C4522-5BEA-4118-97AE-2B560628A157",
     "name": "Docker",
     "friendlyName": "Docker",
-    "description": "Build, push or run Docker images, or run a Docker command",
+    "description": "Build, push or run Docker images, or run a Docker command. This task has been deprecated in favor of a VSTS built-in task.",
     "helpMarkDown": "[More Information](http://aka.ms/dockertoolsforvsts)",
+    "deprecated": true,
     "category": "Build",
     "visibility": [
         "Build",
@@ -13,7 +14,7 @@
     "version": {
         "Major": 0,
         "Minor": 3,
-        "Patch": 1
+        "Patch": 2
     },
     "demands": [],
     "groups": [
