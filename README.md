@@ -1,3 +1,7 @@
+# Deprecated and archived
+
+This repo is deprecated and has been archived. Related to this repo, Azure Pipelines hosted images are generated in the [azure-pipelines-image-generation](https://github.com/Microsoft/azure-pipelines-image-generation) repo.
+
 # vsts-docker
 This is the source code repository of Docker extension for Visual Studio Team Services. This extension contains VSTS build tasks to work with Docker.
 
