@@ -1,4 +1,4 @@
 pyyaml==3.12
-requests==2.12.3
+requests==2.20.0
 sshtunnel==0.1.1
 sseclient==0.0.14
