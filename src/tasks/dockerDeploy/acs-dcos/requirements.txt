@@ -1,4 +1,4 @@
-pyyaml==3.12
+pyyaml==5.4
 requests==2.12.3
 sshtunnel==0.1.1
 sseclient==0.0.14
